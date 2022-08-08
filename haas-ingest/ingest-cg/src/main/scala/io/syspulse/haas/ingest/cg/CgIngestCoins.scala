@@ -32,7 +32,7 @@ import spray.json._
 class CgIngestCoins(config:Config,c:Configuration) extends CgIngest[CoingeckoCoin](config,c) {
   import CoingeckoJson._
 
-  override def url(host:String = "http://localhost:8100") = s"${host}/bulk"
+  override def urls() = Seq(s"${host()}/bulk")
 
   override def toData(json:String):Seq[CoingeckoCoin] = {
     log.info(s"message: ${json}")

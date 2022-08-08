@@ -32,7 +32,8 @@ import spray.json._
 abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
   import CoingeckoJson._
     
-  def url(host:String = "http://localhost:8100") = s"${host}/"
+  def host() = config.cgUri
+  def urls() = Seq(s"${host()}/")
   def getRequest(req: HttpRequest) = httpFlow(req)
 
   def toData(json:String):Seq[T] = {
@@ -43,7 +44,11 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
   def createSource() = {        
     val freq = FiniteDuration(config.freq,"seconds")
     
-    val httpRequest = HttpRequest(uri = url(config.cgUri)).withHeaders(Accept(MediaTypes.`application/json`))
+    val httpRequest = urls().map(url => 
+      HttpRequest(uri = url)
+        .withHeaders(Accept(MediaTypes.`application/json`))
+    )
+
     val source = Source.tick(0.seconds, freq, httpRequest)
     
     if(config.limit == 0)
@@ -52,7 +57,9 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
       source.take(config.limit)
   }
 
-  def flow = Flow[T].map(m => m)
+  def flow() = Flow[T].map(m => m)
+
+  def par() = 1
 
   def run(sink1:Sink[T,Future[Done]],sink2:Sink[T,Future[Done]] = Sink.ignore) = {
     val source = createSource()
@@ -60,7 +67,8 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
     val restartableSource = RestartSource.withBackoff(retrySettings) { () =>
       log.info(s"Connecting -> Coingecko(${config.cgUri})...")
       source
-        .mapAsync(1)(getRequest(_))
+        .mapConcat(identity)
+        .mapAsync(par())(getRequest(_))
         .map(countFlow)
         .log("Coingecko")
         .map(toJson(_))
@@ -69,7 +77,7 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
     
     val stream = restartableSource
       .alsoTo(sink1)
-      .via(flow)
+      .via(flow())
       .runWith(sink2)
     stream
   }
