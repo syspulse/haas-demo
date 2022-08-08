@@ -19,8 +19,12 @@ case class Config(
   logFile:String = "",   
   elasticUri:String = "",
   datastore:String = "",
+
+  tokens:Seq[String] = Seq(),
+
   cmd:String = "",
-  params: Seq[String] = Seq(),sinks:Seq[String] = Seq()
+  params: Seq[String] = Seq(),
+  sinks:Seq[String] = Seq()
 )
 
 object App {
@@ -37,9 +41,12 @@ object App {
         ArgString('o', "elastic.uri","Elastic cluster uri"),
         ArgLong('l', "limit","Limit"),
         ArgLong('f', "freq","Frequency"),
+
+        ArgString('t', "tokens","Tokens filter"),
         
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
-        ArgCmd("ingest","Ingest flow"),
+        ArgCmd("coins","All coins"),
+        ArgCmd("coin","Coin Detailed info"),
         ArgParam("<params>","")
       ).withExit(1)
     ))
@@ -49,9 +56,13 @@ object App {
       elasticUri = c.getString("elastic.uri").getOrElse("http://localhost:5302"),
       limit = c.getLong("limit").getOrElse(10),
       freq = c.getLong("freq").getOrElse(3600),
+
+      tokens = c.getString("tokens").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
       
       datastore = c.getString("datastore").getOrElse("stdout"),
-      cmd = c.getCmd().getOrElse("ingest"),
+      
+      cmd = c.getCmd().getOrElse("coins"),
+      
       params = c.getParams(),
     )
 
@@ -59,17 +70,19 @@ object App {
 
     val store = config.datastore match {
       // case "elastic" => new CgStoreElastic()
-      case "stdout" => new CgStoreStdout[Coingecko]
+      case "stdout" => new CgStoreStdout[Any]
       case _ => {
         Console.err.println(s"Uknown datastore: '${config.datastore}'")
         System.exit(1)
-        new CgStoreStdout[Coingecko]
+        new CgStoreStdout[Any]
       }
     }
 
     config.cmd match {
-      case "ingest" => 
-        new CgIngest[Coingecko](config,c).run(store.getSink)
+      case "coins" => 
+        new CgIngestCoins(config,c).run(store.getSink)
+      case "coin" => 
+        new CgIngestCoinInfo(config,c).run(store.getSink)
     }
   }
 }

@@ -27,9 +27,12 @@ import io.syspulse.skel.ingest.IngestClient
 import io.syspulse.skel.util.Util._
 import io.syspulse.skel.config.Configuration
 
-class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
+import spray.json._
+
+abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
+  import CoingeckoJson._
     
-  def url(host:String = "http://localhost:8100", tokens:Seq[String] = Seq("UNI")) = s"${host}/"
+  def url(host:String = "http://localhost:8100") = s"${host}/"
   def getRequest(req: HttpRequest) = httpFlow(req)
 
   def toData(json:String):Seq[T] = {
@@ -49,20 +52,21 @@ class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
       source.take(config.limit)
   }
 
+  def flow = Flow[T].map(m => m)
+
   def run(sink1:Sink[T,Future[Done]],sink2:Sink[T,Future[Done]] = Sink.ignore) = {
     val source = createSource()
     
     val restartableSource = RestartSource.withBackoff(retrySettings) { () =>
-      log.info(s"Connecting -> CG(${config.cgUri})...")
+      log.info(s"Connecting -> Coingecko(${config.cgUri})...")
       source
         .mapAsync(1)(getRequest(_))
         .map(countFlow)
-        .log("CG")
+        .log("Coingecko")
         .map(toJson(_))
         .mapConcat(toData(_))
     }
-
-    val flow = Flow[T].map(e => {println(s"${e}"); e;})
+    
     val stream = restartableSource
       .alsoTo(sink1)
       .via(flow)
