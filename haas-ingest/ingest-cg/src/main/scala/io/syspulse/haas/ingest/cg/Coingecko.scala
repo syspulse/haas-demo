@@ -12,7 +12,13 @@ case class CoingeckoCoin(id:String,symbol:String,name:String) extends Ingestable
   def toSimpleLog = s""
 }
 
-case class CoingeckoCoinInfo(id:String,symbol:String,name:String,contract_address:String) extends Ingestable {
+case class MarketCap(usd:Long)
+
+case class MarketData(market_cap:MarketCap)
+
+case class CoingeckoCoinInfo(id:String,symbol:String, name:String,
+  contract_address:Option[String], platforms:Map[String,String],
+  market_data:MarketData) extends Ingestable {
   def toLog = s""
   def toSimpleLog = s""
 }

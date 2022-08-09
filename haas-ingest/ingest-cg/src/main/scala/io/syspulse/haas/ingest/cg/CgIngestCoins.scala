@@ -27,12 +27,13 @@ import io.syspulse.skel.ingest.IngestClient
 import io.syspulse.skel.util.Util._
 import io.syspulse.skel.config.Configuration
 
+import io.syspulse.haas.ingest.FeedIngest
 import spray.json._
 
-class CgIngestCoins(config:Config,c:Configuration) extends CgIngest[CoingeckoCoin](config,c) {
+class CgIngestCoins(config:Config,c:Configuration) extends FeedIngest[CoingeckoCoin](config.cgUri,config.freq,config.limit,"Coingecko") {
   import CoingeckoJson._
 
-  override def urls() = Seq(s"${host()}/bulk")
+  override def urls() = Seq(s"${host()}/coins")
 
   override def toData(json:String):Seq[CoingeckoCoin] = {
     log.info(s"message: ${json}")

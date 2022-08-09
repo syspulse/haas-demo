@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.cg
+package io.syspulse.haas.ingest
 
 import java.time.{Instant}
 
@@ -27,12 +27,9 @@ import io.syspulse.skel.ingest.IngestClient
 import io.syspulse.skel.util.Util._
 import io.syspulse.skel.config.Configuration
 
-import spray.json._
-
-abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
-  import CoingeckoJson._
+abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "") extends IngestClient {
     
-  def host() = config.cgUri
+  def host() = uri
   def urls() = Seq(s"${host()}/")
   def getRequest(req: HttpRequest) = httpFlow(req)
 
@@ -41,20 +38,18 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
     Seq()
   }
 
-  def createSource() = {        
-    val freq = FiniteDuration(config.freq,"seconds")
-    
+  def createSource() = {            
     val httpRequest = urls().map(url => 
       HttpRequest(uri = url)
         .withHeaders(Accept(MediaTypes.`application/json`))
     )
 
-    val source = Source.tick(0.seconds, freq, httpRequest)
+    val source = Source.tick(0.seconds, FiniteDuration(freq,"seconds"), httpRequest)
     
-    if(config.limit == 0)
+    if(limit == 0)
       source
     else  
-      source.take(config.limit)
+      source.take(limit)
   }
 
   def flow() = Flow[T].map(m => m)
@@ -65,12 +60,12 @@ abstract class CgIngest[T](config:Config,c:Configuration) extends IngestClient {
     val source = createSource()
     
     val restartableSource = RestartSource.withBackoff(retrySettings) { () =>
-      log.info(s"Connecting -> Coingecko(${config.cgUri})...")
+      log.info(s"Connecting -> ${name}(${uri})...")
       source
         .mapConcat(identity)
         .mapAsync(par())(getRequest(_))
         .map(countFlow)
-        .log("Coingecko")
+        .log(name)
         .map(toJson(_))
         .mapConcat(toData(_))
     }
