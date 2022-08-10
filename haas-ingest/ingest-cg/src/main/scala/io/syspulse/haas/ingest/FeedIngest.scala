@@ -27,14 +27,14 @@ import io.syspulse.skel.ingest.IngestClient
 import io.syspulse.skel.util.Util._
 import io.syspulse.skel.config.Configuration
 
-abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "") extends IngestClient {
+abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) extends IngestClient {
     
   def host() = uri
   def urls() = Seq(s"${host()}/")
   def getRequest(req: HttpRequest) = httpFlow(req)
 
   def toData(json:String):Seq[T] = {
-    log.info(s"message: ${json}")
+    log.debug(s"message: ${json}")
     Seq()
   }
 
@@ -44,7 +44,10 @@ abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "") e
         .withHeaders(Accept(MediaTypes.`application/json`))
     )
 
-    val source = Source.tick(0.seconds, FiniteDuration(freq,"seconds"), httpRequest)
+    val source = if(freq != 0) 
+      Source.tick(0.seconds, FiniteDuration(freq,"seconds"), httpRequest)
+    else 
+      Source.single(httpRequest)
     
     if(limit == 0)
       source
@@ -57,23 +60,33 @@ abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "") e
   def par() = 1
 
   def run(sink1:Sink[T,Future[Done]],sink2:Sink[T,Future[Done]] = Sink.ignore) = {
-    val source = createSource()
     
-    val restartableSource = RestartSource.withBackoff(retrySettings) { () =>
-      log.info(s"Connecting -> ${name}(${uri})...")
-      source
+    val innerFlow = createSource()
         .mapConcat(identity)
         .mapAsync(par())(getRequest(_))
         .map(countFlow)
         .log(name)
         .map(toJson(_))
         .mapConcat(toData(_))
-    }
     
-    val stream = restartableSource
+    val source = if(freq != 0L) 
+      RestartSource.withBackoff(retrySettings) { () =>
+        log.info(s"Connecting -> ${name}(${uri})...")  
+        innerFlow
+      }
+    else
+      innerFlow
+    
+    val stream = source
       .alsoTo(sink1)
       .via(flow())
       .runWith(sink2)
-    stream
+    
+    val r = if(freq != 0L)
+      stream
+    else {
+      Await.ready(stream,FiniteDuration(timeout,"milliseconds"))
+      system.terminate()
+    }
   }
 }

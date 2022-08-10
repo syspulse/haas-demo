@@ -39,7 +39,7 @@ class CgIngestCoinInfo(config:Config,c:Configuration) extends FeedIngest[Coingec
   override def flow() = Flow[CoingeckoCoinInfo].throttle(1,1.second)
 
   override def toData(json:String):Seq[CoingeckoCoinInfo] = {
-    log.info(s"message: ${json}")
+    log.debug(s"message: ${json}")
     val coin = json.parseJson.convertTo[CoingeckoCoinInfo]
     Seq(coin)
   }

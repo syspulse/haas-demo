@@ -54,8 +54,8 @@ object App {
     val config = Config(
       cgUri = c.getString("cg.uri").getOrElse("http://localhost:8100"),
       elasticUri = c.getString("elastic.uri").getOrElse("http://localhost:5302"),
-      limit = c.getLong("limit").getOrElse(10),
-      freq = c.getLong("freq").getOrElse(3600),
+      limit = c.getLong("limit").getOrElse(0),
+      freq = c.getLong("freq").getOrElse(0),
 
       tokens = c.getString("tokens").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
       

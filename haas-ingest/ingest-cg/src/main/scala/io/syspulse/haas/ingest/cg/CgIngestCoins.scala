@@ -36,7 +36,7 @@ class CgIngestCoins(config:Config,c:Configuration) extends FeedIngest[CoingeckoC
   override def urls() = Seq(s"${host()}/coins")
 
   override def toData(json:String):Seq[CoingeckoCoin] = {
-    log.info(s"message: ${json}")
+    log.debug(s"message: ${json}")
     val bulk = json.parseJson.convertTo[List[CoingeckoCoin]]
     if(config.tokens.isEmpty) 
       bulk.toSeq
