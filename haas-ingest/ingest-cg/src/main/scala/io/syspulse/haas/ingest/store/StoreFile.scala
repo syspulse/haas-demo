@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.cg.store
+package io.syspulse.haas.ingest.store
 
 import java.time.{Instant}
 import java.nio.file.StandardOpenOption._
@@ -30,7 +30,7 @@ import scala.jdk.CollectionConverters._
 
 import io.syspulse.skel.util.Util
 
-class CgStoreFile[T](logFile:String,toLog:(T => String)) extends CgStore[T] {
+class StoreFile[T](logFile:String,toLog:(T => String)) extends Store[T] {
 
   override def getSink = if(logFile.trim.isEmpty) 
       Sink.ignore

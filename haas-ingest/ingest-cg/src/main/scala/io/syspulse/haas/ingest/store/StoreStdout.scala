@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.cg.store
+package io.syspulse.haas.ingest.store
 
 import java.time.{Instant}
 import java.nio.file.StandardOpenOption._
@@ -30,8 +30,8 @@ import scala.jdk.CollectionConverters._
 
 import io.syspulse.skel.util.Util
 
-trait CgStore[T] {
-  implicit val log = Logger(s"${this}")
-
-  def getSink:Sink[T,_]
+class StoreStdout[T] extends Store[T] {
+  
+  override def getSink = Sink.foreach[T](t => println(s"${t}"))
+  
 }

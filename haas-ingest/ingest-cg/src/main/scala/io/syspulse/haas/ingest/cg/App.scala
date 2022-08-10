@@ -10,7 +10,7 @@ import io.syspulse.skel.config._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-import io.syspulse.haas.ingest.cg.store._
+import io.syspulse.haas.ingest.store._
 
 case class Config(  
   cgUri:String = "",  
@@ -70,11 +70,11 @@ object App {
 
     val store = config.datastore match {
       // case "elastic" => new CgStoreElastic()
-      case "stdout" => new CgStoreStdout[Any]
+      case "stdout" => new StoreStdout[Any]
       case _ => {
         Console.err.println(s"Uknown datastore: '${config.datastore}'")
         System.exit(1)
-        new CgStoreStdout[Any]
+        new StoreStdout[Any]
       }
     }
 
