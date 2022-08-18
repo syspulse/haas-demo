@@ -220,6 +220,7 @@ lazy val core = (project in file("haas-core"))
       name := "haas-core",
       libraryDependencies ++= 
         Seq(
+          libSkelCore,
           libUUID, 
         ),
     )
@@ -257,6 +258,7 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
       libSkelIngest,
+      
       libUpickleLib
     ),
      
@@ -274,6 +276,7 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
       libSkelIngest,
+
       libSkelDSL,
       libUpickleLib
     ),

@@ -8,7 +8,7 @@ CONF=`echo $APP | awk -F"-" '{print $2}'`
 
 export SITE=${SITE:-$CONF}
 
-MAIN=io.syspulse.haas.ingest.cg.App
+MAIN=io.syspulse.haas.ingest.gecko.App
 
 echo "app: $APP"
 echo "site: $SITE"
