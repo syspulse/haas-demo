@@ -203,8 +203,8 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
 
 
 lazy val root = (project in file("."))
-  .aggregate(core, ingest_cg)
-  .dependsOn(core, ingest_cg)
+  .aggregate(core, ingest_gecko, ingest_eth)
+  .dependsOn(core, ingest_gecko, ingest_eth)
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     
@@ -245,18 +245,36 @@ lazy val tokens = (project in file("haas-tokens"))
   )
 
 
-lazy val ingest_cg = (project in file("haas-ingest/ingest-cg"))
+lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
   .dependsOn(core)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,
     sharedConfigAssembly,
 
-    appAssemblyConfig("ingest-cg","io.syspulse.haas.ingest.cg.App"),
+    appAssemblyConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
       libSkelIngest,
+      libUpickleLib
+    ),
+     
+  )
+
+lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
+  .dependsOn(core)
+  .enablePlugins(JavaAppPackaging)
+  .settings (
+    sharedConfig,
+    sharedConfigAssembly,
+
+    appAssemblyConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
+    
+    libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
+      libSkelCore,
+      libSkelIngest,
+      libSkelDSL,
       libUpickleLib
     ),
      
