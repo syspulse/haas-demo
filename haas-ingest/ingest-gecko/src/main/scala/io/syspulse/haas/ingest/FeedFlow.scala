@@ -28,60 +28,126 @@ import io.syspulse.skel.util.Util._
 import io.syspulse.skel.config.Configuration
 import io.syspulse.skel.ingest.IngestFlow
 import scala.concurrent.Awaitable
+import io.syspulse.skel.elastic.ElasticFlow
+import io.syspulse.skel.Ingestable
+import akka.stream.scaladsl.RestartSink
 
-abstract class FeedFlow[T,D](uri:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) extends IngestFlow[T,D] {
+abstract class Feeder
+case class HttpFeeder(http:HttpRequest) extends Feeder
+case class FileFeeder(file:String) extends Feeder
+
+abstract class FeedFlow[T,D <: Ingestable](feed:String,output:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) extends IngestFlow[T,D] {
   private val log = com.typesafe.scalalogging.Logger(s"${this}")
 
-  def host() = uri
+  def host() = feed
   def urls() = Seq(s"${host()}/")
   
-  override def source():Source[ByteString,_] = {
-    val httpRequest = urls().map(url => 
-      HttpRequest(uri = url)
-        .withHeaders(Accept(MediaTypes.`application/json`))
-    )
 
-    val s1 = if(freq != 0) 
-      Source.tick(0.seconds, FiniteDuration(freq,"seconds"), httpRequest)
-    else 
-      Source.single(httpRequest)
-    
-    val f2 = (
-      if(limit == 0)
-        s1
-      else  
-        s1.take(limit)
-    )
-    .mapConcat(identity)
-    .mapAsync(par())(IngestFlow.fromHttp(_))
-    .log(name)
+  override def source() = {
+    log.info(s"feed=${feed}")
 
-    if(freq != 0L) 
-      RestartSource.withBackoff(retrySettings) { () =>
-        log.info(s"Connecting -> ${name}(${uri})...")  
-        f2
-      }
-    else
-      f2    
-  }
-
-  def par() = 1
-
-  override def run() = {        
-    val f = if(freq != 0L)
-      super.run()
-    else {      
-      val f = super.run()
-      log.info(s"${f}")
-      f match {
-        case a:Awaitable[_] => 
-          Await.ready(a,FiniteDuration(timeout,TimeUnit.MILLISECONDS))
-          // this is a very simple HACK to avoid Akka overengineering: java.lang.IllegalStateException: Pool shutdown unexpectedly
-          Thread.sleep(500)
-          system.terminate()
-        case _ => 
-      }      
+    val s0 = feed.split("://").toList match {
+      case "http" :: _ => IngestFlow.fromHttp(HttpRequest(uri = feed).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r")
+      case "https" :: _ => IngestFlow.fromHttp(HttpRequest(uri = feed).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r")
+      case "file" :: fileName :: Nil => IngestFlow.fromFile(fileName,1024)
+      case "stdin" :: _ => IngestFlow.fromStdin()
+      case _ => IngestFlow.fromFile(feed)
     }
-    f
+
+    // val s1 = if(freq != 0) 
+    //   Source.tick(0.seconds, FiniteDuration(freq,"seconds"), ())
+    // else 
+    //   Source.single(s0)
+    
+    // val s2 = (
+    //   if(limit == 0)
+    //     s1
+    //   else  
+    //     s1.take(limit)
+    // )
+
+    // s2.mapConcat(s0)
+    
+    RestartSource.withBackoff(RestartSettings(1.seconds,5.seconds,0.2)) { () =>
+      log.info(s"Connecting -> ${name}(${feed})...")  
+      s0
+    }
   }
+
+  override def sink() = {
+    val sink = output.split("://").toList match {
+      //case "elastic" :: _ => 
+      case "file" :: fileName :: Nil => IngestFlow.toFile(fileName)
+      case "hive" :: fileName :: Nil => IngestFlow.toHiveFile(fileName)
+      case "stdout" :: _ => IngestFlow.toStdout()
+      case _ => IngestFlow.toFile(output)
+    }
+    
+    RestartSink.withBackoff(RestartSettings(1.seconds,5.seconds,0.2)) { () =>
+      log.info(s"Sinking -> ${output}")  
+      sink
+    }
+  }
+
+  // override def source():Source[ByteString,_] = {
+
+  //   val s0 = 
+  //     if(feed.trim.toLowerCase().startsWith("http://") || feed.trim.toLowerCase().startsWith("https://")) {
+  //         urls().map(url => 
+  //           HttpFeeder(
+  //             HttpRequest(uri = url).withHeaders(Accept(MediaTypes.`application/json`))
+  //           )
+  //         )
+  //       } else {
+  //         urls().map( url => FileFeeder(url))
+  //       }
+      
+
+  //   val s1 = if(freq != 0) 
+  //     Source.tick(0.seconds, FiniteDuration(freq,"seconds"), s0)
+  //   else 
+  //     Source.single(s0)
+    
+  //   val s2 = (
+  //     if(limit == 0)
+  //       s1
+  //     else  
+  //       s1.take(limit)
+  //   )
+
+  //   val s3 = s2
+  //   .mapConcat(identity)
+  //   .mapAsync(par())( f => f match {
+  //     case HttpFeeder(http) => IngestFlow.fromHttpFuture(http)
+  //     case FileFeeder(file) => IngestFlow.fromFile(file)
+  //   })
+
+  //   if(freq != 0L) 
+  //     RestartSource.withBackoff(retrySettings) { () =>
+  //       log.info(s"Connecting -> ${name}(${feed})...")  
+  //       s3
+  //     }
+  //   else
+  //     s3  
+  // }
+
+  // def par() = 1
+
+  // override def run() = {        
+  //   val f = if(freq != 0L)
+  //     super.run()
+  //   else {      
+  //     val f = super.run()
+  //     log.info(s"${f}")
+  //     f match {
+  //       case a:Awaitable[_] => 
+  //         Await.ready(a,FiniteDuration(timeout,TimeUnit.MILLISECONDS))
+  //         // this is a very simple HACK to avoid Akka overengineering: java.lang.IllegalStateException: Pool shutdown unexpectedly
+  //         Thread.sleep(500)
+  //         system.terminate()
+  //       case _ => 
+  //     }      
+  //   }
+  //   f
+  // }
 }

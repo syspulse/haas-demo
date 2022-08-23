@@ -32,8 +32,8 @@ import io.syspulse.haas.core.Token
 
 import io.syspulse.haas.ingest.FeedFlow
 
-abstract class CoingeckoFlow[D](uri:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) 
-  extends FeedFlow[D,Token](uri,freq,limit,name) {
+abstract class CoingeckoFlow[D](uri:String,output:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) 
+  extends FeedFlow[D,Token](uri,output,freq,limit,name) {
   
   
 }

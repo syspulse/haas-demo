@@ -10,14 +10,25 @@ import io.syspulse.skel.config._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-import io.syspulse.haas.ingest.store._
+import io.syspulse.haas.token.store.TokenStoreElastic
+import io.syspulse.haas.token.store.TokenStoreMem
+import io.syspulse.skel.token.store.TokenStoreStdout
 
 case class Config(  
   cgUri:String = "",  
+  
+  feed:String = "",
+  
   limit:Long = 0L,
   freq: Long = 0L,
-  logFile:String = "",   
+  output:String = "",   
+  
   elasticUri:String = "",
+  elasticUser:String = "",
+  elasticPass:String = "",
+  elasticIndex:String = "",
+  expr:String = "",
+  
   datastore:String = "",
 
   tokens:Seq[String] = Seq(),
@@ -38,7 +49,16 @@ object App {
       new ConfigurationEnv, 
       new ConfigurationArgs(args,"ingest-gecko","",
         ArgString('i', "cg.uri","Coingecko uri"),
-        ArgString('o', "elastic.uri","Elastic cluster uri"),
+                
+        ArgString('f', "feed","Input Feed (def: )"),
+        ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
+
+        ArgString('_', "elastic.uri","Elastic uri (def: http://localhost:9200)"),
+        ArgString('_', "elastic.user","Elastic user (def: )"),
+        ArgString('_', "elastic.pass","Elastic pass (def: )"),
+        ArgString('_', "elastic.index","Elastic Index (def: video)"),
+
+
         ArgLong('l', "limit","Limit"),
         ArgLong('f', "freq","Frequency"),
 
@@ -54,7 +74,14 @@ object App {
 
     val config = Config(
       cgUri = c.getString("cg.uri").getOrElse("http://localhost:8100"),
-      elasticUri = c.getString("elastic.uri").getOrElse("http://localhost:5302"),
+      
+      elasticUri = c.getString("elastic.uri").getOrElse("http://localhost:9200"),
+      elasticIndex = c.getString("elastic.index").getOrElse("token"),
+      elasticUser = c.getString("elastic.user").getOrElse(""),
+      elasticPass = c.getString("elastic.pass").getOrElse(""),
+      
+      feed = c.getString("feed").getOrElse(""),
+
       limit = c.getLong("limit").getOrElse(0),
       freq = c.getLong("freq").getOrElse(0),
 
@@ -69,17 +96,18 @@ object App {
 
     println(s"Config: ${config}")
 
-    val store = config.datastore match {
-      // case "elastic" => new CgStoreElastic()
-      case "stdout" => new StoreStdout[Any]
+    val store = config.datastore match {      
+      case "elastic" => new TokenStoreElastic().connect(config.elasticUri,config.elasticIndex)
+      case "mem" => new TokenStoreMem()
+      case "stdout" => new TokenStoreStdout()
       case _ => {
         Console.err.println(s"Uknown datastore: '${config.datastore}'")
-        System.exit(1)
-        new StoreStdout[Any]
+        sys.exit(1)
       }
     }
 
     config.cmd match {
+        
       case "coins" => 
         new CoingeckoIngestCoins(config,c).run()
       case "coin" => 

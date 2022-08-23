@@ -15,9 +15,9 @@ import io.syspulse.haas.ingest.gecko._
 import io.syspulse.haas.ingest.gecko.CoingeckoCoin
 import io.syspulse.haas.ingest.gecko.CoingeckoFlow
 
-class CoingeckoCoinsFlowFile(file:String)(uri:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) 
-  extends CoingeckoFlow[CoingeckoCoin](uri:String,freq:Long,limit:Long,name:String,timeout) 
+class CoingeckoCoinsFlowFile(file:String)(uri:String,output:String,freq:Long,limit:Long,name:String = "",timeout:Long=5000L) 
+  extends CoingeckoFlow[CoingeckoCoin](uri,output,freq,limit,name,timeout) 
   with CoingeckoCoinsFlow {
   
-  override def sink():Sink[Token,Any] = IngestFlow.toHiveFile(file)
+  //override def sink() = IngestFlow.toHiveFile(file)
 }

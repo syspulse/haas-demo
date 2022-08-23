@@ -17,11 +17,17 @@ trait CoingeckoCoinInfoFlow {
   import CoingeckoJson._
 
   def parse(data:String):Seq[CoingeckoCoinInfo] = {
-    val coin = data.parseJson.convertTo[CoingeckoCoinInfo]
-    Seq(coin)
+    try {
+      val coin = data.parseJson.convertTo[CoingeckoCoinInfo]
+      Seq(coin)
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'")
+        Seq()
+    }
   }
 
-  def transform(cg: CoingeckoCoinInfo): Token = {
-    Token(cg.id,cg.symbol,cg.name,cg.contract_address)
+  def transform(cg: CoingeckoCoinInfo): Seq[Token] = {    
+    Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address))
   }
 }

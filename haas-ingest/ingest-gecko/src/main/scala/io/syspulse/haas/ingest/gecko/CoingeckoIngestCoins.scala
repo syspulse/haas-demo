@@ -31,10 +31,12 @@ import io.syspulse.skel.config.Configuration
 import io.syspulse.haas.ingest.FeedIngest
 import io.syspulse.haas.ingest.FeedFlow
 import io.syspulse.haas.ingest.gecko.CoingeckoFlow
+
 import io.syspulse.haas.core.Token
+import io.syspulse.haas.core.Token.ID
 
 class CoingeckoIngestCoins(config:Config,c:Configuration) 
-  extends CoingeckoFlow[CoingeckoCoin](config.cgUri,config.freq,config.limit,"Coingecko") 
+  extends CoingeckoFlow[CoingeckoCoin](config.cgUri,config.output,config.freq,config.limit,"Coingecko") 
   with CoingeckoCoinsFlow {
 
   override def tokensFilter:Seq[String] = config.tokens  

@@ -34,7 +34,7 @@ import io.syspulse.haas.ingest.gecko.CoingeckoFlow
 import io.syspulse.haas.core.Token
 
 class CoingeckoIngestCoinInfo(config:Config,c:Configuration) 
-  extends CoingeckoFlow[CoingeckoCoinInfo](config.cgUri,config.freq,config.limit,"Coingecko") 
+  extends CoingeckoFlow[CoingeckoCoinInfo](config.cgUri,config.output,config.freq,config.limit,"Coingecko") 
   with CoingeckoCoinInfoFlow {
   
   override val log = com.typesafe.scalalogging.Logger(s"${this}")

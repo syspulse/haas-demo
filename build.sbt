@@ -203,8 +203,8 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
 
 
 lazy val root = (project in file("."))
-  .aggregate(core, ingest_gecko, ingest_eth)
-  .dependsOn(core, ingest_gecko, ingest_eth)
+  .aggregate(core, token, ingest_gecko, ingest_eth)
+  .dependsOn(core, token, ingest_gecko, ingest_eth)
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     
@@ -226,7 +226,7 @@ lazy val core = (project in file("haas-core"))
     )
 
 
-lazy val tokens = (project in file("haas-tokens"))
+lazy val token = (project in file("haas-token"))
   .dependsOn(core)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
@@ -238,16 +238,18 @@ lazy val tokens = (project in file("haas-tokens"))
     sharedConfigDocker,
     dockerBuildxSettings,
 
-    appDockerConfig("haas-tokens","io.syspulse.haas.tokens.App"),
+    appDockerConfig("haas-tokens","io.syspulse.haas.token.App"),
 
     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
-      libSkelCore
+      libSkelCore,
+      libSkelIngest,
+      libSkelIngestElastic
     ),    
   )
 
 
 lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
-  .dependsOn(core)
+  .dependsOn(core,token)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,
@@ -258,7 +260,7 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
       libSkelIngest,
-      
+      libSkelIngestElastic,
       libUpickleLib
     ),
      
