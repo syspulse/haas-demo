@@ -14,7 +14,7 @@ import io.syspulse.haas.token.store.TokenStoreElastic
 import io.syspulse.haas.token.store.TokenStoreMem
 import io.syspulse.skel.token.store.TokenStoreStdout
 
-import io.syspulse.haas.ingest.gecko.flow.PipelineCoins
+import io.syspulse.haas.ingest.gecko.flow.{ PipelineCoins,PipelineCoinInfo }
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Awaitable
 
@@ -127,7 +127,9 @@ object App {
       case "ingest" => {
         val pp = config.entity match {
           case "coins" =>
-            new PipelineCoins(config.feed,config.output)(config)            
+            new PipelineCoins(config.feed,config.output)(config)
+          case "coin" =>
+            new PipelineCoinInfo(config.feed,config.output)(config)
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 
 
