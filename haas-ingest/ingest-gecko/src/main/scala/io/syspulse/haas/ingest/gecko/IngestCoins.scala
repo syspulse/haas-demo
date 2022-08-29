@@ -35,13 +35,13 @@ import io.syspulse.haas.ingest.gecko._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 
-class IngestCoins(config:Config,c:Configuration) 
-  extends CoingeckoFlow[CoingeckoCoin](config.feed,config.output,config.freq,config.limit,"Coingecko") 
-  with FlowCoins {
+// class IngestCoins(config:Config,c:Configuration) 
+//   extends CoingeckoFlow[CoingeckoCoin](config.feed,config.output,config.freq,config.limit,"Coingecko") 
+//   with FlowCoins {
 
-  override def tokensFilter:Seq[String] = config.tokens  
-  override val log = com.typesafe.scalalogging.Logger(s"${this}")
+//   override def tokensFilter:Seq[String] = config.tokens  
+//   override val log = com.typesafe.scalalogging.Logger(s"${this}")
 
-  override def urls() = Seq(s"${host()}/coins/list")
+//   override def urls() = Seq(s"${host()}/coins/list")
 
-}
+// }

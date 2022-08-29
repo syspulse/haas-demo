@@ -33,14 +33,14 @@ import io.syspulse.haas.ingest.FeedFlow
 import io.syspulse.haas.ingest.gecko._
 import io.syspulse.haas.core.Token
 
-class IngestCoinInfo(config:Config,c:Configuration) 
-  extends CoingeckoFlow[CoingeckoCoinInfo](config.feed,config.output,config.freq,config.limit,"Coingecko") 
-  with FlowCoinInfo {
+// class IngestCoinInfo(config:Config,c:Configuration) 
+//   extends CoingeckoFlow[CoingeckoCoinInfo](config.feed,config.output,config.freq,config.limit,"Coingecko") 
+//   with FlowCoinInfo {
   
-  override val log = com.typesafe.scalalogging.Logger(s"${this}")
+//   override val log = com.typesafe.scalalogging.Logger(s"${this}")
 
-  override def urls() = config.tokens.map( c => (s"${host()}/coins/${c}"))
+//   override def urls() = config.tokens.map( c => (s"${host()}/coins/${c}"))
 
-  override def flow = Flow[CoingeckoCoinInfo].throttle(1,1.second)
+//   override def flow = Flow[CoingeckoCoinInfo].throttle(1,1.second)
 
-}
+// }
