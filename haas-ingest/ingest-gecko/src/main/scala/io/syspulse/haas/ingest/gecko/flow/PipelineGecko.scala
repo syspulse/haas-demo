@@ -31,28 +31,25 @@ import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
 import io.syspulse.haas.ingest.TokenJson._
+import io.syspulse.haas.ingest.gecko.CoingeckoURI
 
-class PipelineCoins(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoingeckoCoin](feed,output) {
+abstract class PipelineGecko[T](feed:String,output:String)(implicit config:Config)
+  extends Pipeline[T,T,Token](feed,output,config.throttle,config.delimiter,config.buffer) {
+
+  protected val log = com.typesafe.scalalogging.Logger(s"${this}")
 
   import CoingeckoJson._
-  
-  override def apiSuffix():String = s"/coins/list"
 
-  def parse(data:String):Seq[CoingeckoCoin] = {
-    try {
-      val bulk = data.parseJson.convertTo[List[CoingeckoCoin]]
-      if(tokensFilter.size == 0)
-        bulk.toSeq
-      else
-        bulk.filter( c => tokensFilter.contains(c.id) || tokensFilter.map(_.toLowerCase).contains(c.symbol.toLowerCase) ).toSeq
-    } catch {
-      case e:Exception => 
-        log.error(s"failed to parse: '${data}'")
-        Seq()
+  def tokensFilter:Seq[String] = config.tokens
+  def apiSuffix():String
+
+  override def source() = {
+    feed.split("://").toList match {
+      case "coingecko" :: _ => super.source(CoingeckoURI(feed,apiSuffix()).uri)
+      case _ => super.source()
     }
   }
 
-  def transform(cg: CoingeckoCoin): Seq[Token] = {
-    Seq(Token(cg.id,cg.symbol,cg.name,None))
-  }
+  override def processing:Flow[T,T,_] = Flow[T].map(v => v)
+
 }

@@ -31,16 +31,13 @@ import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
 import io.syspulse.haas.ingest.TokenJson._
+import io.syspulse.haas.ingest.gecko.CoingeckoURI
 
-class PipelineCoinInfo(feed:String,output:String)(implicit config:Config)
-  extends Pipeline[CoingeckoCoinInfo,CoingeckoCoinInfo,Token](feed,output,config.throttle,config.delimiter,config.buffer) {
-
-  private val log = com.typesafe.scalalogging.Logger(s"${this}")
+class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoingeckoCoinInfo](feed,output) {
 
   import CoingeckoJson._
 
-  def tokensFilter:Seq[String] = config.tokens
-
+  override def apiSuffix():String = s"/coins/${config.tokens.mkString(",")}"
   override def processing:Flow[CoingeckoCoinInfo,CoingeckoCoinInfo,_] = Flow[CoingeckoCoinInfo].map(v => v)
 
   def parse(data:String):Seq[CoingeckoCoinInfo] = {
