@@ -81,6 +81,7 @@ object App {
       elasticPass = c.getString("elastic.pass").getOrElse(""),
       
       feed = c.getString("feed").getOrElse(""),
+      output = c.getString("output").getOrElse(""),
 
       limit = c.getLong("limit").getOrElse(0),
       freq = c.getLong("freq").getOrElse(0),
@@ -109,9 +110,9 @@ object App {
     config.cmd match {
         
       case "coins" => 
-        new CoingeckoIngestCoins(config,c).run()
+        new IngestCoins(config,c).run()
       case "coin" => 
-        new CoingeckoIngestCoinInfo(config,c).run()
+        new IngestCoinInfo(config,c).run()
       
     }
   }

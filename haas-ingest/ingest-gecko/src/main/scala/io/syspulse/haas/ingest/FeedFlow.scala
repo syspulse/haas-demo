@@ -47,8 +47,8 @@ abstract class FeedFlow[T,D <: Ingestable](feed:String,output:String,freq:Long,l
     log.info(s"feed=${feed}")
 
     val s0 = feed.split("://").toList match {
-      case "http" :: _ => IngestFlow.fromHttp(HttpRequest(uri = feed).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r")
-      case "https" :: _ => IngestFlow.fromHttp(HttpRequest(uri = feed).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r")
+      case "http" :: _ => IngestFlow.fromHttp(HttpRequest(uri = feed).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r",frameSize = 1024 * 1024 * 1024)
+      case "https" :: _ => IngestFlow.fromHttp(HttpRequest(uri = urls().head).withHeaders(Accept(MediaTypes.`application/json`)),frameDelimiter = "\r",frameSize = 1024 * 1024 * 1024)
       case "file" :: fileName :: Nil => IngestFlow.fromFile(fileName,1024)
       case "stdin" :: _ => IngestFlow.fromStdin()
       case _ => IngestFlow.fromFile(feed)
@@ -68,8 +68,8 @@ abstract class FeedFlow[T,D <: Ingestable](feed:String,output:String,freq:Long,l
 
     // s2.mapConcat(s0)
     
-    RestartSource.withBackoff(RestartSettings(1.seconds,5.seconds,0.2)) { () =>
-      log.info(s"Connecting -> ${name}(${feed})...")  
+    RestartSource.onFailuresWithBackoff(RestartSettings(3.seconds,10.seconds,0.2)) { () =>
+      log.info(s"Connecting -> ${name}(${urls()})...")  
       s0
     }
   }
@@ -80,12 +80,27 @@ abstract class FeedFlow[T,D <: Ingestable](feed:String,output:String,freq:Long,l
       case "file" :: fileName :: Nil => IngestFlow.toFile(fileName)
       case "hive" :: fileName :: Nil => IngestFlow.toHiveFile(fileName)
       case "stdout" :: _ => IngestFlow.toStdout()
+      case Nil => IngestFlow.toStdout()
       case _ => IngestFlow.toFile(output)
     }
     
-    RestartSink.withBackoff(RestartSettings(1.seconds,5.seconds,0.2)) { () =>
+    RestartSink.withBackoff(RestartSettings(3.seconds,10.seconds,0.2)) { () =>
       log.info(s"Sinking -> ${output}")  
       sink
+    }
+  }
+
+  override def run() = {
+    val r = super.run()
+
+    if(freq != 0L)
+      r
+    else {
+      r match {
+        case a: Awaitable[_] => 
+          Await.ready(a,FiniteDuration(timeout,TimeUnit.MILLISECONDS))      
+          system.terminate()
+      }      
     }
   }
 

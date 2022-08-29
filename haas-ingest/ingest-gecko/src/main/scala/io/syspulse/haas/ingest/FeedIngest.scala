@@ -70,7 +70,7 @@ abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "",ti
         .mapConcat(toData(_))
     
     val source = if(freq != 0L) 
-      RestartSource.withBackoff(retrySettings) { () =>
+      RestartSource.onFailuresWithBackoff(retrySettings) { () =>
         log.info(s"Connecting -> ${name}(${uri})...")  
         innerFlow
       }
@@ -85,7 +85,7 @@ abstract class FeedIngest[T](uri:String,freq:Long,limit:Long,name:String = "",ti
     val r = if(freq != 0L)
       stream
     else {
-      Await.ready(stream,FiniteDuration(timeout,"milliseconds"))
+      Await.ready(stream,FiniteDuration(timeout,TimeUnit.MILLISECONDS))      
       system.terminate()
     }
   }

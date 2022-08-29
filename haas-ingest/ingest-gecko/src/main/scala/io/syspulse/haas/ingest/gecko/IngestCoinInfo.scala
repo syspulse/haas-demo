@@ -30,12 +30,12 @@ import io.syspulse.skel.config.Configuration
 
 import io.syspulse.haas.ingest.FeedIngest
 import io.syspulse.haas.ingest.FeedFlow
-import io.syspulse.haas.ingest.gecko.CoingeckoFlow
+import io.syspulse.haas.ingest.gecko._
 import io.syspulse.haas.core.Token
 
-class CoingeckoIngestCoinInfo(config:Config,c:Configuration) 
-  extends CoingeckoFlow[CoingeckoCoinInfo](config.cgUri,config.output,config.freq,config.limit,"Coingecko") 
-  with CoingeckoCoinInfoFlow {
+class IngestCoinInfo(config:Config,c:Configuration) 
+  extends CoingeckoFlow[CoingeckoCoinInfo](config.feed,config.output,config.freq,config.limit,"Coingecko") 
+  with FlowCoinInfo {
   
   override val log = com.typesafe.scalalogging.Logger(s"${this}")
 

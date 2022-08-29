@@ -11,7 +11,7 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.ingest.IngestFlow
 import io.syspulse.haas.core.Token
 
-trait CoingeckoCoinInfoFlow {
+trait FlowCoinInfo {
   implicit val log = Logger(s"${this}")
 
   import CoingeckoJson._
