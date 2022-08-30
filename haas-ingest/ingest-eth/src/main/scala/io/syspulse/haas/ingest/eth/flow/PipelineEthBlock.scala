@@ -30,7 +30,7 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthJson._
 
-class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block](feed,output) {
+class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block,Block](feed,output) {
 
   import EthJson._
   
@@ -38,7 +38,7 @@ class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extend
 
   def parse(data:String):Seq[Block] = {
     if(data.isEmpty()) return Seq()
-    
+
     try {
       val block = data.parseJson.convertTo[Block]
       Seq(block)

@@ -31,11 +31,22 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthJson._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 
-class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) with EthTx {
+trait EthTx {
+  private val log = Logger(s"${this}")
 
-  override def apiSuffix():String = s"/"
+  import EthJson._
 
-  def transform(tx: Tx): Seq[Tx] = {
-    Seq(tx)
+  def parse(data:String):Seq[Tx] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      val tx = data.parseJson.convertTo[Tx]
+      Seq(tx)
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
   }
+
 }

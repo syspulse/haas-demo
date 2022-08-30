@@ -32,10 +32,10 @@ import io.syspulse.haas.ingest.eth.EthJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T <: skel.Ingestable](feed:String,output:String)(implicit config:Config,implicit val fmt:JsonFormat[T])
-  extends Pipeline[T,T,T](feed,output,config.throttle,config.delimiter,config.buffer) {
+abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(implicit config:Config,implicit val fmt:JsonFormat[O])
+  extends Pipeline[T,T,O](feed,output,config.throttle,config.delimiter,config.buffer) {
 
-  protected val log = com.typesafe.scalalogging.Logger(s"${this}")
+  protected val log = Logger(s"${this}")
 
   //import EthJson._
 

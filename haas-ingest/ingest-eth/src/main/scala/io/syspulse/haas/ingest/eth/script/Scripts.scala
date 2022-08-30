@@ -1,47 +1,69 @@
 package io.syspulse.haas.ingest.eth.script
 
 import scala.util.Random
+import io.jvm.uuid._
 
 import com.typesafe.scalalogging.Logger
 
 import io.syspulse.skel.dsl.JS
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
-import scala.util.Try
-import scala.util.Success
+
+import scala.util.{Success,Failure,Try}
 
 import io.syspulse.haas.ingest.eth.alarm.UserAlarm
 import io.syspulse.haas.ingest.eth.notify.{NotficationEmail,NotficationPush}
 
-case class UserScript(id:String,script:String) {
-  val log = Logger(s"${this.getClass().getSimpleName()}")
+abstract class Script(script:String, name:String = "",id:UUID=UUID.random) {
+  protected val log = Logger(s"${this.getClass()}")
+
+  def load(script:String):Try[JS]
+
+  val js = load(script)
   
-  log.info(s"script='${script}'")
+  def javascript():Try[JS] = js
+}
 
-  val scriptText = 
-    (if(script.trim.endsWith(".js")) {
-      val scriptFile = script
-      log.info(s"loading script: ${scriptFile}...")
-      Some(scala.io.Source.fromFile(scriptFile).getLines().mkString("\n"))
-    } else 
-      Some(script)
-    ).getOrElse("")
+case class TextScript(script:String, name:String="") extends Script(script,name) {
+  override def load(script:String):Try[JS] = Success(new JS(script))
+}
 
-  log.info(s"script='${scriptText}'")
+case class FileScript(file:String, name:String="") extends Script(file,name) {
 
-  val js = new JS(scriptText)
+  override def load(file:String):Try[JS] = {
+    //log.info(s"script='${script}'")
+    log.info(s"loading script: ${file}...")
+    try {
+      val scriptText = scala.io.Source.fromFile(file).getLines().mkString("\n")
+      log.info(s"script='${scriptText}'")
+      Success(new JS(scriptText))
+    } catch {
+      case e:Exception => log.error(s"could not load script: ${file}",e); Failure(e)
+    }
+    
+  }  
+}
 
-  def getJs() = js
+object Script {
+  val URI_FILE_PREFIX = "file://"
+  def apply(script:String,name:String = ""):Script = {
+    if(script.trim.startsWith(URI_FILE_PREFIX)) {
+      new FileScript(script.stripPrefix(URI_FILE_PREFIX))
+    } else {
+      new TextScript(script)
+    }
+  }
 }
 
 object Scripts {
 
-  var scripts = Map[UserScript,List[UserAlarm]](
-    UserScript("S-0001","if(to_address == '0x41fb81197275db2105a839fce23858dabf86c73c') 'Transfer: '+to_address; else null;") -> List( UserAlarm("A-0001",NotficationEmail("user1@test.org")), UserAlarm("A-0002",NotficationPush("user1-PUSH-1")))
+  var scripts = Map[Script,List[UserAlarm]](
+    Script("if(to_address == '0x41fb81197275db2105a839fce23858dabf86c73c') 'Transfer: '+to_address; else null;","S-0001") -> 
+      List( UserAlarm("A-0001",NotficationEmail("user1@test.org")), UserAlarm("A-0002",NotficationPush("user1-PUSH-1")))
   )
 
   def +(script:String) = {
-    scripts = scripts + ( UserScript(Random.nextInt().toString,script) -> List( UserAlarm("A-0002",NotficationPush("user1-PUSH-1",enabled = true)) ))
+    scripts = scripts + ( Script(script) -> List( UserAlarm("A-0002",NotficationPush("user1-PUSH-1",enabled = true)) ))
   }
 
 }

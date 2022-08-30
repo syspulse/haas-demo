@@ -12,7 +12,7 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock }
+import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock,PipelineEthIntercept }
 
 
 object App {
@@ -39,8 +39,11 @@ object App {
         ArgString('t', "filter","Filter (ex: '')"),
         
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
+
+        ArgString('s', "script","Script to execute on TX (or file uri: file://script.js"),
         
         ArgCmd("ingest","Ingest pipeline (requires -e <entity>)"),
+        ArgCmd("intercept","Intercept pipeline (-s script)"),
         
         ArgParam("<params>","")
       ).withExit(1)
@@ -61,6 +64,8 @@ object App {
       filter = c.getString("filter").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
       
       datastore = c.getString("datastore").getOrElse("stdout"),
+
+      script = c.getString("script").getOrElse(""),
       
       cmd = c.getCmd().getOrElse("ingest"),
       
@@ -69,7 +74,7 @@ object App {
 
     Console.err.println(s"Config: ${config}")
 
-    config.cmd match {
+    val (pp,r) = config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
           case "tx" =>
@@ -81,20 +86,26 @@ object App {
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 
 
-        val r = pp.run()
-        println(s"r=${r}")
-        r match {
-          case a:Awaitable[_] => {
-            val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
-            Console.err.println(s"result: ${rr}")
-          }
-          case akka.NotUsed => 
-        }
-
-        Console.err.println(s"Data (Tx,Block): ${pp.countObj}")
-        sys.exit(0)
+        (pp,pp.run())
+        
       }
-
+    
+      case "intercept" => {
+        val pp = new PipelineEthIntercept(config.feed,config.output)(config)
+        (pp,pp.run())
+      }
     }
+    
+    Console.err.println(s"r=${r}")
+    r match {
+      case a:Awaitable[_] => {
+        val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
+        Console.err.println(s"rr: ${rr}")
+      }
+      case akka.NotUsed => 
+    }
+
+    Console.err.println(s"Result: ${pp.countObj}")
+    sys.exit(0)
   }
 }
