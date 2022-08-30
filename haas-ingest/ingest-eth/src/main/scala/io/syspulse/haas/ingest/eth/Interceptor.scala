@@ -1,4 +1,4 @@
-package io.syspulse.skel.eth.stream
+package io.syspulse.haas.ingest.eth
 
 import scala.concurrent.Future
 import akka.actor.ActorSystem
@@ -23,7 +23,8 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.skel.eth.script.Scripts
+import io.syspulse.haas.ingest.eth.script.Scripts
+import io.syspulse.haas.core.Tx
 
 class Interceptor(config:Config) {
   val log = Logger(s"${this.getClass().getSimpleName()}")

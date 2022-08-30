@@ -280,7 +280,7 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
       libSkelIngest,
-
+      libSkelIngestFlow,
       libSkelDSL,
       libUpickleLib
     ),

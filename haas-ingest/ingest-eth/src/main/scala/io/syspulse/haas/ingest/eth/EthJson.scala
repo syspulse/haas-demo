@@ -1,4 +1,4 @@
-package io.syspulse.skel.eth.stream
+package io.syspulse.haas.ingest.eth
 
 import com.typesafe.scalalogging.Logger
 
@@ -6,20 +6,7 @@ import com.typesafe.scalalogging.Logger
 import io.syspulse.skel.service.JsonCommon
 import spray.json._
 import spray.json.{DefaultJsonProtocol,NullOptions}
-
-
-case class Tx(
-  ts:Long,
-  txIndex:Int,
-  hash:String,
-  blockNumber:Long,
-  fromAddress:String,
-  toAddress:Option[String],
-  gas:Long,
-  gasPrice:BigInt,
-  input:String,
-  value:BigInt,
-)
+import io.syspulse.haas.core.Tx
 
 object EthJson extends JsonCommon with NullOptions {
   import DefaultJsonProtocol._

@@ -1,4 +1,4 @@
-package io.syspulse.skel.eth.stream
+package io.syspulse.haas.ingest.eth
 
 import com.typesafe.scalalogging.Logger
 import akka.stream.scaladsl.Flow
@@ -24,13 +24,7 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 import io.syspulse.skel.dsl.JS
 
-case class Config(
-  script:String="",
-  source:String="",
-  cmd:Seq[String] = Seq()
-)
-
-object App extends {
+object AppOld extends {
   val log = Logger(s"${this.getClass().getSimpleName()}")
   
   def main(args:Array[String]) = {
@@ -49,7 +43,7 @@ object App extends {
     val config = Config(
       script = c.getString("script").getOrElse(""),
       source = c.getString("source").getOrElse("stdin"),
-      cmd = c.getParams()
+      params = c.getParams()
     )
 
     println(s"config: ${config}")

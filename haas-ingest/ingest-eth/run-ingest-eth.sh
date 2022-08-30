@@ -9,7 +9,7 @@ CONF=`echo $APP | awk -F"-" '{print $2}'`
 
 export SITE=${SITE:-$CONF}
 
-MAIN=io.syspulse.skel.eth.stream.App
+MAIN=io.syspulse.haas.ingest.eth.App
 
 >&2 echo "app: $APP"
 >&2 echo "site: $SITE"

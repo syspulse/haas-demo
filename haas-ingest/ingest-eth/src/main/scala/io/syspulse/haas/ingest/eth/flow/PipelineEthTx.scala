@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.gecko.flow
+package io.syspulse.haas.ingest.eth.flow
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -26,25 +26,20 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Token
-import io.syspulse.haas.ingest.gecko.CoingeckoJson
-import io.syspulse.haas.ingest.gecko._
+import io.syspulse.haas.core.Tx
+import io.syspulse.haas.ingest.eth._
+import io.syspulse.haas.ingest.eth.EthJson._
 
-import io.syspulse.haas.token.TokenJson._
+class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx](feed,output) {
 
-class PipelineCoins(feed:String,output:String)(implicit config:Config) extends PipelineGecko[Coin](feed,output) {
-
-  import CoingeckoJson._
+  import EthJson._
   
-  override def apiSuffix():String = s"/coins/list"
+  override def apiSuffix():String = s"/"
 
-  def parse(data:String):Seq[Coin] = {
+  def parse(data:String):Seq[Tx] = {
     try {
-      val bulk = data.parseJson.convertTo[List[Coin]]
-      if(tokensFilter.size == 0)
-        bulk.toSeq
-      else
-        bulk.filter( c => tokensFilter.contains(c.id) || tokensFilter.map(_.toLowerCase).contains(c.symbol.toLowerCase) ).toSeq
+      val tx = data.parseJson.convertTo[Tx]
+      Seq(tx)
     } catch {
       case e:Exception => 
         log.error(s"failed to parse: '${data}'",e)
@@ -52,7 +47,7 @@ class PipelineCoins(feed:String,output:String)(implicit config:Config) extends P
     }
   }
 
-  def transform(cg: Coin): Seq[Token] = {
-    Seq(Token(cg.id,cg.symbol,cg.name,None))
+  def transform(tx: Tx): Seq[Tx] = {
+    Seq(tx)
   }
 }

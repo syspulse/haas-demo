@@ -1,42 +1,19 @@
-package io.syspulse.haas.ingest.gecko
+package io.syspulse.haas.ingest.eth
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
+import java.util.concurrent.TimeUnit
+import scala.concurrent.Awaitable
+import scala.concurrent.{Await, ExecutionContext, Future}
+
 import com.typesafe.scalalogging.Logger
 
 import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx }
 
-import io.syspulse.haas.ingest.gecko.flow.{ PipelineCoins,PipelineCoinInfo }
-import java.util.concurrent.TimeUnit
-import scala.concurrent.Awaitable
-
-case class Config(  
-  
-  feed:String = "",
-  output:String = "",
-  
-  limit:Long = 0L,
-  freq: Long = 0L,
-  delimiter:String = "",
-  buffer:Int = 0,
-  throttle:Long = 0L,
-  
-  entity:String = "",
-  
-  expr:String = "",
-  
-  datastore:String = "",
-
-  tokens:Seq[String] = Seq(),
-
-  cmd:String = "",
-  params: Seq[String] = Seq(),
-  sinks:Seq[String] = Seq()
-)
 
 object App {
   
@@ -47,19 +24,19 @@ object App {
       new ConfigurationAkka,
       new ConfigurationProp,
       new ConfigurationEnv, 
-      new ConfigurationArgs(args,"ingest-gecko","",
+      new ConfigurationArgs(args,"ingest-eth","",
                 
         ArgString('f', "feed","Input Feed (def: )"),
         ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
-        ArgString('e', "entity","Ingest entity: (coin,coins)"),
+        ArgString('e', "entity","Ingest entity: (tx,block)"),
 
         ArgLong('_', "limit","Limit"),
         ArgLong('_', "freq","Frequency"),
-        ArgString('_', "delimiter","""Delimiter characteds (def: ''). Usage example: --delimiter=`echo -e $"\r"` """),
+        ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
         ArgLong('_', "throttle","Throttle messages in msec (def: 0)"),
 
-        ArgString('t', "tokens","Tokens filter (ex: 'UNI,ETH')"),
+        ArgString('t', "filter","Filter (ex: '')"),
         
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
         
@@ -73,15 +50,15 @@ object App {
       
       feed = c.getString("feed").getOrElse(""),
       output = c.getString("output").getOrElse(""),
-      entity = c.getString("entity").getOrElse("coins"),
+      entity = c.getString("entity").getOrElse("tx"),
 
       limit = c.getLong("limit").getOrElse(0),
       freq = c.getLong("freq").getOrElse(0),
-      delimiter = c.getString("delimiter").getOrElse(""),
+      delimiter = c.getString("delimiter").getOrElse("\n"),
       buffer = c.getInt("buffer").getOrElse(1024*1024),
       throttle = c.getLong("throttle").getOrElse(0L),     
 
-      tokens = c.getString("tokens").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
+      filter = c.getString("filter").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
       
       datastore = c.getString("datastore").getOrElse("stdout"),
       
@@ -95,10 +72,13 @@ object App {
     config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
-          case "coins" =>
-            new PipelineCoins(config.feed,config.output)(config)
-          case "coin" =>
-            new PipelineCoinInfo(config.feed,config.output)(config)
+          case "tx" =>
+            new PipelineEthTx(config.feed,config.output)(config)
+          
+          case "block" =>
+            //new PipelineEthTx(config.feed,config.output)(config)
+            Console.err.println(s"Not supported: '${config.entity}'"); sys.exit(2)
+
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 
 
@@ -112,7 +92,7 @@ object App {
           case akka.NotUsed => 
         }
 
-        Console.err.println(s"Tokens: ${pp.countObj}")
+        Console.err.println(s"Data (Tx,Block): ${pp.countObj}")
         sys.exit(0)
       }
 
