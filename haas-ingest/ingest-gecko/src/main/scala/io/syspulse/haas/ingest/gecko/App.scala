@@ -103,8 +103,12 @@ object App {
         } 
 
         val r = pp.run()
+        println(s"r=${r}")
         r match {
-          case a:Awaitable[_] => Await.ready(a,FiniteDuration(30,TimeUnit.MINUTES))
+          case a:Awaitable[_] => {
+            val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
+            Console.err.println(s"result: ${rr}")
+          }
           case akka.NotUsed => 
         }
 

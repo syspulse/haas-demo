@@ -43,10 +43,11 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   def parse(data:String):Seq[CoinInfo] = {
     try {
       val coin = data.parseJson.convertTo[CoinInfo]
+      log.info(s"coin=${coin}")
       Seq(coin)
     } catch {
       case e:Exception => 
-        log.error(s"failed to parse: '${data}'")
+        log.error(s"failed to parse: '${data}'",e)
         Seq()
     }
   }
