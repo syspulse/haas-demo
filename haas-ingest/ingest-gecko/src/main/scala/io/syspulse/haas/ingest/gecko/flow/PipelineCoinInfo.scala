@@ -41,6 +41,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   override def processing:Flow[CoinInfo,CoinInfo,_] = Flow[CoinInfo].map(v => v)
 
   def parse(data:String):Seq[CoinInfo] = {
+    if(data.isEmpty()) return Seq()
     try {
       val coin = data.parseJson.convertTo[CoinInfo]
       log.info(s"coin=${coin}")

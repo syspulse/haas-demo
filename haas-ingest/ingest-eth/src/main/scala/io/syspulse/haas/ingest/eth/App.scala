@@ -12,7 +12,7 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx }
+import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock }
 
 
 object App {
@@ -76,8 +76,7 @@ object App {
             new PipelineEthTx(config.feed,config.output)(config)
           
           case "block" =>
-            //new PipelineEthTx(config.feed,config.output)(config)
-            Console.err.println(s"Not supported: '${config.entity}'"); sys.exit(2)
+            new PipelineEthBlock(config.feed,config.output)(config)            
 
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 

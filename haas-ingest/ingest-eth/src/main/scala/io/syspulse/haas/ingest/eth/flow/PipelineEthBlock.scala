@@ -26,22 +26,22 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.Block
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthJson._
 
-class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx](feed,output) {
+class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block](feed,output) {
 
   import EthJson._
   
   override def apiSuffix():String = s"/"
 
-  def parse(data:String):Seq[Tx] = {
+  def parse(data:String):Seq[Block] = {
     if(data.isEmpty()) return Seq()
     
     try {
-      val tx = data.parseJson.convertTo[Tx]
-      Seq(tx)
+      val block = data.parseJson.convertTo[Block]
+      Seq(block)
     } catch {
       case e:Exception => 
         log.error(s"failed to parse: '${data}'",e)
@@ -49,7 +49,7 @@ class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends P
     }
   }
 
-  def transform(tx: Tx): Seq[Tx] = {
-    Seq(tx)
+  def transform(block: Block): Seq[Block] = {
+    Seq(block)
   }
 }

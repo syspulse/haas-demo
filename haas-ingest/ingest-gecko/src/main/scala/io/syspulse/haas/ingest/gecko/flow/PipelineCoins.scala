@@ -39,6 +39,8 @@ class PipelineCoins(feed:String,output:String)(implicit config:Config) extends P
   override def apiSuffix():String = s"/coins/list"
 
   def parse(data:String):Seq[Coin] = {
+    if(data.isEmpty()) return Seq()
+    
     try {
       val bulk = data.parseJson.convertTo[List[Coin]]
       if(tokensFilter.size == 0)
