@@ -243,7 +243,8 @@ lazy val token = (project in file("haas-token"))
     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
       libSkelCore,
       libSkelIngest,
-      libSkelIngestElastic
+      libSkelIngestElastic,
+      libElastic4s,
     ),    
   )
 

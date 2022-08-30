@@ -30,17 +30,17 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
-import io.syspulse.haas.ingest.TokenJson._
+import io.syspulse.haas.token.TokenJson._
 
-class PipelineCoins(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoingeckoCoin](feed,output) {
+class PipelineCoins(feed:String,output:String)(implicit config:Config) extends PipelineGecko[Coin](feed,output) {
 
   import CoingeckoJson._
   
   override def apiSuffix():String = s"/coins/list"
 
-  def parse(data:String):Seq[CoingeckoCoin] = {
+  def parse(data:String):Seq[Coin] = {
     try {
-      val bulk = data.parseJson.convertTo[List[CoingeckoCoin]]
+      val bulk = data.parseJson.convertTo[List[Coin]]
       if(tokensFilter.size == 0)
         bulk.toSeq
       else
@@ -52,7 +52,7 @@ class PipelineCoins(feed:String,output:String)(implicit config:Config) extends P
     }
   }
 
-  def transform(cg: CoingeckoCoin): Seq[Token] = {
+  def transform(cg: Coin): Seq[Token] = {
     Seq(Token(cg.id,cg.symbol,cg.name,None))
   }
 }

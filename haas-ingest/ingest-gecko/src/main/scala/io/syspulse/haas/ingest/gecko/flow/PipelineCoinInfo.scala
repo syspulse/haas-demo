@@ -30,19 +30,19 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
-import io.syspulse.haas.ingest.TokenJson._
+import io.syspulse.haas.token.TokenJson._
 import io.syspulse.haas.ingest.gecko.CoingeckoURI
 
-class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoingeckoCoinInfo](feed,output) {
+class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoinInfo](feed,output) {
 
   import CoingeckoJson._
 
   override def apiSuffix():String = s"/coins/${config.tokens.mkString(",")}"
-  override def processing:Flow[CoingeckoCoinInfo,CoingeckoCoinInfo,_] = Flow[CoingeckoCoinInfo].map(v => v)
+  override def processing:Flow[CoinInfo,CoinInfo,_] = Flow[CoinInfo].map(v => v)
 
-  def parse(data:String):Seq[CoingeckoCoinInfo] = {
+  def parse(data:String):Seq[CoinInfo] = {
     try {
-      val coin = data.parseJson.convertTo[CoingeckoCoinInfo]
+      val coin = data.parseJson.convertTo[CoinInfo]
       Seq(coin)
     } catch {
       case e:Exception => 
@@ -51,7 +51,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
     }
   }
 
-  def transform(cg: CoingeckoCoinInfo): Seq[Token] = {    
+  def transform(cg: CoinInfo): Seq[Token] = {    
     Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address))
   }
 }
