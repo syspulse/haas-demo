@@ -22,6 +22,26 @@ ethereumetl stream -e transaction --start-block 14747950 --provider-uri $ETH_RPC
 rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC | ./run-ingest-eth.sh ingest -e tx -f stdin://
 ```
 
+## via Kafka
+
+Start Kafka:
+
+[../../infra/docker/kafka](../../infra/docker/kafka)
+
+Run ETL:
+```
+ETH_RPC=http://geth:8545 ./eth-proxy.sh kafka/localhost:9092 latest
+```
+
+Run ingest and Intercept 
+
+__NOTE__: Use different Consumer Groups or Kafka will load balance
+
+```
+./run-ingest-eth.sh ingest -e transaction -f kafka://localhost:9092/transactions/group-1 -o stdout://
+./run-ingest-eth.sh intercept -e transaction -f kafka://localhost:9092/transactions/group-2 -o stdout:// -s file://scripts/script-1.js
+```
+
 
 ## Intercept
 

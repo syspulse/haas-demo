@@ -1,9 +1,12 @@
 #!/bin/bash
+#
+# OUTPUT: kafka/localhost:9092
 
-ETH_RPC=http://192.168.1.13:8545
+ETH_RPC=${ETH_RPC:-http://api.infura.io}
 
 #START_BLOCK=${1:-14747950}
-START_BLOCK=${1:-latest}
+OUTPUT=${1}
+START_BLOCK=${2:-latest}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -14,8 +17,17 @@ else
   START_BLOCK_ARG="--start-block $latest"
 fi
 
-#echo "Block: $START_BLOCK_ARG"
+case "$OUTPUT" in 
+   "") 
+      ;;
+   *)
+      OUTPUT="-o $OUTPUT"
+      ;;      
+esac
+
+#echo "Block: $START_BLOCK_ARG" >&2
 
 export PYTHONUNBUFFERED="1"
-ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC 2>/dev/null
+ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+#ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 2>/dev/null
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
