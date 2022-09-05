@@ -35,7 +35,7 @@ ETH_RPC=http://geth:8545 ./eth-proxy.sh kafka/localhost:9092 latest
 
 Run ingest and Intercept 
 
-__NOTE__: Use different Consumer Groups or Kafka will load balance
+__NOTE__: Use different Consumer Groups otherwise Kafka will load balance
 
 ```
 ./run-ingest-eth.sh ingest -e transaction -f kafka://localhost:9092/transactions/group-1 -o stdout://
@@ -45,7 +45,7 @@ __NOTE__: Use different Consumer Groups or Kafka will load balance
 
 ## Intercept
 
-Run script which shows transactions >10ETH value:
+Intercept tx > 10ETH from captured file
 ```
 ./run-ingest-eth.sh intercept -f file://feed/tx-1734.log -s file://scripts/script-1.js
 ```
@@ -54,3 +54,10 @@ Run from live transactions: [__geth__] -> [__ethereum-etl__] -> [__eth-ingest__]
 ```
 rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC 2>/dev/null | ./run-ingest-eth.sh intercept -f stdin:// -s file://scripts/script-1.js
 ```
+
+Run the same pipeline in a simple way
+
+```
+./run-intercept-eth.sh -s file://scripts/script-1.js
+```
+

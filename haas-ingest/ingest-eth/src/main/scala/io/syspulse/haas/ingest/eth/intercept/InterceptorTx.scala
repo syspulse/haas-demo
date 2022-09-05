@@ -28,47 +28,16 @@ import io.syspulse.haas.ingest.eth.script.Scripts
 import io.syspulse.haas.ingest.eth.Config
 import io.syspulse.haas.ingest.eth.EthJson
 
-class InterceptorTx(config:Config) {
-  private val log = Logger(s"${this.getClass()}")
+class InterceptorTx(config:Config) extends Interceptor(config) {
   
-  import EthJson._
-  import DefaultJsonProtocol._
-
-  Scripts.+(config.script)
-  Console.err.println(Scripts.scripts)
- 
-  def scan(tx:Tx):Seq[Interception] = {
-    Scripts.scripts.flatMap {
-      case(userScript,userAlarms) => {
-        val js = userScript.javascript()
-        
-        // JavaScript returns null !
-        val r = Option(
-          if(js.isSuccess) js.get.run(
-            Map( 
-              ("from_address" -> tx.fromAddress),
-              ("to_address" -> tx.toAddress.getOrElse("null")),
-              ("value" -> tx.value),
-              ("gas" -> tx.value),
-              ("input" -> tx.input),
-            )
-         ) else null
-        )
-
-        log.debug(s"tx: ${tx}: ${userScript}: ${Console.YELLOW}${r}${Console.RESET}")
-
-        if(! r.isDefined) None
-        else {
-          val scriptOutput = s"${r.get}"
-          
-          userAlarms.filter(_.to.isEnabled).map{ ua => 
-            ua.to.send(scriptOutput)
-          }
-          
-          Some(Interception(tx.blockNumber,tx.hash,scriptOutput))
-        }
-      }
-    }.toSeq
-    
+  override def parseTx(tx:Tx):Map[String,Any] = {
+    Map( 
+      ("from_address" -> tx.fromAddress),
+      ("to_address" -> tx.toAddress.getOrElse("null")),
+      ("value" -> tx.value),
+      ("gas" -> tx.value),
+      ("input" -> tx.input),
+    )
   }
+ 
 }

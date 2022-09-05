@@ -201,10 +201,11 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
     assembly / assemblyJarName := jarPrefix + appName + "-" + "assembly" + "-"+  appVersion + ".jar",
   )
 
+// ============================================================================= Modules ==============================
 
 lazy val root = (project in file("."))
-  .aggregate(core, token, ingest_gecko, ingest_eth)
-  .dependsOn(core, token, ingest_gecko, ingest_eth)
+  .aggregate(core, token, ingest_gecko, ingest_eth, circ_core)
+  .dependsOn(core, token, ingest_gecko, ingest_eth, circ_core)
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     
@@ -282,7 +283,40 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
       libSkelIngest,
       libSkelIngestFlow,
       libSkelDSL,
-      libUpickleLib
+      libUpickleLib,
+
+      libEthAbi
     ),
      
   )
+
+lazy val circ_core = (project in file("haas-circ/circ_core"))
+  .disablePlugins(sbtassembly.AssemblyPlugin)
+  .settings (
+      sharedConfig,
+      name := "circ-core",
+      libraryDependencies ++= 
+        Seq(
+          libSkelCore,
+          libUUID,
+        ),
+    )
+
+// lazy val circ_service = (project in file("haas-circ/circ-service"))
+//   .dependsOn(core)
+//   .enablePlugins(JavaAppPackaging)
+//   .enablePlugins(DockerPlugin)
+//   .enablePlugins(AshScriptPlugin)
+//   .settings (
+
+//     sharedConfig,
+//     sharedConfigAssembly,
+//     sharedConfigDocker,
+//     dockerBuildxSettings,
+
+//     appDockerConfig("haas-circ","io.syspulse.haas.circ.App"),
+
+//     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
+//       libSkelCore
+//     ),    
+//   )

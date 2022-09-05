@@ -1,6 +1,6 @@
 # haas-demo
 
-Demo Platform
+Proto 
 
 ----
 ## Architecture

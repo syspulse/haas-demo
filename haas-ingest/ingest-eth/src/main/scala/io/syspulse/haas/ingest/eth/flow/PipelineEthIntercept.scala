@@ -35,11 +35,10 @@ import io.syspulse.haas.ingest.eth.intercept.Interception
 import io.syspulse.haas.ingest.eth.intercept.InterceptionJson
 
 import InterceptionJson._
+import io.syspulse.haas.ingest.eth.intercept.Interceptor
 
-class PipelineEthIntercept(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Interception](feed,output) with EthTx {
+class PipelineEthIntercept(feed:String,output:String,interceptor:Interceptor)(implicit config:Config) extends PipelineEth[Tx,Interception](feed,output) with EthTx {
 
-  val interceptor = new InterceptorTx(config)
-  
   override def apiSuffix():String = s"/"
 
   def transform(tx: Tx): Seq[Interception] = {

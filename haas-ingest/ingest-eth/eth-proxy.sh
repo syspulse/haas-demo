@@ -20,6 +20,8 @@ fi
 case "$OUTPUT" in 
    "") 
       ;;
+   "stdout") 
+      ;;
    *)
       OUTPUT="-o $OUTPUT"
       ;;      

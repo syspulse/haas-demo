@@ -8,6 +8,7 @@ case class Config(
   output:String = "",
 
   script:String="",
+  abi:String = "",
   source:String="",
   
   limit:Long = 0L,

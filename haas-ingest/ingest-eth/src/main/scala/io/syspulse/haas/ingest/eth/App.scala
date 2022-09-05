@@ -13,6 +13,8 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
 import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock,PipelineEthIntercept }
+import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
+import io.syspulse.haas.ingest.eth.intercept.InterceptorERC20
 
 
 object App {
@@ -41,6 +43,7 @@ object App {
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
 
         ArgString('s', "script","Script to execute on TX (or file uri: file://script.js"),
+        ArgString('a', "abi","directory with ABI jsons (format: NAME-0xaddress.json"),
         
         ArgCmd("ingest","Ingest pipeline (requires -e <entity>)"),
         ArgCmd("intercept","Intercept pipeline (-s script)"),
@@ -66,6 +69,7 @@ object App {
       datastore = c.getString("datastore").getOrElse("stdout"),
 
       script = c.getString("script").getOrElse(""),
+      abi = c.getString("abi").getOrElse("abi/"),
       
       cmd = c.getCmd().getOrElse("ingest"),
       
@@ -79,7 +83,7 @@ object App {
         val pp = config.entity match {
           case "tx" =>
             new PipelineEthTx(config.feed,config.output)(config)
-          
+                    
           case "block" =>
             new PipelineEthBlock(config.feed,config.output)(config)            
 
@@ -91,7 +95,12 @@ object App {
       }
     
       case "intercept" => {
-        val pp = new PipelineEthIntercept(config.feed,config.output)(config)
+        val pp = config.entity match {
+          case "tx" =>
+            new PipelineEthIntercept(config.feed,config.output, new InterceptorTx(config))(config)
+          case "erc20" =>
+            new PipelineEthIntercept(config.feed,config.output, new InterceptorERC20(config))(config)
+        }
         (pp,pp.run())
       }
     }
@@ -99,7 +108,7 @@ object App {
     Console.err.println(s"r=${r}")
     r match {
       case a:Awaitable[_] => {
-        val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
+        val rr = Await.result(a,FiniteDuration(300,TimeUnit.MINUTES))
         Console.err.println(s"rr: ${rr}")
       }
       case akka.NotUsed => 
