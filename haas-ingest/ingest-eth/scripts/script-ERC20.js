@@ -1,5 +1,6 @@
-if(input != "0x" && token!="") {
-  token + "," + value / 10e9 + ", "+ from_address +" -> " + to_address
+if(input != "0x" && (token=="USDC" || token=="UNI")) {
+//if(input != "0x" ) {
+  token + "," + value / 10e6 + ", "+ from_address +" -> " + to_address
 }
 else
   null

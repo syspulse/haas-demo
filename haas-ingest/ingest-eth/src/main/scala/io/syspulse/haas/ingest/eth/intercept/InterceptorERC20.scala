@@ -30,43 +30,44 @@ import io.syspulse.haas.ingest.eth.EthJson
 
 import codegen.Decoder
 import codegen.AbiDefinition
-import os._
+
+import io.syspulse.crypto.eth.abi._
 
 class InterceptorERC20(config:Config) extends InterceptorTx(config) {
     
-  val erc20s = AbiRepo.build().withRepo(new AbiRepoFiles(config.abi)).load()
+  val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(config.abi)).load()
   
   override def parseTx(tx:Tx):Map[String,Any] = {
-    val token = erc20s.get(tx.toAddress.getOrElse(""))
+    val token = erc20.findToken(tx.toAddress.getOrElse(""))
 
-    val (toAddress,value,name) = if(token.isDefined) {    
-      val funcHashSize = AbiRepo.FUNC_HASH_SIZE
-      val funcHash = tx.input.take(funcHashSize)
-      val input = tx.input.drop(funcHashSize)
+    val (fromAddress,toAddress,value,name) = if(token.isDefined) {    
       
-      val di = Decoder.decodeInput(token.get.abi,"transfer",input)
+      val di = erc20.decodeInput(tx.toAddress.get,tx.input)
 
-      log.debug(s"${token}: ${funcHash}: ${input}: ${di}")
+      log.debug(s"${token}: ${tx.input}: ${di}")
 
       if(di.isSuccess) {
-        val dmap = di.get.map(ntv => ntv._1 -> ntv._3).toMap
+        val params = di.get.map(ntv => ntv._3)
                 
-        val dst = dmap.get(token.get.funcTo).getOrElse("0x")
-        val rawAmount = dmap.get(token.get.funcValue).getOrElse(0)
+        val (_from,_to,_value) = params.size match {
+          case 2 => (tx.fromAddress,params(0),params(1))
+          case 3 => (params(0),params(1),params(2))
+          case _ => ("","","")
+        }
         
         //val value = "%.2f".format(rawAmount.asInstanceOf[BigInt].toDouble / 10e6)
         //val value = "%.2f".format(rawAmount.asInstanceOf[BigInt].toDouble / 10e18)
-        val value = rawAmount
 
-        log.debug(s"ERC20: ${token}: ${dst},${rawAmount} -> ${value}")
+        log.debug(s"ERC20: ${token}: ${_from},${_to} -> ${_value}")
         
-        (dst,value,token.get.name)
+        (_from,_to,_value,token.get.name)
 
-      } else ("","","")
-    } else ("","","")
+      } else (tx.fromAddress,"","","")
+    } else (tx.fromAddress,"","","")
     
     super.parseTx(tx) ++ Map( 
       ("token" -> name),
+      ("from_address" -> fromAddress),
       ("to_address" -> toAddress),
       ("value" -> value),
     )
