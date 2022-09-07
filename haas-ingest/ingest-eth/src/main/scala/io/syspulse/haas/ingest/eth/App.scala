@@ -42,7 +42,7 @@ object App {
         
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
 
-        ArgString('s', "script","Script to execute on TX (or file uri: file://script.js"),
+        ArgString('s', "scripts","Scripts to execute on TX (or file uri: file://script.js (multiple with ',')"),
         ArgString('a', "abi","directory with ABI jsons (format: NAME-0xaddress.json"),
         
         ArgCmd("ingest","Ingest pipeline (requires -e <entity>)"),
@@ -68,7 +68,7 @@ object App {
       
       datastore = c.getString("datastore").getOrElse("stdout"),
 
-      script = c.getString("script").getOrElse(""),
+      scripts = c.getString("scripts").getOrElse("").split(",").toSeq,
       abi = c.getString("abi").getOrElse("abi/"),
       
       cmd = c.getCmd().getOrElse("ingest"),

@@ -285,7 +285,8 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
       libSkelDSL,
       libUpickleLib,
 
-      libEthAbi,
+      libSkelCrypto,
+      //libEthAbi,
       libScalaTest % "test"
     ),
      

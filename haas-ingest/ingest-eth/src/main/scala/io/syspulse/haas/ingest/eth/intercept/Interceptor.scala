@@ -34,7 +34,8 @@ abstract class Interceptor(config:Config) {
   import EthJson._
   import DefaultJsonProtocol._
 
-  Scripts.+(config.script)
+  Scripts.++(config.scripts)
+  
   Console.err.println(Scripts.scripts)
 
   def parseTx(tx:Tx):Map[String,Any]

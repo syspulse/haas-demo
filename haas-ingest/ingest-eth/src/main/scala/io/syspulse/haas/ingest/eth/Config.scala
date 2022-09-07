@@ -7,7 +7,7 @@ case class Config(
   feed:String = "",
   output:String = "",
 
-  script:String="",
+  scripts:Seq[String]=Seq(),
   abi:String = "",
   source:String="",
   

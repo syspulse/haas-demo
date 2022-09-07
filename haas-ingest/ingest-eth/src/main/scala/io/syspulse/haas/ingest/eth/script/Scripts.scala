@@ -62,6 +62,10 @@ object Scripts {
       List( UserAlarm("A-0001",NotficationEmail("user1@test.org")), UserAlarm("A-0002",NotficationPush("user1-PUSH-1")))
   )
 
+  def ++(scripts:Seq[String]) = {
+    scripts.foreach(s => this.+(s))
+  }
+
   def +(script:String) = {
     scripts = scripts + ( Script(script) -> List( UserAlarm("A-0002",NotficationPush("user1-PUSH-1",enabled = true)) ))
   }
