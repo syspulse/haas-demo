@@ -4,18 +4,21 @@
 
 ETH_RPC=${ETH_RPC:-http://api.infura.io}
 
-#START_BLOCK=${1:-14747950}
-OUTPUT=${1}
-START_BLOCK=${2:-latest}
+START_BLOCK=${1:-14747950}
+END_BLOCK=${2:-latest}
 
-if [ "$START_BLOCK" != "latest" ]; then
+OUTPUT=${3}
+
+if [ "$END_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
-  START_BLOCK_ARG="--start-block $START_BLOCK"
+  END_BLOCK_ARG="--end-block $END_BLOCK"
 else
   rm -f last_synced_block.txt
   latest=`curl -s POST --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["latest", false],"id":1}' -H "Content-Type: application/json" ${ETH_RPC} |jq -r .result.number | xargs printf "%d"`
-  START_BLOCK_ARG="--start-block $latest"
+  END_BLOCK_ARG="--end-block $latest"
 fi
+
+START_BLOCK_ARG="--start-block $START_BLOCK"
 
 case "$OUTPUT" in 
    "") 
@@ -30,8 +33,7 @@ esac
 #echo "Block: $START_BLOCK_ARG" >&2
 
 export PYTHONUNBUFFERED="1"
-#ethereumetl stream -e log $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
-ethereumetl stream -e token_transfer $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+ethereumetl export_token_transfers $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 2>/dev/null
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
