@@ -1,0 +1,3 @@
+USE haas_db;
+TRUNCATE TABLE HOLDERS;
+

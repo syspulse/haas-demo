@@ -11,6 +11,8 @@ import $ivy.`org.apache.hadoop:hadoop-aws:3.2.2`
 import org.apache.spark.sql.{SparkSession,Dataset}
 import org.apache.spark.sql.functions._
 
+import $ivy.`mysql:mysql-connector-java:8.0.22`
+
 import java.time._
 import java.math.BigInteger
 
@@ -35,8 +37,18 @@ def balanceOf(token:String,addr:String) = {
 
 case class Holder(addr:String,value:Double)
 
+case class Circulation(holders:List[Holder])
+
+import upickle.default._
+import upickle.default.{ReadWriter => RW, macroRW}
+
+object Holder{ implicit val rw: RW[Holder] = macroRW }
+//import Holder._
+object Circulation{ implicit val rw: RW[Circulation] = macroRW }
+//import Circulation._
+
 @main
-def main(input:String="./UNI-1000.csv", output:String = "./UNI-1000-Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
+def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
   
   println(s"input=${input}, output=${output}, codec=${codec}, batch=${batch}, par=${parallelism}")
 
@@ -49,12 +61,12 @@ def main(input:String="./UNI-1000.csv", output:String = "./UNI-1000-Holders.csv"
   df.printSchema()
 
   val receivers = df.select("to_address")
-  val holdersAll = df.dropDuplicates("to_address").sort(col("value").desc).select("to_address","value").collect
+  val holdersAll = df.dropDuplicates("to_address").sort(col("value").desc).select("to_address","value")
 
-  val holdersBalance = holdersAll.map( r => (r.get(0).toString,balanceOf("0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",r.get(0).toString)))
+  val holdersBalance = holdersAll.collect.map( r => (r.get(0).toString,balanceOf("0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",r.get(0).toString)))
   
   // need to resort because balance is different now
-  val holders = holdersBalance.map( h => Holder(h._1,h._2.doubleValue / decimals)).sortBy(- _.value).take(25)
+  val holders = holdersBalance.map( h => Holder(h._1,h._2.doubleValue / decimals)).sortBy(- _.value).take(25).toList
 
   holders.foreach{ println _ }
   
@@ -63,4 +75,22 @@ def main(input:String="./UNI-1000.csv", output:String = "./UNI-1000-Holders.csv"
   val ts1 = Instant.now
   val elapsed = Duration.between(ts0, ts1)
   println(s"Elapsed time: ${elapsed.toMinutes} min (${elapsed.toSeconds} sec)")
+
+  // read from JDBC
+  val jdbcDF = ss.read.format("jdbc").option("url", "jdbc:mysql://localhost:3306/haas_db").option("user", "haas_user").option("password", "haas_pass").option("dbtable", "haas_db.HOLDERS").load()
+  
+  // overwrite results (append == INSERT)
+  val hDF = ss.createDataFrame(holders)
+  hDF.write.format("jdbc").option("url", "jdbc:mysql://localhost:3306/haas_db").option("user", "haas_user").option("password", "haas_pass").option("dbtable", "haas_db.HOLDERS").mode("overwrite").save()
+
+  // the same
+  val dbProp = new java.util.Properties
+  Map("driver" -> "com.mysql.jdbc.Driver","user" -> "haas_user","password" -> "haas_pass").foreach{ case(k,v) => dbProp.setProperty(k,v)}
+  val dbUrl = "jdbc:mysql://localhost:3306/haas_db"
+  val dbTable = "HOLDERS"
+  hDF.write.mode("overwrite").jdbc(dbUrl, dbTable, dbProp)
+
+  val circ = Circulation(holders)
+  val circJson = write(circ)
+  println(circJson)
 }

@@ -1,0 +1,3 @@
+USE haas_db;
+SELECT * FROM HOLDERS;
+
