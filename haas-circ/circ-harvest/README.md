@@ -18,16 +18,19 @@ From Contract (from Ethereum Nodes cluster)
 
 ## supply
 
-1. From historical set of transactions (from Contract Deployment) with supply change function:
+1. From historical set of logs (if Contract emits it) or transactions (from Contract Deployment) with supply change function:
 
+- transfer()
+- transferFrom()
 - mint()
 - emission()
 - unlock()
 
 2. From historical balances of all addresses which were token holders
 
-- chifra index for all accounts
-- sum of all account holders at each block 
+- chifra index for all accounts (need Archive node)
+- sum of all account holders at each block (archive node)
+- sum of all account holders at each block (self-index based on Logs/Tx)
 
 ### Prerequisites
 
