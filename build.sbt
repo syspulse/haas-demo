@@ -204,8 +204,8 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
 // ============================================================================= Modules ==============================
 
 lazy val root = (project in file("."))
-  .aggregate(core, token, ingest_gecko, ingest_eth, circ_core)
-  .dependsOn(core, token, ingest_gecko, ingest_eth, circ_core)
+  .aggregate(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
+  .dependsOn(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     
@@ -214,7 +214,7 @@ lazy val root = (project in file("."))
     dockerBuildxSettings
   )
 
-lazy val core = (project in file("haas-core"))
+lazy val haas_core = (project in file("haas-core"))
   .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings (
       sharedConfig,
@@ -227,8 +227,8 @@ lazy val core = (project in file("haas-core"))
     )
 
 
-lazy val token = (project in file("haas-token"))
-  .dependsOn(core)
+lazy val haas_token = (project in file("haas-token"))
+  .dependsOn(haas_core)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)
@@ -251,7 +251,7 @@ lazy val token = (project in file("haas-token"))
 
 
 lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
-  .dependsOn(core,token)
+  .dependsOn(haas_core,haas_token)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,
@@ -270,7 +270,7 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
   )
 
 lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
-  .dependsOn(core)
+  .dependsOn(haas_core)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,
@@ -292,20 +292,37 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
      
   )
 
-lazy val circ_core = (project in file("haas-circ/circ_core"))
+lazy val circ_core = (project in file("haas-circ/circ-core"))
   .disablePlugins(sbtassembly.AssemblyPlugin)
+  .dependsOn(haas_core)
   .settings (
-      sharedConfig,
-      name := "circ-core",
-      libraryDependencies ++= 
-        Seq(
-          libSkelCore,
-          libUUID,
-        ),
-    )
+    sharedConfig,
+    name := "circ-core",
+    libraryDependencies ++= 
+      Seq(
+        libSkelCore,
+        libUUID,
+      ),
+  )
+
+lazy val circ_harvest = (project in file("haas-circ/circ-harvest"))
+  .disablePlugins(sbtassembly.AssemblyPlugin)
+  .dependsOn(circ_core)
+  .settings (
+    sharedConfig,
+    name := "circ-harvest",
+    libraryDependencies ++= 
+      Seq(
+        libSkelCore,
+        libUUID,
+
+        libScalaTest % "test"
+      ),
+  )
+
 
 // lazy val circ_service = (project in file("haas-circ/circ-service"))
-//   .dependsOn(core)
+//   .dependsOn(haas_core)
 //   .enablePlugins(JavaAppPackaging)
 //   .enablePlugins(DockerPlugin)
 //   .enablePlugins(AshScriptPlugin)
