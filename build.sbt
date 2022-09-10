@@ -223,6 +223,8 @@ lazy val haas_core = (project in file("haas-core"))
         Seq(
           libSkelCore,
           libUUID, 
+
+          libScalaTest % "test"
         ),
     )
 

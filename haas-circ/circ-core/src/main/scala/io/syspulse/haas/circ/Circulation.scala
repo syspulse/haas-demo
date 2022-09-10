@@ -7,8 +7,6 @@ import scala.math.BigInt
 //import io.syspulse.skel.Ingestable
 import io.syspulse.haas.core.Token
 
-case class Holder(addr:String,value:BigInt)
-
 case class Circulation(
   id:Circulation.ID,
   tid:Token.ID,

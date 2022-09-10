@@ -4,17 +4,14 @@ import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import io.jvm.uuid._
 import scala.math.BigInt
+import scala.io.Source
 
+import io.syspulse.haas.core._
 
 case class TotalSupply(totalContract:Double,totalHolders:Double)
 
 case class BlockTransfer(addr:String,value:Double)
 case class BlockSupply(block:Long,totalHolders:Long,totalSupply:Double)
-
-object DoubleValue {
-  def isZero(d:Double) = Math.abs(d).toLong == 0
-  def ==(d1:Double,d2:Double) = isZero(d1-d2)
-}
 
 object Supply {
   def foldBlockTransfer(bts: Array[BlockTransfer]):Array[BlockTransfer] = { 
@@ -23,6 +20,21 @@ object Supply {
     bts.groupBy(_.addr).map{ case(addr,bts) => { if(bts.size==1) bts.head else {val valueAggr = bts.foldLeft(0.0)( _ + _.value); BlockTransfer(addr,valueAggr) }} }.toArray
   }
 
+  def fromFile(file:String):Array[(Int, String, Double)] = {
+    Source.fromFile(file)
+      .getLines()
+      .flatMap(s => s.split(",").toList match {
+        case erc20 :: from_addr :: to_addr :: value :: _ :: _ :: block :: Nil => Some(
+          List(
+            (block.toInt,from_addr,- BigInt(value).doubleValue),
+            (block.toInt,to_addr,BigInt(value).doubleValue)
+          )
+        )
+        case _ => None
+      }).toArray.flatten.sortBy(_._1)
+  }
+
+  // Accepts: collected (block,address,balance)
   // the function is optimized for very large sets processing 
   // does not use Functional style, heavily imperative to keep code sane and be memory efficient
   // uses mutable collections
