@@ -16,9 +16,9 @@ implicit val rw1: RW[Holder] = macroRW
 implicit val rw2: RW[Circulation] = macroRW
 
 @main
-def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
+def main(input:String="./UNI-1000.csv", token:String = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
   
-  println(s"input=${input}, output=${output}, codec=${codec}, batch=${batch}, par=${parallelism}")
+  println(s"input=${input}, token=${token}, output=${output}, codec=${codec}, batch=${batch}, par=${parallelism}")
 
   val ss = SparkSession.builder().appName("circ-holders").config("spark.master", "local").config("default.parallelism",1).config("fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain").getOrCreate()
   import ss.implicits._
@@ -29,6 +29,7 @@ def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:Str
   df.printSchema()
 
   val accountBalanceDelta = df
+    .where(s"token_address == '${token}'")
     .select("from_address","to_address","value","block_number").sort("block_number")
     .flatMap(r => Seq((r.getInt(3),r.getString(0),BigInt(r.getDecimal(2).negate.toBigInteger)),(r.getInt(3),r.getString(1),BigInt(r.getDecimal(2).toBigInteger))))
 
