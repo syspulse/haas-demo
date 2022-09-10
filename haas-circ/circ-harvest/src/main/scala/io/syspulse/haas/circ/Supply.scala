@@ -70,11 +70,11 @@ object Supply {
       val addr = a._2
       val value = a._3
 
-      println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): $i: ${block},${addr},${value}")
+      //println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): $i: ${block},${addr},${value}")
 
       if(block != lastBlock) {
         supply = supply :+ BlockSupply(lastBlock,totalHolders,totalSupply)
-        println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): ${supply}")
+        //println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): ${supply}")
         
         lastBlock = block
       }
@@ -117,7 +117,7 @@ object Supply {
     }
 
     supply = supply :+ BlockSupply(lastBlock,totalHolders,totalSupply)
-    println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): ${supply}")
+    //println(s"(lastBlock=${lastBlock},totalHolders=${totalHolders},totalSupply=${totalSupply}): ${supply}")
         
     (supply,historyHolders)
   }
