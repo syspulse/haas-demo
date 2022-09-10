@@ -7,4 +7,3 @@ import scala.math.BigInt
 //import io.syspulse.haas.core.Token
 
 case class Holder(addr:String,value:BigInt)
-

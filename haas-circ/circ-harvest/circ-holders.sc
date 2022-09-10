@@ -4,7 +4,7 @@
 import $file.Tokens,Tokens.Tokens
 import $file.ERC20,ERC20.ERC20
 
-case class Holder(addr:String,value:Double)
+case class Holder(addr:String,value:BigInt)
 
 case class Circulation(holders:List[Holder])
 
