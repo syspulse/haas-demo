@@ -1,7 +1,7 @@
-import java.math.BigInteger
+//import java.math.BigInteger
 
 object ERC20 {
-  def toHex(s:String) = new BigInt(s.drop(2),16)
+  def toHex(s:String) = new BigInteger(s.drop(2),16)
   def toStr(a:Array[Byte]) = a.map("%02X" format _).mkString
 
   // curl -X POST --data '{"jsonrpc":"2.0","method":"eth_call","params":[{"to": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "data":"0x70a082310000000000000000000000000b88516a6d22bf8e0d3657effbd41577c5fd4cb7"}, "latest"],"id":67}' -H "Content-Type: application/json" http://127.0.0.1:8545/

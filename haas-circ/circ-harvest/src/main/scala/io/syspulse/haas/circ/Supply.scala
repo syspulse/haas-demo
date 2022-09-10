@@ -41,8 +41,12 @@ object Supply {
     holders
   }
 
-  def history(accountBalanceDeltaCollected: Array[(Int, String, BigInt)]):List[BlockSupply] = 
-    historyWithHolders(accountBalanceDeltaCollected)._1
+  def history(accountBalanceDeltaCollected: Array[(Int, String, BigInt)]):List[BlockSupply] = {
+    val (hist,holders) = historyWithHolders(accountBalanceDeltaCollected)
+    // for faster GC
+    holders.clear()
+    hist
+  }
 
   // Accepts: collected (block,address,balance)
   // the function is optimized for very large sets processing 

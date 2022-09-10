@@ -1,17 +1,19 @@
 // AWS emr-6.6.0   3.2.0
 // AWS emr-5.35.0  2.4.8
+import java.util.UUID
 
-import $file.Tokens,Tokens.Tokens
-import $file.ERC20,ERC20.ERC20
+//import $file.Tokens,Tokens.Tokens
+//import $file.ERC20,ERC20.ERC20
 
-case class Holder(addr:String,value:BigInt)
+import $ivy.`io.syspulse::circ-core:0.0.1`
+import $ivy.`io.syspulse::circ-harvest:0.0.1`
 
-case class Circulation(holders:List[Holder])
+import io.syspulse.haas.circ._
+import io.syspulse.haas.circ.Holder
+import io.syspulse.haas.circ.Circulation
 
-object Holder{ implicit val rw: RW[Holder] = macroRW }
-//import Holder._
-object Circulation{ implicit val rw: RW[Circulation] = macroRW }
-//import Circulation._
+implicit val rw1: RW[Holder] = macroRW
+implicit val rw2: RW[Circulation] = macroRW
 
 @main
 def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
@@ -26,13 +28,19 @@ def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:Str
   val df = ss.read.option("header", "false").format("com.databricks.spark.csv").option("inferSchema", "true").csv(input).toDF("token_address","from_address","to_address","value","transaction_hash","log_index","block_number")
   df.printSchema()
 
-  val receivers = df.select("to_address")
-  val holdersAll = df.dropDuplicates("to_address").sort(col("value").desc).select("to_address","value")
+  val accountBalanceDelta = df
+    .select("from_address","to_address","value","block_number").sort("block_number")
+    .flatMap(r => Seq((r.getInt(3),r.getString(0),BigInt(r.getDecimal(2).negate.toBigInteger)),(r.getInt(3),r.getString(1),BigInt(r.getDecimal(2).toBigInteger))))
 
-  val holdersBalance = holdersAll.collect.map( r => (r.get(0).toString,ERC20.balanceOf(Tokens.UNI,r.get(0).toString)))
+  val accountBalanceDeltaCollected = accountBalanceDelta.collect
+  val holders = Supply.holders(accountBalanceDeltaCollected,10)
   
+  // val receivers = df.select("to_address")
+  // val holdersAll = df.dropDuplicates("to_address").sort(col("value").desc).select("to_address","value")
+
+  //val holdersBalance = holdersAll.collect.map( r => (r.get(0).toString,ERC20.balanceOf(Tokens.UNI,r.get(0).toString)))
   // need to resort because balance is different now
-  val holders = holdersBalance.map( h => Holder(h._1,h._2.doubleValue / decimals)).sortBy(- _.value).take(25).toList
+  //val holders = holdersBalance.map( h => Holder(h._1,h._2.doubleValue / decimals)).sortBy(- _.value).take(25).toList
 
   holders.foreach{ println _ }
   
@@ -42,21 +50,7 @@ def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:Str
   val elapsed = Duration.between(ts0, ts1)
   println(s"Elapsed time: ${elapsed.toMinutes} min (${elapsed.toSeconds} sec)")
 
-  // read from JDBC
-  val jdbcDF = ss.read.format("jdbc").option("url", "jdbc:mysql://localhost:3306/haas_db").option("user", "haas_user").option("password", "haas_pass").option("dbtable", "haas_db.HOLDERS").load()
-  
-  // overwrite results (append == INSERT)
-  val hDF = ss.createDataFrame(holders)
-  hDF.write.format("jdbc").option("url", "jdbc:mysql://localhost:3306/haas_db").option("user", "haas_user").option("password", "haas_pass").option("dbtable", "haas_db.HOLDERS").mode("overwrite").save()
-
-  // the same
-  val dbProp = new java.util.Properties
-  Map("driver" -> "com.mysql.jdbc.Driver","user" -> "haas_user","password" -> "haas_pass").foreach{ case(k,v) => dbProp.setProperty(k,v)}
-  val dbUrl = "jdbc:mysql://localhost:3306/haas_db"
-  val dbTable = "HOLDERS"
-  hDF.write.mode("overwrite").jdbc(dbUrl, dbTable, dbProp)
-
-  val circ = Circulation(holders)
-  val circJson = write(circ)
-  println(circJson)
+  val circ = Circulation(id=UUID.randomUUID(), tid = "UNI", holders = holders)
+  println(circ)
+  println(write(circ))
 }

@@ -4,26 +4,19 @@
 // AWS emr-6.6.0   3.2.0
 // AWS emr-5.35.0  2.4.8
 
+import $ivy.`io.syspulse::circ-core:0.0.1`
+import $ivy.`io.syspulse::circ-harvest:0.0.1`
+
+import io.syspulse.haas.circ._
+import io.syspulse.haas.circ.Holder
+import io.syspulse.haas.circ.Circulation
+
+implicit val rw1: RW[Holder] = macroRW
+implicit val rw2: RW[Circulation] = macroRW
+
 import $file.Tokens,Tokens.Tokens
 import $file.ERC20,ERC20.ERC20
 
-case class BlockSupply(block:Long,totalHolders:Long,totalSupply:Double)
-case class TotalSupply(totalContract:Double,totalHolders:Double)
-
-case class BlockTransfer(addr:String,value:Double)
-
-object TotalSupply{ implicit val rw: RW[TotalSupply] = macroRW }
-
-// several transfers may happen inside one block
-// this function aggregates all transfers for an address into a singel BlockTransfer fot his address
-// usually this is not a case and could be grearty optimized:
-// bts.size == 2 -> no need to process
-// if grouped address has only 1 BlockTransfer, don't do any fold
-def foldBlockTransfer(bts: Array[BlockTransfer]):Array[BlockTransfer] = { 
-  if(bts.size == 2) return bts
-
-  bts.groupBy(_.addr).map{ case(addr,bts) => { if(bts.size==1) bts.head else {val valueAggr = bts.foldLeft(0.0)( _ + _.value); BlockTransfer(addr,valueAggr) }} }.toArray
-}
 
 @main
 def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
@@ -39,39 +32,16 @@ def main(input:String="./UNI-1000.csv", output:String = "Holders.csv", codec:Str
   df.printSchema()
 
   // sorted by Block Number !
-  val accountBalanceDelta = df.select("from_address","to_address","value","block_number").sort("block_number").flatMap(r => Seq((r.getInt(3),r.getString(0),r.getDecimal(2).negate.toBigInteger),(r.getInt(3),r.getString(1),r.getDecimal(2).toBigInteger)))
+  val accountBalanceDelta = df
+    .select("from_address","to_address","value","block_number")
+    .sort("block_number")
+    .flatMap(r => Seq((r.getInt(3),r.getString(0),BigInt(r.getDecimal(2).negate.toBigInteger)),(r.getInt(3),r.getString(1),BigInt(r.getDecimal(2).toBigInteger))))
   
   val accountBalanceDeltaCollected = accountBalanceDelta.collect
-  // iterate and accumulate a list of supplies 
-  // don't do groupBy because will require another sorting which is heavy !
-  var supply: List[BlockSupply] = List()
-  var lastBlock: Long = 0
-  var totalHolders = 0L
-  var totalSupply = 0.0
-  for(i <- 0 to accountBalanceDeltaCollected.size) { 
-    val a = accountBalanceDeltaCollected(i); 
-    if(lastBlock == 0L || lastBlock != a._3) 
-      supply = supply :+ BlockSupply() 
-  }
-
-  // Attention: Reduced !
-  val accountBalanceDeltaBlock = accountBalanceDelta.collect.groupBy(r => r._1)
-
-  // transfers per block
-  val blockTransfers = accountBalanceDeltaBlock.map{ case(block,transfers) => block -> transfers.map(t => BlockTransfer(t._2,t._3.doubleValue)) }
   
-  // aggregate transfer if multiple times in a block
-  val blockTransfersAggregated = blockTransfers.map{ case(block,bts) => block -> foldBlockTransfer(bts)}
+  val supply = Supply.history(accountBalanceDeltaCollected)
 
-  // aggregate per block
-  val blockSupply = blockTransfersAggregated.map{ case(block,bts) => BlockSupply()}
-
-  val holdersBalance = holdersAll.collect.map( r => (r.get(0).toString,balanceOf(Tokens.UNI,r.get(0).toString)))
-  
-  // need to resort because balance is different now
-  val holders = holdersBalance.map( h => Holder(h._1,h._2.doubleValue / decimals)).sortBy(- _.value).take(25).toList
-
-  holders.foreach{ println _ }
+  supply.foreach{ println _ }
   
   //df.write.option("maxRecordsPerFile", batch).option("compression", "gzip").mode("overwrite").format(codec).save(output);
   
