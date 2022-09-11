@@ -13,6 +13,8 @@ case class Tx(
   gasPrice:BigInt,
   input:String,
   value:BigInt,
+
+  timestamp:Option[Long]
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)
 }

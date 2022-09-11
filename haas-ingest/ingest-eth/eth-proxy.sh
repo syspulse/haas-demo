@@ -30,8 +30,8 @@ esac
 #echo "Block: $START_BLOCK_ARG" >&2
 
 export PYTHONUNBUFFERED="1"
-#ethereumetl stream -e log $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
-ethereumetl stream -e token_transfer $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+ethereumetl stream -e block,transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+#ethereumetl stream -e token_transfer $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 2>/dev/null
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
