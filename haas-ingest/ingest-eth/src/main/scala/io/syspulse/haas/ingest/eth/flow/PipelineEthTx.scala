@@ -31,9 +31,11 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthJson._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 
-class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) with EthTx {
-
+class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) with EthTxParser {
+  
   override def apiSuffix():String = s"/"
+
+  override def parse(data:String):Seq[Tx] = parseTx(data)
 
   def transform(tx: Tx): Seq[Tx] = {
     Seq(tx)

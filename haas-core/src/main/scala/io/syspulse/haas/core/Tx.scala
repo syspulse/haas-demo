@@ -14,7 +14,7 @@ case class Tx(
   input:String,
   value:BigInt,
 
-  timestamp:Option[Long]
+  //timestamp:Option[Long]
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)
 }

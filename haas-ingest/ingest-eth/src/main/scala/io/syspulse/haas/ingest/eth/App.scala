@@ -87,7 +87,7 @@ object App {
           case "block" =>
             new PipelineEthBlock(config.feed,config.output)(config)            
           
-          case "block-tx" =>
+          case "block-tx" =>             
             new PipelineEthBlockTx(config.feed,config.output)(config)
 
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)

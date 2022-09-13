@@ -22,6 +22,15 @@ ethereumetl stream -e transaction --start-block 14747950 --provider-uri $ETH_RPC
 rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC | ./run-ingest-eth.sh ingest -e tx -f stdin://
 ```
 
+### Export
+
+Export transactions into directory structure for Hive/Spark processing:
+
+```
+./eth-export-tx.sh 1000 1000001 2>/dev/null | ./run-ingest-eth.sh -e tx -f stdin:// -o 'hive://output/{yyyy}/{MM}/{dd}/transactions
+.log'
+```
+
 ## via Kafka
 
 Start Kafka:

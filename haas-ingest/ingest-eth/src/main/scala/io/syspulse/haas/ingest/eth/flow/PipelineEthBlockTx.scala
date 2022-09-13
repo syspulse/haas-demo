@@ -21,6 +21,7 @@ import io.syspulse.skel.config._
 import io.syspulse.skel.ingest._
 import io.syspulse.skel.ingest.store._
 import io.syspulse.skel.ingest.flow.Pipeline
+import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -34,10 +35,8 @@ import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block
 
 class PipelineEthBlockTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) {
-  import EthJson._
+  
   override def apiSuffix():String = s"/"
-
-  var latestTs:AtomicLong = new AtomicLong(0)
 
   def parse(data:String):Seq[Tx] = {
     if(data.isEmpty()) return Seq()
@@ -51,7 +50,7 @@ class PipelineEthBlockTx(feed:String,output:String)(implicit config:Config) exte
         Seq.empty
       } else {
         val tx = data.parseJson.convertTo[Tx]        
-        Seq(tx.copy(timestamp = Some(latestTs.get)))
+        Seq(tx.copy(ts = latestTs.get))
       }
     } catch {
       case e:Exception => 

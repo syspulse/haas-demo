@@ -1,5 +1,8 @@
 package io.syspulse.haas.ingest.eth.flow
 
+import java.util.concurrent.atomic.AtomicLong
+import io.syspulse.skel.ingest.flow.Flows
+
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
@@ -37,7 +40,63 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
 
   protected val log = Logger(s"${this}")
 
-  //import EthJson._
+  import EthJson._
+
+  var latestTs:AtomicLong = new AtomicLong(0)
+
+  override def getRotator():Flows.Rotator = 
+    new Flows.RotatorTimestamp(() => {
+      latestTs.get()
+    })
+
+  def parseTx(data:String):Seq[Tx] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val tx = data.parseJson.convertTo[Tx]
+        Seq(tx)
+      } else {
+        // assume CSV
+        // ignore header
+        // hash,nonce,block_hash,block_number,transaction_index,from_address,to_address,value,gas,gas_price,input,block_timestamp,max_fee_per_gas,max_priority_fee_per_gas,transaction_type
+        if(data.stripLeading().startsWith("hash")) {
+          Seq.empty
+        } else {
+          val tx = data.split(",").toList match {
+            case hash :: nonce :: block_hash :: block_number :: transaction_index :: from_address :: to_address :: 
+                 value :: gas :: gas_price :: input :: block_timestamp :: max_fee_per_gas :: max_priority_fee_per_gas :: 
+                 transaction_type :: Nil =>
+                
+                 val ts = block_timestamp.toLong
+                 latestTs.set(ts * 1000L)
+
+                 Seq(Tx(
+                    ts,
+                    transaction_index.toInt,
+                    hash,
+                    block_number.toLong,
+                    from_address,
+                    Option(to_address),
+                    gas.toLong,
+                    BigInt(gas_price),
+                    input,
+                    BigInt(value)
+                  ))
+            case _ => 
+              log.error(s"failed to parse: '${data}'")
+              Seq()
+          }
+          tx
+        }
+      }
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
+  }
 
   def filter:Seq[String] = config.filter
   def apiSuffix():String
@@ -49,6 +108,10 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
     }
   }
 
-  override def processing:Flow[T,T,_] = Flow[T].map(v => v)
+  override def processing:Flow[T,T,_] = Flow[T].map(v => {
+    if(countObj % 1000 == 0) 
+      log.info(s"processed: ${countInput},${countObj}")
+    v
+  })
 
 }
