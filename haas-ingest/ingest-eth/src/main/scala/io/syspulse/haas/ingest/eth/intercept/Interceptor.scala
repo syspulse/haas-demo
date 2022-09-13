@@ -26,12 +26,12 @@ import io.syspulse.skel.dsl.JS
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth.script.Scripts
 import io.syspulse.haas.ingest.eth.Config
-import io.syspulse.haas.ingest.eth.EthJson
+import io.syspulse.haas.ingest.eth.EthEtlJson
 
 abstract class Interceptor(config:Config) {
   protected val log = Logger(s"${this.getClass()}")
   
-  import EthJson._
+  import EthEtlJson._
   import DefaultJsonProtocol._
 
   Scripts.++(config.scripts)

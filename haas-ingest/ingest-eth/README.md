@@ -31,6 +31,12 @@ Export transactions into directory structure for Hive/Spark processing:
 .log'
 ```
 
+Export Token transfers:
+
+```
+./eth-export-tokens.sh 10000000 10000001 | ./run-ingest-eth.sh ingest -e token --filter 0x2b591e99afe9f32eaa6214f7b7629768c40eeb39 -f stdin://
+```
+
 ## via Kafka
 
 Start Kafka:

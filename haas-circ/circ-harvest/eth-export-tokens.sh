@@ -5,7 +5,7 @@
 # People send tokens to ERC20 contracts
 
 export ENTITY=export_token_transfers
-export OUTPUT_FILE=--output TOKENS.csv
+export OUTPUT_FILE="--output TOKENS.csv"
 
 ./eth-export.sh $@
 

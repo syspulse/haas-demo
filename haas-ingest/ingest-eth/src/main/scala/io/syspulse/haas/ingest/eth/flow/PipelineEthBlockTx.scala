@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthJson._
+import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block

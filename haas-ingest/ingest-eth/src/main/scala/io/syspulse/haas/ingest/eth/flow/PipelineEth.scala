@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthJson._
+import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
@@ -40,7 +40,7 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
 
   protected val log = Logger(s"${this}")
 
-  import EthJson._
+  import EthEtlJson._
 
   var latestTs:AtomicLong = new AtomicLong(0)
 

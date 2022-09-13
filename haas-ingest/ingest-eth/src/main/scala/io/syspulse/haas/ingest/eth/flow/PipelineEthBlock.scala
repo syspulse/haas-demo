@@ -28,11 +28,11 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Block
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthJson._
+import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block,Block](feed,output) {
 
-  import EthJson._
+  import EthEtlJson._
   
   override def apiSuffix():String = s"/"
 

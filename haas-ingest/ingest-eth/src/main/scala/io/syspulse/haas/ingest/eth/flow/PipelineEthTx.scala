@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthJson._
+import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 
-class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) with EthTxParser {
+class PipelineEthTx(feed:String,output:String)(implicit config:Config) extends PipelineEth[Tx,Tx](feed,output) {
   
   override def apiSuffix():String = s"/"
 

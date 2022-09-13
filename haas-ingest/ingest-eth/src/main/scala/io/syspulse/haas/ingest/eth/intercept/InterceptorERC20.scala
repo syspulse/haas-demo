@@ -26,7 +26,7 @@ import io.syspulse.skel.dsl.JS
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth.script.Scripts
 import io.syspulse.haas.ingest.eth.Config
-import io.syspulse.haas.ingest.eth.EthJson
+import io.syspulse.haas.ingest.eth.EthEtlJson
 
 import codegen.Decoder
 import codegen.AbiDefinition
