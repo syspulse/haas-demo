@@ -49,7 +49,11 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
         val tt = data.parseJson.convertTo[TokenTransfer]
+        
+        val ts = tt.blockTimestamp * 1000L
+        latestTs.set(ts)
         Seq(tt)
+
       } else {
         // ignore header
         if(data.stripLeading().startsWith("token_address")) {
@@ -70,8 +74,9 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
                   token_address,
                   from_address,
                   to_address,
-                  BigInt(value),
+                  BigInt(value),                  
                   transaction_hash,
+                  log_index.toInt,
                   block_number.toLong,
                   ts
                 ))
