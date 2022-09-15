@@ -4,6 +4,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
+import akka.actor.ActorSystem
 import akka.util.ByteString
 import akka.http.javadsl.Http
 import akka.http.scaladsl.model.HttpRequest
@@ -21,6 +22,7 @@ import io.syspulse.skel.config._
 import io.syspulse.skel.ingest._
 import io.syspulse.skel.ingest.store._
 import io.syspulse.skel.ingest.flow.Pipeline
+import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -32,12 +34,14 @@ import io.syspulse.haas.ingest.gecko._
 
 import io.syspulse.haas.token.TokenJson._
 import io.syspulse.haas.ingest.gecko.CoingeckoURI
+import akka.stream.scaladsl.Framing
 
 class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoinInfo](feed,output) {
 
   import CoingeckoJson._
 
-  override def apiSuffix():String = s"/coins/${config.tokens.mkString(",")}"
+  val TOKEN_SLOT = "COIN"
+  override def apiSuffix():String = s"/coins/${TOKEN_SLOT}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false"
   override def processing:Flow[CoinInfo,CoinInfo,_] = Flow[CoinInfo].map(v => v)
 
   def parse(data:String):Seq[CoinInfo] = {
@@ -55,5 +59,27 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
 
   def transform(cg: CoinInfo): Seq[Token] = {    
     Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address))
+  }
+
+  override def source() = {
+    feed.split("://").toList match {
+      case "coingecko" :: _ => source(CoingeckoURI(feed,apiSuffix()).uri) 
+      case "http" :: _ | "https" :: _ => source(feed + apiSuffix())
+      case _ => super.source()
+    }
+  }
+
+  override def source(feed:String) = {
+    feed.split("://").toList match {
+      case "http" :: _ | "https" :: _ => {
+        val reqs = tokensFilter.map( t => 
+          HttpRequest(uri = feed.replaceFirst(TOKEN_SLOT,t)).withHeaders(Accept(MediaTypes.`application/json`))
+        )
+        log.info(s"reqs=${reqs}")
+        Flows.fromHttpList(reqs,frameDelimiter = config.delimiter,frameSize = config.buffer)
+      }
+            
+      case _ => super.source(feed)
+    }
   }
 }

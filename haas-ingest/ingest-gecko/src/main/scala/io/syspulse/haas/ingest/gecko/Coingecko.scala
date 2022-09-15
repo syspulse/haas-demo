@@ -20,6 +20,6 @@ case class CoinInfo(id:String,symbol:String, name:String,
   contract_address:Option[String], platforms:Map[String,String],
   links:Links,
   image:Image,
-  market_data:MarketData,
+//  market_data:MarketData,
   last_updated:String) extends Ingestable
 
