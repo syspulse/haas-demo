@@ -24,6 +24,7 @@ case class Config(
   delimiter:String = "",
   buffer:Int = 0,
   throttle:Long = 0L,
+  throttleSource:Long = 0L,
   
   entity:String = "",
   
@@ -58,12 +59,13 @@ object App {
         ArgString('_', "delimiter","""Delimiter characteds (def: ''). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
         ArgLong('_', "throttle","Throttle messages in msec (def: 0)"),
+        ArgLong('_', "throttle.source","Throttle source (e.g. http, def=0L)"),
 
         ArgString('t', "tokens","Tokens filter (ex: 'UNI,ETH')"),
         
         ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
         
-        ArgCmd("ingest","Ingest pipeline (requires -e <entity>)"),
+        ArgCmd("ingest","Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
         ArgParam("<params>","")
       ).withExit(1)
@@ -79,9 +81,10 @@ object App {
       freq = c.getLong("freq").getOrElse(0),
       delimiter = c.getString("delimiter").getOrElse(""),
       buffer = c.getInt("buffer").getOrElse(1024*1024),
-      throttle = c.getLong("throttle").getOrElse(0L),     
+      throttle = c.getLong("throttle").getOrElse(0L),
+      throttleSource = c.getLong("throttle.source").getOrElse(0L),
 
-      tokens = c.getString("tokens").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
+      tokens = c.getListString("tokens"),
       
       datastore = c.getString("datastore").getOrElse("stdout"),
       

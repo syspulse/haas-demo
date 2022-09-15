@@ -34,7 +34,7 @@ import io.syspulse.haas.token.TokenJson._
 import io.syspulse.haas.ingest.gecko.CoingeckoURI
 
 abstract class PipelineGecko[T](feed:String,output:String)(implicit config:Config)
-  extends Pipeline[T,T,Token](feed,output,config.throttle,config.delimiter,config.buffer) {
+  extends Pipeline[T,T,Token](feed,output,config.throttle,config.delimiter,config.buffer,throttleSource = config.throttleSource) {
 
   protected val log = com.typesafe.scalalogging.Logger(s"${this}")
 

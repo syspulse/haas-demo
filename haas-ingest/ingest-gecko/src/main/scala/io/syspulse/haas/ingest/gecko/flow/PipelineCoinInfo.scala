@@ -76,7 +76,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
           HttpRequest(uri = feed.replaceFirst(TOKEN_SLOT,t)).withHeaders(Accept(MediaTypes.`application/json`))
         )
         log.info(s"reqs=${reqs}")
-        Flows.fromHttpList(reqs,frameDelimiter = config.delimiter,frameSize = config.buffer)
+        Flows.fromHttpList(reqs,par = 1, frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
       }
             
       case _ => super.source(feed)
