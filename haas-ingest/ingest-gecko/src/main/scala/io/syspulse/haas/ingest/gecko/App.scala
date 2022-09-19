@@ -59,7 +59,7 @@ object App {
         ArgString('_', "delimiter","""Delimiter characteds (def: ''). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
         ArgLong('_', "throttle","Throttle messages in msec (def: 0)"),
-        ArgLong('_', "throttle.source","Throttle source (e.g. http, def=0L)"),
+        ArgLong('_', "throttle.source","Throttle source (e.g. http, def=1000L)"),
 
         ArgString('t', "tokens","Tokens filter (ex: 'UNI,ETH')"),
         
@@ -82,7 +82,7 @@ object App {
       delimiter = c.getString("delimiter").getOrElse(""),
       buffer = c.getInt("buffer").getOrElse(1024*1024),
       throttle = c.getLong("throttle").getOrElse(0L),
-      throttleSource = c.getLong("throttle.source").getOrElse(0L),
+      throttleSource = c.getLong("throttle.source").getOrElse(1000L),
 
       tokens = c.getListString("tokens"),
       

@@ -40,7 +40,8 @@ abstract class PipelineGecko[T](feed:String,output:String)(implicit config:Confi
 
   import CoingeckoJson._
 
-  def tokensFilter:Seq[String] = config.tokens
+  val tokensFilter:Seq[String] = config.tokens
+
   def apiSuffix():String
 
   override def source() = {
