@@ -38,11 +38,11 @@ ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx -o 'hive://outp
 Export transactions into directory structure for Hive/Spark processing:
 
 ```
-./eth-export-tx.sh 1000 1000001 2>/dev/null | ./run-ingest-eth.sh -e tx -f stdin:// -o 'hive://output/{yyyy}/{MM}/{dd}/transactions
+./eth-export-tx.sh 1000000 1000001 | ./run-ingest-eth.sh -e tx -o 'hive://output/{yyyy}/{MM}/{dd}/transactions
 .log'
 ```
 
-Export Token transfers:
+Export Token transfers (with filter by token address)
 
 ```
 ./eth-export-tokens.sh 10000000 10000001 | ./run-ingest-eth.sh ingest -e token --filter 0x2b591e99afe9f32eaa6214f7b7629768c40eeb39 -f stdin://
