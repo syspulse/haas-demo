@@ -30,6 +30,7 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
+
 class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block,Block](feed,output) {
 
   import EthEtlJson._
@@ -41,6 +42,9 @@ class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extend
 
     try {
       val block = data.parseJson.convertTo[Block]
+      
+      latestTs.set(block.timestamp * 1000L)
+      
       Seq(block)
     } catch {
       case e:Exception => 
