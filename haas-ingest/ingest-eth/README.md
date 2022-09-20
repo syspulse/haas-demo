@@ -2,6 +2,9 @@
 
 ## Ingest Ethereum Tx and Blocks
 
+
+### Stream 
+
 Ingest transactions from file:
 ```
 ./run-ingest-eth.sh ingest -e tx -f feed/tx-1734.log -o stdout://
@@ -12,17 +15,25 @@ Ingest blocks from file:
 ./run-ingest-eth.sh ingest -e block -f feed/blocks-1.log -o stdout://
 ```
 
-Stream: geth -> ethereum-etl -> eth-ingest
+Stream: geth -> ethereum-etl -> eth-ingest from last PoW block 15537393
 
 ```
-ethereumetl stream -e transaction --start-block 14747950 --provider-uri $ETH_RPC | ./run-ingest-eth.sh ingest -e tx -f stdin://
+ENTITY="transaction" ./eth-stream.sh 15537393 | ./run-ingest-eth.sh -e tx
 ```
 
+Stream from latest block
+
 ```
-rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC | ./run-ingest-eth.sh ingest -e tx -f stdin://
+ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx
 ```
 
-### Export
+Stream from latest block into Hive
+
+```
+ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx -o 'hive://output/{yyyy}/{MM}/{dd}/transactions'
+```
+
+### Import
 
 Export transactions into directory structure for Hive/Spark processing:
 

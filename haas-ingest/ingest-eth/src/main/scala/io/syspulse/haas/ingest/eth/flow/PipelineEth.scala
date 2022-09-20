@@ -56,6 +56,10 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
         val tx = data.parseJson.convertTo[Tx]
+        
+        val ts = tx.ts
+        latestTs.set(ts * 1000L)
+
         Seq(tx)
       } else {
         // assume CSV

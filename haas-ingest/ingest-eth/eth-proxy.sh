@@ -2,11 +2,13 @@
 #
 # OUTPUT: kafka/localhost:9092
 
-ETH_RPC=${ETH_RPC:-http://api.infura.io}
+ETH_RPC=${ETH_RPC:-http://geth:8545}
 
 #START_BLOCK=${1:-14747950}
 OUTPUT=${1}
 START_BLOCK=${2:-latest}
+#ENTITY=${ENTITY:-token_transfer}
+ENTITY=${ENTITY:-transaction}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -30,8 +32,10 @@ esac
 #echo "Block: $START_BLOCK_ARG" >&2
 
 export PYTHONUNBUFFERED="1"
-ethereumetl stream -e block,transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+#ethereumetl stream -e block,transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e token_transfer $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 2>/dev/null
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
+
+ethereumetl stream -e "$ENTITY" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
