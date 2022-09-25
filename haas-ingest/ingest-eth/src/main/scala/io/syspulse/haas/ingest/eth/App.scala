@@ -12,7 +12,7 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock,PipelineEthIntercept,PipelineEthBlockTx,PipelineEthToken }
+import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock,PipelineEthIntercept,PipelineEthBlockTx,PipelineEthToken,PipelineEthLog }
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import io.syspulse.haas.ingest.eth.intercept.InterceptorERC20
 
@@ -30,7 +30,7 @@ object App {
                 
         ArgString('f', "feed","Input Feed (def: )"),
         ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
-        ArgString('e', "entity","Ingest entity: (tx,block,block-tx,token)"),
+        ArgString('e', "entity","Ingest entity: (tx,block,block-tx,token,log)"),
 
         ArgLong('_', "limit","Limit"),
         ArgLong('_', "freq","Frequency"),
@@ -92,6 +92,9 @@ object App {
 
           case "token" =>
             new PipelineEthToken(config.feed,config.output)(config)
+
+          case "log" =>
+            new PipelineEthLog(config.feed,config.output)(config)
 
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 

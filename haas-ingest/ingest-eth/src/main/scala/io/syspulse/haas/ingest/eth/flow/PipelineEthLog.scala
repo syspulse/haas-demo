@@ -34,51 +34,51 @@ import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block
 
-class PipelineEthToken(feed:String,output:String)(implicit config:Config) extends PipelineEth[TokenTransfer,TokenTransfer](feed,output) {
+class PipelineEthLog(feed:String,output:String)(implicit config:Config) extends PipelineEth[EthLog,EthLog](feed,output) {
   
   override def apiSuffix():String = s"/"
 
-  def transform(tx: TokenTransfer): Seq[TokenTransfer] = {
+  def transform(tx: EthLog): Seq[EthLog] = {
     Seq(tx)
   }
 
-  override def parse(data:String):Seq[TokenTransfer] = {
+  override def parse(data:String):Seq[EthLog] = {
     if(data.isEmpty()) return Seq()
 
     try {
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
-        val tt = data.parseJson.convertTo[TokenTransfer]
+        val tt = data.parseJson.convertTo[EthLog]
         
-        val ts = tt.blockTimestamp * 1000L
+        val ts = tt.block_timestamp * 1000L
         latestTs.set(ts)
-        Seq(tt.copy(blockTimestamp = ts))
+        Seq(tt.copy(block_timestamp = ts))
 
       } else {
         // ignore header
-        if(data.stripLeading().startsWith("token_address")) {
+        if(data.stripLeading().startsWith("type")) {
           Seq.empty
         } else {
           val tt = data.split(",").toList match {
-            case token_address :: from_address :: to_address :: 
-                 value :: transaction_hash :: log_index :: 
-                 block_number :: block_timestamp :: Nil =>
+            case log_index :: transaction_hash :: transaction_index :: address :: data :: topics :: block_number :: block_timestamp :: block_hash :: 
+                 item_id :: item_timestamp :: Nil =>
                 
-              if(filter.isEmpty || filter.contains(token_address)) {
+              if(filter.isEmpty || filter.contains(address)) {
                 
                 // ATTENTION: Stupid ethereum-etl insert '\r' !
                 val ts = block_timestamp.trim.toLong * 1000L
                 latestTs.set(ts)
 
-                Seq(TokenTransfer(
-                  token_address,
-                  from_address,
-                  to_address,
-                  BigInt(value),                  
-                  transaction_hash,
+                Seq(EthLog(
                   log_index.toInt,
+                  transaction_hash,
+                  transaction_index.toInt,
+                  address,
+                  data,
+                  List(topics),
                   block_number.toLong,
-                  ts
+                  ts,
+                  block_hash
                 ))
 
               } else Seq.empty

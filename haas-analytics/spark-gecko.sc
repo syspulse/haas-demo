@@ -6,7 +6,7 @@ import spark.implicits._
 import org.apache.spark.sql.functions._
 
 val filter = "Ethereum"
-val data = "/mnt/share/data/haas/gecko/tokens-10"
+val data = "/mnt/share/data/haas/gecko/tokens"
 
 // read all data
 val df = spark.read.format("json").option("inferSchema", "true").load(data).cache
