@@ -9,6 +9,7 @@ HaaS Platform Demo
 - [haas-ingest](haas-ingest)    - Ingest (blockchains, feeds)
 - [haas-lake](haas-lake)        - DataLake
 - [haas-circ](haas-circ)        - Circulation Product
+- [haas-analytics](haas-analytics)   - Analytics Code snippets for Notebooks
 
 
 ----
