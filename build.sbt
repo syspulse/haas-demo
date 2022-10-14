@@ -258,8 +258,11 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
   .settings (
     sharedConfig,
     sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
 
-    appAssemblyConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
+    //appAssemblyConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
+    appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
@@ -277,8 +280,11 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
   .settings (
     sharedConfig,
     sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
 
-    appAssemblyConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
+    //appAssemblyConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
+    appDockerConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,

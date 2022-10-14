@@ -22,6 +22,8 @@ object App {
   def main(args:Array[String]):Unit = {
     Console.err.println(s"args: '${args.mkString(",")}'")
 
+    val d = Config()
+
     val c = Configuration.withPriority(Seq(
       new ConfigurationAkka,
       new ConfigurationProp,
@@ -32,7 +34,9 @@ object App {
         ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
         ArgString('e', "entity","Ingest entity: (tx,block,block-tx,token,log)"),
 
-        ArgLong('_', "limit","Limit"),
+        ArgLong('_', "limit","Limit for entities to output"),
+        ArgLong('_', "size","Size limit for output (files)"),
+
         ArgLong('_', "freq","Frequency"),
         ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
@@ -58,7 +62,9 @@ object App {
       output = c.getString("output").getOrElse(""),
       entity = c.getString("entity").getOrElse("tx"),
 
-      limit = c.getLong("limit").getOrElse(0),
+      limit = c.getLong("limit").getOrElse(d.limit),
+      size = c.getLong("size").getOrElse(d.size),
+
       freq = c.getLong("freq").getOrElse(0),
       delimiter = c.getString("delimiter").getOrElse("\n"),
       buffer = c.getInt("buffer").getOrElse(1024*1024),

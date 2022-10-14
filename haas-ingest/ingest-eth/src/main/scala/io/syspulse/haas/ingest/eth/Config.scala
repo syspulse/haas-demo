@@ -11,7 +11,9 @@ case class Config(
   abi:String = "",
   source:String="",
   
-  limit:Long = 0L,
+  size:Long = Long.MaxValue,
+  limit:Long = Long.MaxValue,
+
   freq: Long = 0L,
   delimiter:String = "",
   buffer:Int = 0,

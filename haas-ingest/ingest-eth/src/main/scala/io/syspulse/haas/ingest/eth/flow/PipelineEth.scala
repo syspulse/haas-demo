@@ -49,6 +49,9 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
       latestTs.get()
     })
 
+  override def getFileLimit():Long = config.limit
+  override def getFileSize():Long = config.size
+
   def parseTx(data:String):Seq[Tx] = {
     if(data.isEmpty()) return Seq()
 
@@ -88,6 +91,25 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
                     input,
                     BigInt(value)
                   ))
+            // this is format of Tx. WHY !?
+            case ts :: transaction_index :: hash :: block_number :: from_address :: to_address :: 
+                 gas :: gas_price :: input :: value :: Nil =>
+                
+                 latestTs.set(ts.toLong)
+
+                 Seq(Tx(
+                    ts.toLong,
+                    transaction_index.toInt,
+                    hash,
+                    block_number.toLong,
+                    from_address,
+                    Option(to_address),
+                    gas.toLong,
+                    BigInt(gas_price),
+                    input,
+                    BigInt(value)
+                  ))
+                  
             case _ => 
               log.error(s"failed to parse: '${data}'")
               Seq()

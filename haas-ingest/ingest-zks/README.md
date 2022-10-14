@@ -1,4 +1,38 @@
-## ZkSync
+## ZkSync v2
+
+Testnet: https://zksync2-testnet.zksync.dev
+
+Latest block:
+```
+echo '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}' | http POST https://zksync2-testnet.zksync.dev
+```
+
+Block:
+```
+echo '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x12e0a9", true],"id":1}' | http POST https://zksync2-testnet.zksync.dev
+```
+
+WS:
+```
+wscat --connect wss://zksync2-testnet.zksync.dev/ws
+Connected (press CTRL+C to quit)
+> {"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}
+< {"jsonrpc":"2.0","result":"0x12e1af","id":83}
+```
+
+New Block Headers (not Blocks):
+```
+{"jsonrpc":"2.0", "id": 1, "method": "eth_subscribe", "params": ["newHeads"]}
+```
+
+Stream of pending Transactions (A LOT!)
+```
+{"jsonrpc":"2.0", "id": 1, "method": "eth_subscribe", "params": ["newPendingTransactions"]}
+```
+
+
+----
+## ZkSync v1
 
 API: https://docs.zksync.io/apiv02-docs/
 
