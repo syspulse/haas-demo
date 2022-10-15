@@ -27,6 +27,14 @@ Stream from latest block
 ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx
 ```
 
+Stream blocks into S3 compatible mount (no append).
+
+Limit (`--limit=10`) is important when file is rolled over:
+
+```
+ENTITY=block ./eth-ingest.sh -e block -o fs3://output/blk-{HH_mm_ss}.log --limit=10
+```
+
 Stream from latest block into Hive
 
 ```

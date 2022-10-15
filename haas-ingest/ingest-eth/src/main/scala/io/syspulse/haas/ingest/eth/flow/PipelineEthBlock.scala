@@ -41,11 +41,51 @@ class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extend
     if(data.isEmpty()) return Seq()
 
     try {
-      val block = data.parseJson.convertTo[Block]
-      
-      latestTs.set(block.timestamp * 1000L)
-      
-      Seq(block)
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val block = data.parseJson.convertTo[Block]
+        
+        val ts = block.timestamp
+        latestTs.set(ts * 1000L)
+
+        Seq(block)
+      } else {
+        // assume CSV
+        // ignore header
+        // 
+        if(data.stripLeading().startsWith("number")) {
+          Seq.empty
+        } else {
+          val tx = data.split(",").toList match {
+            case number :: hash :: parent_hash :: nonce :: sha3_uncles :: logs_bloom :: transactions_root :: 
+                 state_root :: receipts_root :: miner :: difficulty :: total_difficulty :: size :: extra_data :: 
+                 gas_limit :: gas_used :: timestamp :: transaction_count :: base_fee_per_gas :: Nil =>
+                
+                 val ts = timestamp.toLong
+                 latestTs.set(ts * 1000L)
+
+                 Seq(Block(
+                    number.toLong,
+                    hash,parent_hash, nonce, 
+                    sha3_uncles,logs_bloom,
+                    transactions_root,state_root, receipts_root,
+                    miner, BigInt(difficulty), BigInt(total_difficulty),
+                    size.toLong,
+                    extra_data,
+                    gas_limit.toLong,gas_used.toLong,
+
+                    ts,
+                    transaction_count.toLong,
+                    base_fee_per_gas.toLong                    
+                  ))            
+                  
+            case _ => 
+              log.error(s"failed to parse: '${data}'")
+              Seq()
+          }
+          tx
+        }
+      }
     } catch {
       case e:Exception => 
         log.error(s"failed to parse: '${data}'",e)

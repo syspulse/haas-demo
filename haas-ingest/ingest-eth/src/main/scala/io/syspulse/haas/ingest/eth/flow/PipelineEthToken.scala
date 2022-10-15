@@ -50,8 +50,8 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
       if(data.stripLeading().startsWith("{")) {
         val tt = data.parseJson.convertTo[TokenTransfer]
         
-        val ts = tt.blockTimestamp * 1000L
-        latestTs.set(ts)
+        val ts = tt.blockTimestamp
+        latestTs.set(ts * 1000L)
         Seq(tt.copy(blockTimestamp = ts))
 
       } else {
@@ -67,8 +67,8 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
               if(filter.isEmpty || filter.contains(token_address)) {
                 
                 // ATTENTION: Stupid ethereum-etl insert '\r' !
-                val ts = block_timestamp.trim.toLong * 1000L
-                latestTs.set(ts)
+                val ts = block_timestamp.trim.toLong
+                latestTs.set(ts * 1000L)
 
                 Seq(TokenTransfer(
                   token_address,
