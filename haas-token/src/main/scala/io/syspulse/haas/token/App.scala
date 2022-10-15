@@ -16,6 +16,8 @@ import io.jvm.uuid._
 import io.syspulse.skel.FutureAwaitable._
 import io.syspulse.haas.token.server.TokenRoutes
 
+import io.syspulse.haas.token.client.TokenClientHttp
+
 case class Config(  
   host:String="0.0.0.0",
   port:Int=8080,
@@ -109,49 +111,44 @@ object App extends skel.Server {
         val uri = s"http://${host}:${config.port}${config.uri}"
         val timeout = Duration("3 seconds")
 
-        // val r = 
-        //   config.params match {
-        //     case "delete" :: id :: Nil => 
-        //       TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .delete(UUID(id))
-        //         .await()
-        //     case "create" :: data => 
-        //       val (email:String,name:String,eid:String) = data match {
-        //         case email :: name :: eid :: _ => (email,name,eid)
-        //         case email :: name :: Nil => (email,name,"")
-        //         case email :: Nil => (email,"","")
-        //         case Nil => ("token-1@mail.com","","")
-        //       }
-        //       TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .create(email,name,eid)
-        //         .await()
-        //     case "get" :: id :: Nil => 
-        //       TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .get(UUID(id))
-        //         .await()
-        //     case "getByEid" :: eid :: Nil => 
-        //       TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .getByEid(eid)
-        //         .await()
-        //     case "all" :: Nil => 
-        //       TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .all()
-        //         .await()
+        val r = 
+          config.params match {
+            case "create" :: data => 
+              val (id:String,symbol:String,name:String) = data match {
+                case id :: symbol :: name :: _ => (id,symbol,name)
+                case id :: symbol :: Nil => (id,symbol,"name")
+                case id :: Nil => (id,"symbol","name")
+                case Nil => ("token","symbol","name")
+              }
+              TokenClientHttp(uri)
+                .withTimeout(timeout)
+                .create(id,symbol,name)
+                .await()
+            case "get" :: id :: Nil => 
+              TokenClientHttp(uri)
+                .withTimeout(timeout)
+                .get(id)
+                .await()
+            case "search" :: txt :: Nil => 
+              TokenClientHttp(uri)
+                .withTimeout(timeout)
+                .search(txt)
+                .await()
+            case "all" :: Nil => 
+              TokenClientHttp(uri)
+                .withTimeout(timeout)
+                .all()
+                .await()
 
-        //     case Nil => TokenClientHttp(uri)
-        //         .withTimeout(timeout)
-        //         .all()
-        //         .await()
+            case Nil => TokenClientHttp(uri)
+                .withTimeout(timeout)
+                .all()
+                .await()
 
-        //     case _ => println(s"unknown op: ${config.params}")
-        //   }
+            case _ => println(s"unknown op: ${config.params}")
+          }
         
-        // println(s"${r}")
+        println(s"${r}")
         System.exit(0)
       }
     }
