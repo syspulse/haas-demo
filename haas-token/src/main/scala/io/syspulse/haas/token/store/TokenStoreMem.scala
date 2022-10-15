@@ -42,16 +42,19 @@ class TokenStoreMem extends TokenStore {
 
   def ?(id:ID):Option[Token] = tokens.get(id)
 
-  def ??(txt:String):List[Token] = {
-    tokens.values.filter(v => 
-      v.symbol.matches(txt) || 
-      v.name.matches(txt) || 
-      v.contractAddress.map(_.matches(txt)).isDefined
+  def ??(txt:String):List[Token] = {    
+    tokens.values.filter(v => {
+        //log.info(s"'${txt}' :: ${v.symbol},${v.name}")
+        v.id.matches(txt) || 
+        v.symbol.matches(txt) ||
+        v.name.matches(txt) || 
+        (v.contractAddress.isDefined && v.contractAddress.get.matches(txt))
+      }
     ).toList
   }
 
   def scan(txt:String):List[Token] = ??(txt)
-  def search(txt:String):List[Token] = ??(txt)
+  def search(txt:String):List[Token] = ??(txt + ".*")
   def grep(txt:String):List[Token] = ??(txt)
   def typing(txt:String):List[Token] = ??(txt)
 }

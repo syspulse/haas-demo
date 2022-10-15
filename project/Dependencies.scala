@@ -187,6 +187,7 @@ object Dependencies {
     
 
     val libSkelCore =         "io.syspulse"                     %% "skel-core"                     % skelVersion
+    val libSkelAuthCore =     "io.syspulse"                     %% "skel-auth-core"                % skelVersion
     val libSkelCrypto =       "io.syspulse"                     %% "skel-crypto"                   % skelVersion
     val libSkelIngest =       "io.syspulse"                     %% "skel-ingest"                   % skelVersion
     val libSkelIngestFlow =   "io.syspulse"                     %% "ingest-flow"                   % skelVersion

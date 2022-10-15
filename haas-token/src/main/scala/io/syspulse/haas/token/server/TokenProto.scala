@@ -10,11 +10,11 @@ import io.syspulse.skel.service.JsonCommon
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.serde.TokenJson
 
-final case class Tokens(videos: immutable.Seq[Token])
-final case class TokenCreateReq(symbol: String, name:String, contractAddress: Option[String] = None, id:Option[String] = None)
+final case class Tokens(tokens: immutable.Seq[Token])
+final case class TokenCreateReq(id:String,symbol: String, name:String, contractAddress: Option[String] = None)
 final case class TokenRandomReq()
 final case class TokenActionRes(status: String,id:Option[String])
-final case class TokenRes(video: Option[Token])
+final case class TokenRes(token: Option[Token])
 
 object TokenProto extends JsonCommon {
   

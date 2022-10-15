@@ -10,16 +10,18 @@ import io.jvm.uuid._
 
 import io.syspulse.skel.Command
 
+import io.syspulse.haas.token.server._
+import io.syspulse.haas.token._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
-import io.syspulse.haas.token._
 
 object TokenRegistry {
   val log = Logger(s"${this}")
   
   final case class GetTokens(replyTo: ActorRef[Tokens]) extends Command
   final case class GetToken(id:ID,replyTo: ActorRef[Option[Token]]) extends Command
-  final case class SearchToken(txt:String,replyTo: ActorRef[List[Token]]) extends Command
+  final case class SearchToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
+  final case class TypingToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
   
   final case class CreateToken(tokenCreate: TokenCreateReq, replyTo: ActorRef[Token]) extends Command
   final case class RandomToken(replyTo: ActorRef[Token]) extends Command
@@ -47,12 +49,15 @@ object TokenRegistry {
         Behaviors.same
 
       case SearchToken(txt, replyTo) =>
-        replyTo ! store.??(txt)
+        replyTo ! Tokens(store.search(txt))
+        Behaviors.same
+      
+      case TypingToken(txt, replyTo) =>
+        replyTo ! Tokens(store.typing(txt))
         Behaviors.same
 
-
       case CreateToken(tokenCreate, replyTo) =>
-        val token = Token(tokenCreate.id, tokenCreate.symbol,tokenCreate.name,tokenCreate.address)
+        val token = Token(tokenCreate.id, tokenCreate.symbol,tokenCreate.name,tokenCreate.contractAddress)
                 
         val store1 = store.+(token)
 
