@@ -13,13 +13,13 @@ case class MarketCap(usd:Long)
 
 case class MarketData(market_cap:MarketCap)
 
-case class Links(homepage:List[String])
+case class Links(homepage:List[Option[String]])
 case class Image(thumb:String,small:String,large:String)
 
 case class CoinInfo(id:String,symbol:String, name:String,
-  contract_address:Option[String], platforms:Map[String,String],
+  contract_address:Option[String], platforms:Map[String,Option[String]],
   links:Links,
   image:Image,
 //  market_data:MarketData,
-  last_updated:String) extends Ingestable
+  last_updated:Option[String]) extends Ingestable
 

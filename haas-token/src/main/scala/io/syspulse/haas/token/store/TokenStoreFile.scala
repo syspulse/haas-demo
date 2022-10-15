@@ -33,9 +33,13 @@ class TokenStoreFile(dir:String = "store/") extends TokenStoreMem {
         os.read(f)
       })
       .map(data => {
-        val coin = data.parseJson.convertTo[CoinInfo]
-        log.debug(s"coin=${coin}")
-        Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address))
+        try {
+          val coin = data.parseJson.convertTo[CoinInfo]
+          log.debug(s"coin=${coin}")
+          Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address))
+        } catch {
+          case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
+        }
       })
       .flatten
 
