@@ -230,7 +230,7 @@ lazy val haas_core = (project in file("haas-core"))
 
 
 lazy val haas_token = (project in file("haas-token"))
-  .dependsOn(haas_core)
+  .dependsOn(haas_core,ingest_gecko)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)
@@ -253,7 +253,7 @@ lazy val haas_token = (project in file("haas-token"))
 
 
 lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
-  .dependsOn(haas_core,haas_token)
+  .dependsOn(haas_core)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,

@@ -17,33 +17,33 @@ import io.syspulse.haas.core.Token.ID
 class TokenStoreMem extends TokenStore {
   val log = Logger(s"${this}")
   
-  var Tokens: Map[ID,Token] = Map()
+  var tokens: Map[ID,Token] = Map()
 
-  def all:Seq[Token] = Tokens.values.toSeq
+  def all:Seq[Token] = tokens.values.toSeq
 
-  def size:Long = Tokens.size
+  def size:Long = tokens.size
 
   def +(Token:Token):Try[TokenStore] = { 
-    Tokens = Tokens + (Token.id -> Token)
+    tokens = tokens + (Token.id -> Token)
     log.info(s"${Token}")
     Success(this)
   }
 
   def del(id:ID):Try[TokenStore] = { 
-    val sz = Tokens.size
-    Tokens = Tokens - id;
+    val sz = tokens.size
+    tokens = tokens - id;
     log.info(s"${id}")
-    if(sz == Tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
+    if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
   def -(Token:Token):Try[TokenStore] = {     
     del(Token.id)
   }
 
-  def ?(id:ID):Option[Token] = Tokens.get(id)
+  def ?(id:ID):Option[Token] = tokens.get(id)
 
   def ??(txt:String):List[Token] = {
-    Tokens.values.filter(v => 
+    tokens.values.filter(v => 
       v.symbol.matches(txt) || 
       v.name.matches(txt) || 
       v.contractAddress.map(_.matches(txt)).isDefined

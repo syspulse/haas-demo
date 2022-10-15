@@ -16,26 +16,23 @@ import io.jvm.uuid._
 import io.syspulse.skel.FutureAwaitable._
 
 case class Config(  
-  host:String="",
-  port:Int=0,
-  uri:String = "",
+  host:String="0.0.0.0",
+  port:Int=8080,
+  uri:String = "/api/v1/token",
   
   cgUri:String = "",  
   limit:Long = 0L,
   freq: Long = 0L,
   logFile:String = "",   
   
-  elasticUri:String = "",
+  elasticUri:String = "http://localhost:9200",
   elasticUser:String = "",
   elasticPass:String = "",
-  elasticIndex:String = "",
-  expr:String = "",
+  elasticIndex:String = "token",
     
-  datastore:String = "",
+  datastore:String = "mem",
 
-  tokens:Seq[String] = Seq(),
-
-  cmd:String = "",
+  cmd:String = "server",
   params: Seq[String] = Seq(),
 
 )
@@ -45,51 +42,54 @@ object App extends skel.Server {
   def main(args:Array[String]):Unit = {
     println(s"args: '${args.mkString(",")}'")
 
+    val d = Config()
     val c = Configuration.withPriority(Seq(
       new ConfigurationAkka,
       new ConfigurationProp,
       new ConfigurationEnv, 
-      new ConfigurationArgs(args,"eth-stream","",
-        ArgString('h', "http.host","listen host (def: 0.0.0.0)"),
-        ArgInt('p', "http.port","listern port (def: 8080)"),
-        ArgString('u', "http.uri","api uri (def: /api/v1/token)"),
-        ArgString('d', "datastore","datastore [elastic,mem,cache] (def: mem)"),
+      new ConfigurationArgs(args,"haas-token","",
+        ArgString('h', "http.host",s"listen host (def: ${d.host})"),
+        ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
+        ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
+        ArgString('d', "datastore",s"datastore [elastic,mem,file] (def: ${d.datastore})"),
 
-        ArgString('_', "elastic.uri","Elastic uri (def: http://localhost:9200)"),
-        ArgString('_', "elastic.user","Elastic user (def: )"),
-        ArgString('_', "elastic.pass","Elastic pass (def: )"),
-        ArgString('_', "elastic.index","Elastic Index (def: token)"),
+        ArgString('_', "elastic.uri",s"Elastic uri (def: ${d.elasticUri})"),
+        ArgString('_', "elastic.user",s"Elastic user (def: ${d.elasticUser})"),
+        ArgString('_', "elastic.pass",s"Elastic pass (def: ${d.elasticPass})"),
+        ArgString('_', "elastic.index",s"Elastic Index (def: ${d.elasticIndex})"),
         
-        ArgCmd("server","Command"),
-        ArgCmd("client","Command"),
+        ArgCmd("server","Server"),
+        ArgCmd("client","Client"),
         ArgParam("<params>","")
       ).withExit(1)
     ))
 
     val config = Config(
-      host = c.getString("http.host").getOrElse("0.0.0.0"),
-      port = c.getInt("http.port").getOrElse(8080),
-      uri = c.getString("http.uri").getOrElse("/api/v1/token"),
-      datastore = c.getString("datastore").getOrElse("mem"),
+      host = c.getString("http.host").getOrElse(d.host),
+      port = c.getInt("http.port").getOrElse(d.port),
+      uri = c.getString("http.uri").getOrElse(d.uri),
+      datastore = c.getString("datastore").getOrElse(d.datastore),
 
-      elasticUri = c.getString("elastic.uri").getOrElse("http://localhost:9200"),
-      elasticIndex = c.getString("elastic.index").getOrElse("token"),
-      elasticUser = c.getString("elastic.user").getOrElse(""),
-      elasticPass = c.getString("elastic.pass").getOrElse(""),
+      elasticUri = c.getString("elastic.uri").getOrElse(d.elasticUri),
+      elasticIndex = c.getString("elastic.index").getOrElse(d.elasticIndex),
+      elasticUser = c.getString("elastic.user").getOrElse(d.elasticUser),
+      elasticPass = c.getString("elastic.pass").getOrElse(d.elasticPass),
       
-      cmd = c.getCmd().getOrElse("server"),
+      cmd = c.getCmd().getOrElse(d.cmd),
       params = c.getParams(),
     )
 
     println(s"Config: ${config}")
 
-    val store = config.datastore match {
+    val store = config.datastore.split("://").toList match {
       // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
       // case "postgres" => new TokenStoreDB(c,"postgres")
-      case "mem" | "cache" => new TokenStoreMem
+      case "mem" :: _ => new TokenStoreMem
+      case "file" :: dir :: Nil => new TokenStoreFile(dir)
+      case "file" :: Nil => new TokenStoreFile()
       case _ => {
-        Console.err.println(s"Uknown datastore: '${config.datastore}': using 'mem'")
-        new TokenStoreMem
+        Console.err.println(s"Uknown datastore: '${config.datastore}'")
+        sys.exit(1)
       }
     }
 

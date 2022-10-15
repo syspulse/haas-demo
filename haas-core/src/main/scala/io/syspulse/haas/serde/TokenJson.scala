@@ -1,4 +1,4 @@
-package io.syspulse.haas.token
+package io.syspulse.haas.core.serde
 
 import scala.jdk.CollectionConverters._
 

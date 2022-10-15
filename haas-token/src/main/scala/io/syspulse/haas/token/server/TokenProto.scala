@@ -8,7 +8,7 @@ import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsVa
 
 import io.syspulse.skel.service.JsonCommon
 import io.syspulse.haas.core.Token
-import io.syspulse.haas.token.TokenJson
+import io.syspulse.haas.core.serde.TokenJson
 
 final case class Tokens(videos: immutable.Seq[Token])
 final case class TokenCreateReq(symbol: String, name:String, contractAddress: Option[String] = None, id:Option[String] = None)
