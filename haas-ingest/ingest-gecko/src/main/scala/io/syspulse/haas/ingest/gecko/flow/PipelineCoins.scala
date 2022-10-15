@@ -43,6 +43,7 @@ class PipelineCoins(feed:String,output:String)(implicit config:Config) extends P
     
     try {
       val bulk = data.parseJson.convertTo[List[Coin]]
+      log.debug(s"bulk=${bulk}")
       if(tokensFilter.size == 0)
         bulk.toSeq
       else
@@ -55,6 +56,8 @@ class PipelineCoins(feed:String,output:String)(implicit config:Config) extends P
   }
 
   def transform(cg: Coin): Seq[Token] = {
-    Seq(Token(cg.id,cg.symbol,cg.name,None))
+    val tt = Seq(Token(cg.id,cg.symbol,cg.name,None))
+    log.debug(s"token=${tt}")
+    tt
   }
 }

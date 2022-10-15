@@ -17,7 +17,7 @@
         </encoder>
     </appender>
     
-    <root level="info">
+    <root level="debug">
         <!-- to use enable this mode pass -Dcolor to jvm -->
         <if condition='isDefined("color")'>
             <then>

@@ -52,7 +52,8 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
         
         val ts = tt.blockTimestamp
         latestTs.set(ts * 1000L)
-        Seq(tt.copy(blockTimestamp = ts))
+        //Seq(tt.copy(blockTimestamp = ts))
+        Seq(tt)
 
       } else {
         // ignore header

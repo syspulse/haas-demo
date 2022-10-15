@@ -19,22 +19,19 @@ case class Config(
   feed:String = "",
   output:String = "",
   
-  limit:Long = 0L,
+  size:Long = Long.MaxValue,
+  limit:Long = Long.MaxValue,
   freq: Long = 0L,
   delimiter:String = "",
-  buffer:Int = 0,
+  buffer:Int = 1024*1024,
   throttle:Long = 0L,
-  throttleSource:Long = 0L,
+  throttleSource:Long = 1000L,
   
-  entity:String = "",
-  
-  expr:String = "",
-  
-  datastore:String = "",
+  entity:String = "coins",  
+  datastore:String = "stdout",
+  tokens:Seq[String] = Seq(""),
 
-  tokens:Seq[String] = Seq(),
-
-  cmd:String = "",
+  cmd:String = "ingest",
   params: Seq[String] = Seq(),
   sinks:Seq[String] = Seq()
 )
@@ -44,52 +41,53 @@ object App {
   def main(args:Array[String]):Unit = {
     Console.err.println(s"args: '${args.mkString(",")}'")
 
+    val d = Config()
     val c = Configuration.withPriority(Seq(
       new ConfigurationAkka,
       new ConfigurationProp,
       new ConfigurationEnv, 
       new ConfigurationArgs(args,"ingest-gecko","",
                 
-        ArgString('f', "feed","Input Feed (def: )"),
-        ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
-        ArgString('e', "entity","Ingest entity: (coin,coins)"),
+        ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
+        ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) (def=${d.output})"),
+        ArgString('e', "entity",s"Ingest entity: (coin,coins) (def=${d.entity})"),
 
-        ArgLong('_', "limit","Limit"),
-        ArgLong('_', "freq","Frequency"),
-        ArgString('_', "delimiter","""Delimiter characteds (def: ''). Usage example: --delimiter=`echo -e $"\r"` """),
-        ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
-        ArgLong('_', "throttle","Throttle messages in msec (def: 0)"),
-        ArgLong('_', "throttle.source","Throttle source (e.g. http, def=1000L)"),
+        ArgLong('_', "limit",s"Limit (def=${d.limit})"),
+        ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
+        ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
 
-        ArgString('t', "tokens","Tokens filter (ex: 'UNI,ETH')"),
+        ArgString('_', "delimiter",s"""Delimiter characteds (def: ''). Usage example: --delimiter=`echo -e $"\r"` """),
+        ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
+        ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
+        ArgLong('_', "throttle.source",s"Throttle source (e.g. http, (def: ${d.throttleSource}))"),
+
+        ArgString('t', "tokens",s"Tokens filter (ex: 'UNI,ETH', def=${d.tokens})"),
         
-        ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
+        ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
         
-        ArgCmd("ingest","Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
+        ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
         ArgParam("<params>","")
       ).withExit(1)
     ))
 
-    val config = Config(
+    val config = Config(      
+      feed = c.getString("feed").getOrElse(d.feed),
+      output = c.getString("output").getOrElse(d.output),
       
-      feed = c.getString("feed").getOrElse(""),
-      output = c.getString("output").getOrElse(""),
-      entity = c.getString("entity").getOrElse("coins"),
+      limit = c.getLong("limit").getOrElse(d.limit),
+      size = c.getLong("size").getOrElse(d.size),
+      freq = c.getLong("freq").getOrElse(d.freq),
+      delimiter = c.getString("delimiter").getOrElse(d.delimiter),
+      buffer = c.getInt("buffer").getOrElse(d.buffer),
+      throttle = c.getLong("throttle").getOrElse(d.throttle),
+      throttleSource = c.getLong("throttle.source").getOrElse(d.throttleSource),
 
-      limit = c.getLong("limit").getOrElse(0),
-      freq = c.getLong("freq").getOrElse(0),
-      delimiter = c.getString("delimiter").getOrElse(""),
-      buffer = c.getInt("buffer").getOrElse(1024*1024),
-      throttle = c.getLong("throttle").getOrElse(0L),
-      throttleSource = c.getLong("throttle.source").getOrElse(1000L),
-
-      tokens = c.getListString("tokens"),
+      entity = c.getString("entity").getOrElse(d.entity),
+      tokens = c.getListString("tokens",d.tokens),      
+      datastore = c.getString("datastore").getOrElse(d.datastore),
       
-      datastore = c.getString("datastore").getOrElse("stdout"),
-      
-      cmd = c.getCmd().getOrElse("ingest"),
-      
+      cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),
     )
 
@@ -115,7 +113,7 @@ object App {
           case akka.NotUsed => 
         }
 
-        Console.err.println(s"Tokens: ${pp.countObj}")
+        Console.err.println(s"Tokens: ${pp.countInput},${pp.countObj},${pp.countOutput}")
         sys.exit(0)
       }
 

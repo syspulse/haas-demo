@@ -35,6 +35,12 @@ Limit (`--limit=10`) is important when file is rolled over:
 ENTITY=block ./eth-ingest.sh -e block -o fs3://output/blk-{HH_mm_ss}.log --limit=10
 ```
 
+Stream Tokens to S3 compatible mount:
+
+```
+ENTITY=token_transfer ./eth-ingest.sh -e token -o fs3://output/token-{HH_mm_ss}.log --limit=100
+```
+
 Stream from latest block into Hive
 
 ```

@@ -30,27 +30,27 @@ object App {
       new ConfigurationEnv, 
       new ConfigurationArgs(args,"ingest-eth","",
                 
-        ArgString('f', "feed","Input Feed (def: )"),
-        ArgString('o', "output","Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log)"),
-        ArgString('e', "entity","Ingest entity: (tx,block,block-tx,token,log)"),
+        ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
+        ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
+        ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
 
-        ArgLong('_', "limit","Limit for entities to output"),
-        ArgLong('_', "size","Size limit for output (files)"),
+        ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
+        ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
 
-        ArgLong('_', "freq","Frequency"),
-        ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
-        ArgInt('_', "buffer","Frame buffer (Akka Framing) (def: 1M)"),
-        ArgLong('_', "throttle","Throttle messages in msec (def: 0)"),
+        ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
+        ArgString('_', "delimiter",s"""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
+        ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
+        ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
 
-        ArgString('t', "filter","Filter (ex: '')"),
+        ArgString('t', "filter",s"Filter (def='${d.filter}')"),
         
-        ArgString('d', "datastore","datastore [elastic,stdout,file] (def: stdout)"),
+        ArgString('d', "datastore",s"datastore (def: ${d.datastore})"),
 
-        ArgString('s', "scripts","Scripts to execute on TX (or file uri: file://script.js (multiple with ',')"),
-        ArgString('a', "abi","directory with ABI jsons (format: NAME-0xaddress.json"),
+        ArgString('s', "scripts",s"Scripts to execute on TX (or file uri: file://script.js (multiple with ',') (def=${d.scripts})"),
+        ArgString('a', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
         
-        ArgCmd("ingest","Ingest pipeline (requires -e <entity>)"),
-        ArgCmd("intercept","Intercept pipeline (-s script)"),
+        ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
+        ArgCmd("intercept",s"Intercept pipeline (-s script)"),
         
         ArgParam("<params>","")
       ).withExit(1)
@@ -58,26 +58,26 @@ object App {
 
     val config = Config(
       
-      feed = c.getString("feed").getOrElse(""),
-      output = c.getString("output").getOrElse(""),
-      entity = c.getString("entity").getOrElse("tx"),
+      feed = c.getString("feed").getOrElse(d.feed),
+      output = c.getString("output").getOrElse(d.output),
+      entity = c.getString("entity").getOrElse(d.entity),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
 
-      freq = c.getLong("freq").getOrElse(0),
-      delimiter = c.getString("delimiter").getOrElse("\n"),
-      buffer = c.getInt("buffer").getOrElse(1024*1024),
-      throttle = c.getLong("throttle").getOrElse(0L),     
+      freq = c.getLong("freq").getOrElse(d.freq),
+      delimiter = c.getString("delimiter").getOrElse(d.delimiter),
+      buffer = c.getInt("buffer").getOrElse(d.buffer),
+      throttle = c.getLong("throttle").getOrElse(d.throttle),     
 
-      filter = c.getString("filter").getOrElse("").split(",").map(_.trim).filter(!_.isEmpty()),
+      filter = c.getListString("filter",d.filter),
       
-      datastore = c.getString("datastore").getOrElse("stdout"),
+      datastore = c.getString("datastore").getOrElse(d.datastore),
 
-      scripts = c.getString("scripts").getOrElse("").split(",").toSeq,
-      abi = c.getString("abi").getOrElse("abi/"),
+      scripts = c.getListString("scripts",d.filter),
+      abi = c.getString("abi").getOrElse(d.abi),
       
-      cmd = c.getCmd().getOrElse("ingest"),
+      cmd = c.getCmd().getOrElse(d.cmd),
       
       params = c.getParams(),
     )
