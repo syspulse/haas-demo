@@ -17,9 +17,9 @@ case class Links(homepage:List[Option[String]])
 case class Image(thumb:String,small:String,large:String)
 
 case class CoinInfo(id:String,symbol:String, name:String,
-  contract_address:Option[String], platforms:Map[String,Option[String]],
-  links:Links,
-  image:Image,
+  contract_address:Option[String], platforms:Map[String,Option[String]] = Map(),
+  links:Links = Links(List()),
+  image:Image = Image("","",""),
 //  market_data:MarketData,
-  last_updated:Option[String]) extends Ingestable
+  last_updated:Option[String] = None) extends Ingestable
 

@@ -47,9 +47,22 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   def parse(data:String):Seq[CoinInfo] = {
     if(data.isEmpty()) return Seq()
     try {
-      val coin = data.parseJson.convertTo[CoinInfo]
-      log.info(s"coin=${coin}")
-      Seq(coin)
+      if(data.stripLeading().startsWith("{")) {
+        val coin = data.parseJson.convertTo[CoinInfo]
+        log.info(s"coin=${coin}")
+        Seq(coin)
+      } else {
+        // assume csv
+        val coin = data.split(",").toList match {
+          case id :: symbol :: name :: contract_address :: Nil => Some(CoinInfo(id,symbol,name,Some(contract_address)))
+          case id :: symbol :: name :: Nil => Some(CoinInfo(id,symbol,name,None))
+          case _ => {
+            log.error(s"failed to parse: '${data}'")
+            None
+          }
+        }
+        coin.toSeq
+      }
     } catch {
       case e:Exception => 
         log.error(s"failed to parse: '${data}'",e)
