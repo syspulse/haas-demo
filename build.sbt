@@ -241,7 +241,7 @@ lazy val haas_token = (project in file("haas-token"))
     sharedConfigDocker,
     dockerBuildxSettings,
 
-    appDockerConfig("haas-tokens","io.syspulse.haas.token.App"),
+    appDockerConfig("haas-token","io.syspulse.haas.token.App"),
 
     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
       libSkelCore,
@@ -263,7 +263,7 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
     dockerBuildxSettings,
 
     //appAssemblyConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
-    appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
+    appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.gecko.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,

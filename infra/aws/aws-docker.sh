@@ -1,6 +1,15 @@
 #!/bin/bash
+CWD=`echo $(dirname $(readlink -f $0))`
 
-APP_FULL=${1}
+t=`pwd`;
+APP_DEF=`basename "$t"`
+
+if [ "$1" != "" ]; then
+   APP_FULL=$1
+else
+   APP_FULL=syspulse/${APP_DEF}:latest
+fi
+
 CMD=${2:-deploy}
 
 APP_NAME=`echo $APP_FULL | awk -F':' '{print $1}'`

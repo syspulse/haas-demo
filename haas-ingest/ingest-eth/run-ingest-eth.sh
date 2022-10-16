@@ -16,7 +16,7 @@ MAIN=io.syspulse.haas.ingest.eth.App
 >&2 echo "main: $MAIN"
 
 if [ "$DOCKER" != "" ]; then
-docker run --rm -it -v `pwd`/output:/output syspulse/ingest-eth:0.0.1 $@
+docker run --rm -it -v `pwd`/output:/output syspulse/$APP:latest $@
 else
 exec ../../run-app.sh $APP $MAIN $@
 fi

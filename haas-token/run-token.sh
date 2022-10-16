@@ -14,4 +14,9 @@ echo "app: $APP"
 echo "site: $SITE"
 echo "main: $MAIN"
 
+if [ "$DOCKER" != "" ]; then
+#docker run --rm -it -v `pwd`/store:/store -p 8080:8080 syspulse/$APP:latest --datastore='file:///store' $@
+docker run --rm -it -v /mnt/share/data/haas/gecko/tokens:/store -p 8080:8080 syspulse/$APP:latest $@
+else
 exec ../run-app.sh $APP $MAIN "$@"
+fi
