@@ -23,9 +23,12 @@ import io.syspulse.haas.core.Token.ID
 
 import io.syspulse.haas.token.elastic.TokenScan
 import io.syspulse.haas.token.elastic.TokenSearch
+import io.syspulse.skel.ingest.uri.ElasticURI
 
-class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStore {
+class TokenStoreElastic(uri:String) extends TokenStore {
   private val log = Logger(s"${this}")
+
+  val elasticUri = ElasticURI(uri)
 
   implicit object TokenHitReader extends HitReader[Token] {
     // becasue of VID case class, it is converted unmarchsalled as Map from Elastic (field vid.id)
@@ -35,13 +38,13 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
     }
   }
   
-  val client = ElasticClient(JavaClient(ElasticProperties(elasticUri)))
+  val client = ElasticClient(JavaClient(ElasticProperties("http://"+elasticUri.uri)))
 
   import ElasticDsl._  
   def all:Seq[Token] = {    
     val r = client.execute {
       ElasticDsl
-      .search(elacticIndex)
+      .search(elasticUri.index)
       .matchAllQuery()
     }.await
 
@@ -52,7 +55,7 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
   // slow and memory hungry !
   def size:Long = {
     val r = client.execute {
-      ElasticDsl.count(Indexes(elacticIndex))
+      ElasticDsl.count(Indexes(elasticUri.index))
     }.await
     r.result.count
   }
@@ -80,7 +83,7 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
   def scan(txt:String):List[Token] = {
     val r = client.execute {
       ElasticDsl
-        .search(elacticIndex)
+        .search(elasticUri.index)
         .rawQuery(s"""
     { 
       "query_string": {
@@ -88,7 +91,7 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
         "fields": ["symbol", "name"]
       }
     }
-    """)        
+    """)
     }.await
 
     log.info(s"r=${r}")
@@ -98,7 +101,7 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
   def search(txt:String):List[Token] = {   
     val r = client.execute {
       com.sksamuel.elastic4s.ElasticDsl
-        .search(elacticIndex)
+        .search(elasticUri.index)
         .query(txt)
     }.await
 
@@ -115,7 +118,7 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
   def grep(txt:String):List[Token] = {
     val r = client.execute {
       ElasticDsl
-        .search(elacticIndex)
+        .search(elasticUri.index)
         .query {
           ElasticDsl.wildcardQuery("symbol",txt)
         }
@@ -128,9 +131,9 @@ class TokenStoreElastic(elasticUri:String,elacticIndex:String) extends TokenStor
   def typing(txt:String):List[Token] = {  
     val r = client.execute {
       ElasticDsl
-        .search(elacticIndex)
+        .search(elasticUri.index)
         .rawQuery(s"""
-    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram" ] }}
+    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram", "name" ] }}
     """)        
     }.await
     
