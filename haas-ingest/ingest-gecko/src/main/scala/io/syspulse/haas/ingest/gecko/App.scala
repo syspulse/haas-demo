@@ -27,7 +27,7 @@ case class Config(
   throttle:Long = 0L,
   throttleSource:Long = 1000L,
   
-  entity:String = "coins",  
+  entity:String = "coin",  
   datastore:String = "stdout",
   tokens:Seq[String] = Seq(""),
 
