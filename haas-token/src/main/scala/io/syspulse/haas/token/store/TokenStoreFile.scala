@@ -18,20 +18,15 @@ import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
 // Preload from file during start
-class TokenStoreFile(dir:String = "store/") extends TokenStoreMem {
+class TokenStoreFile(file:String = "store/tokens.json") extends TokenStoreMem {
   import CoingeckoJson._
 
-  load(dir)
+  load(file)
 
-  def load(dir:String) = {
-    val storeDir = os.Path(dir,os.pwd)
-    log.info(s"Loading store: ${storeDir}")
+  def load(file:String) = {
+    log.info(s"Loading file store: ${file}")
 
-    val vv = os.list(storeDir)
-      .map(f => {
-        log.info(s"Loading file: ${f}")
-        os.read(f)
-      })
+    val vv = scala.io.Source.fromFile(file).getLines()
       .map(data => {
         try {
           val coin = data.parseJson.convertTo[CoinInfo]
