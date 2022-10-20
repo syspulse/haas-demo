@@ -58,8 +58,8 @@ object Script {
 object Scripts {
 
   var scripts = Map[Script,List[UserAlarm]](
-    Script("if(to_address == '0x41fb81197275db2105a839fce23858dabf86c73c') 'Transfer: '+to_address; else null;","S-0001") -> 
-      List( UserAlarm("A-0001",NotficationEmail("user1@test.org")), UserAlarm("A-0002",NotficationPush("user1-PUSH-1")))
+    // Script("if(to_address == '0x41fb81197275db2105a839fce23858dabf86c73c') 'Transfer: '+to_address; else null;","S-0001") -> 
+    //   List( UserAlarm("A-0001",NotficationEmail("user1@test.org")), UserAlarm("A-0002",NotficationPush("user1-PUSH-1")))
   )
 
   def ++(scripts:Seq[String]) = {

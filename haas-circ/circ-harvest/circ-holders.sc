@@ -25,7 +25,7 @@ def main(input:String="./UNI-1000.csv", token:String = "0x1f9840a85d5af5bf1d1762
 
   val ts0 = Instant.now
 
-  val df = ss.read.option("header", "false").format("com.databricks.spark.csv").option("inferSchema", "true").csv(input).toDF("token_address","from_address","to_address","value","transaction_hash","log_index","block_number")
+  val df = ss.read.option("header","false").format("com.databricks.spark.csv").option("inferSchema", "true").csv(input).toDF("token_address","from_address","to_address","value","transaction_hash","log_index","block_number")
   df.printSchema()
 
   val accountBalanceDelta = df

@@ -15,5 +15,5 @@ HaaS Platform Demo
 ----
 ## Architecture
 
-<img src="doc/HaaS-Architecture-Proto.jpg" width="650">
+<img src="doc/HaaS-Architecture-Proto.png" width="1000">
 
