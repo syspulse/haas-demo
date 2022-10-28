@@ -2,13 +2,15 @@
 #
 # OUTPUT: kafka/localhost:9092
 
-ETH_RPC=${ETH_RPC:-http://geth:8545}
+#ETH_RPC=${ETH_RPC:-http://geth:8545}
+ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
 
 #START_BLOCK=${1:-14747950}
 OUTPUT=${1}
 START_BLOCK=${2:-latest}
 #ENTITY=${ENTITY:-token_transfer}
 ENTITY=${ENTITY:-transaction}
+DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -38,4 +40,8 @@ export PYTHONUNBUFFERED="1"
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 2>/dev/null
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
 
-ethereumetl stream -e "$ENTITY" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+if [ "$DOCKER" != "" ]; then
+   docker run --rm --name eth-proxy $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT
+else
+   ethereumetl stream -e "$ENTITY" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
+fi
