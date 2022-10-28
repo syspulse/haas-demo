@@ -11,12 +11,23 @@ export SITE=${SITE:-$CONF}
 
 MAIN=io.syspulse.haas.ingest.eth.App
 
+DOCKER_DEF=${DOCKER_DEF:-649502643044.dkr.ecr.eu-west-1.amazonaws.com}
+
 >&2 echo "app: $APP"
 >&2 echo "site: $SITE"
 >&2 echo "main: $MAIN"
 
 if [ "$DOCKER" != "" ]; then
-   docker run --rm -i -v `pwd`/output:/output syspulse/$APP:latest $@
+  case "$DOCKER" in
+     "default")
+        docker run --rm -i -v `pwd`/output:/output ${DOCKER_DEF}/syspulse/$APP:latest $@
+        ;;
+     *)
+        docker run --rm -i -v `pwd`/output:/output syspulse/$APP:latest $@
+        ;;
+  esac
+   
 else
    exec ../../run-app.sh $APP $MAIN $@
 fi
+
