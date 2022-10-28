@@ -34,6 +34,9 @@ def main(input:String="./UNI-1000.csv", token:String = "0x1f9840a85d5af5bf1d1762
     .flatMap(r => Seq((r.getInt(3),r.getString(0),BigInt(r.getDecimal(2).negate.toBigInteger)),(r.getInt(3),r.getString(1),BigInt(r.getDecimal(2).toBigInteger))))
 
   val accountBalanceDeltaCollected = accountBalanceDelta.collect
+
+  accountBalanceDeltaCollected.foreach{ println _ }
+
   val holders = Supply.holders(accountBalanceDeltaCollected,10)
   
   // val receivers = df.select("to_address")

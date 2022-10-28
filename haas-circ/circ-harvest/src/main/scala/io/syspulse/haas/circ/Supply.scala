@@ -2,11 +2,8 @@ package io.syspulse.haas.circ
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
-import io.jvm.uuid._
 import scala.math.BigInt
 import scala.io.Source
-
-import io.syspulse.haas.core._
 
 case class TotalSupply(totalContract:BigInt,totalHolders:BigInt)
 
@@ -34,10 +31,10 @@ object Supply {
       }).toArray.flatten.sortBy(_._1)
   }
 
-  def holders(accountBalanceDeltaCollected: Array[(Int, String, BigInt)],limit:Int = 3): List[Holder] = {
+  def holders(accountBalanceDeltaCollected: Array[(Int, String, BigInt)],limit:Int = 3): Array[Holder] = {
     val holdersAll = historyWithHolders(accountBalanceDeltaCollected)._2
 
-    val holders = holdersAll.toArray.sortBy{ case(k,v) => - v}.take(limit).map{ case(k,v) => Holder(k,v)}.toList
+    val holders = holdersAll.toArray.sortBy{ case(k,v) => - v}.take(limit).map{ case(k,v) => Holder(k,v)}
     holders
   }
 
