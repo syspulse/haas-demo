@@ -10,7 +10,9 @@ OUTPUT=${1}
 START_BLOCK=${2:-latest}
 #ENTITY=${ENTITY:-token_transfer}
 ENTITY=${ENTITY:-transaction}
-DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
+
+DOCKER_IMG=${DOCKER_IMG:-syspulse/ethereum-etl:2.0.3.1}
+DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -41,7 +43,17 @@ export PYTHONUNBUFFERED="1"
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
 
 if [ "$DOCKER" != "" ]; then
-   docker run --rm --name eth-proxy $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT
+   case "$DOCKER" in
+     "aws")
+         docker run --rm --name eth-proxy ${DOCKER_AWS}/${DOCKER_IMG} stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT
+         ;;
+     "default")
+         docker run --rm --name eth-proxy ${DOCKER_AWS}/${DOCKER_IMG} stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT
+         ;;
+      *)
+         docker run --rm --name eth-proxy $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT
+         ;;
+   esac
 else
    ethereumetl stream -e "$ENTITY" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT 
 fi

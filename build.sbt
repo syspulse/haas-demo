@@ -68,7 +68,13 @@ val sharedConfigDocker = Seq(
   // dockerBaseImage := "openjdk:8u212-jre-alpine3.9", //"openjdk:8-jre-alpine",
 
   //dockerBaseImage := "openjdk:8-jre-alpine",
-  dockerBaseImage := "openjdk:18-slim",
+  //dockerBaseImage := "openjdk:18-slim",
+  dockerBaseImage := "openjdk-s3fs:18-slim",
+  // Add S3 mount options
+  // Requires running docker: 
+  // --privileged -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e S3_BUCKET=haas-data-dev
+  bashScriptExtraDefines += """/mount-s3.sh""",
+  // bashScriptExtraDefines += """ls -l /mnt/s3/""",
   
   dockerUpdateLatest := true,
   dockerUsername := Some("syspulse"),
@@ -78,8 +84,15 @@ val sharedConfigDocker = Seq(
 
   Docker / defaultLinuxInstallLocation := appDockerRoot,
 
-  Docker / daemonUserUid := None, //Some("1000"), 
-  Docker / daemonUser := "daemon"
+  // Docker / daemonUserUid := None,
+  // Docker / daemonUser := "daemon"
+
+  // Experiments with S3 mount compatibility
+  Docker / daemonUserUid := Some("1000"),  
+  // Docker / daemonUser := "ubuntu",
+  // Docker / daemonGroupGid := Some("1000"),
+  // Docker / daemonGroup := "ubuntu",
+  
 ) ++ dockerRegistryLocal
 
 // Spark is not working with openjdk:18-slim (cannot access class sun.nio.ch.DirectBuffer)
