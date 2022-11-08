@@ -39,7 +39,7 @@ import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Token
 
-class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContext) extends ClientHttp[TokenClientHttp](uri)(as,ec) with TokenService {
+class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContext) extends ClientHttp(uri)(as,ec) with TokenService {
   
   import TokenJson._
   import TokenProto._

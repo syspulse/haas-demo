@@ -16,11 +16,15 @@ import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Token
 
+import io.syspulse.skel.AwaitableService
 import io.syspulse.haas.token.client.TokenClientHttp
 
-trait TokenService {
+trait TokenService extends AwaitableService[TokenService] {
   def search(txt:String):Future[Tokens]
   def create(id:String,symbol:String,name:String):Future[Option[Token]]
+  
+  def get(id:String):Future[Option[Token]]
+  def all():Future[Tokens]
 }
 
 object TokenService {
@@ -52,4 +56,7 @@ class TokenServiceSim extends TokenService {
   def create(id:String,symbol:String,name:String):Future[Option[Token]] = {
     Future.successful(Some(Token(id,symbol,name)))
   }
+
+  def get(id:String):Future[Option[Token]] = Future.successful(None)
+  def all():Future[Tokens] = Future.successful(Tokens(Seq()))
 }
