@@ -23,8 +23,8 @@ class TokenStoreMem extends TokenStore {
 
   def size:Long = tokens.size
 
-  def +(Token:Token):Try[TokenStore] = { 
-    tokens = tokens + (Token.id -> Token)
+  def +(token:Token):Try[TokenStore] = { 
+    tokens = tokens + (token.id -> token)
     log.info(s"${Token}")
     Success(this)
   }
@@ -36,8 +36,8 @@ class TokenStoreMem extends TokenStore {
     if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
-  def -(Token:Token):Try[TokenStore] = {     
-    del(Token.id)
+  def -(token:Token):Try[TokenStore] = {     
+    del(token.id)
   }
 
   def ?(id:ID):Option[Token] = tokens.get(id)
@@ -45,10 +45,10 @@ class TokenStoreMem extends TokenStore {
   def ??(txt:String):List[Token] = {    
     tokens.values.filter(v => {
         //log.info(s"'${txt}' :: ${v.symbol},${v.name}")
-        v.id.matches(txt) || 
-        v.symbol.matches(txt) ||
-        v.name.matches(txt) || 
-        (v.contractAddress.isDefined && v.contractAddress.get.matches(txt))
+        v.id.toLowerCase.matches(txt.toLowerCase) || 
+        v.symbol.toLowerCase.matches(txt.toLowerCase) ||
+        v.name.toLowerCase.matches(txt.toLowerCase) || 
+        (v.contractAddress.isDefined && v.contractAddress.get.toLowerCase.matches(txt.toLowerCase))
       }
     ).toList
   }

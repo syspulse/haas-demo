@@ -16,6 +16,6 @@ trait TokenScan extends ElasticScan[Token] {
 
   override def getSearchParamas():Map[String,String] = Map(
           "query" -> s""" {"match_all": {}} """,
-          "_source" -> """ ["vid", "ts", "title", "category"] """
+          "_source" -> """ ["id", "symbol", "name", "contractAddress","category","icon"] """
         )
 }

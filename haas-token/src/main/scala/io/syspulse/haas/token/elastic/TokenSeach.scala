@@ -24,7 +24,7 @@ trait TokenSearch extends ElasticSearch[Token] {
     """
 
   def getSearches(txt:String) = s"""
-    { "multi_match": { "query": "${txt}", "fields": [ "symbol", "address" ] }}
+    { "multi_match": { "query": "${txt}", "fields": [ "symbol", "contractAddress" ] }}
     """
 
   def getSearch(txt:String) = s"""
@@ -33,6 +33,6 @@ trait TokenSearch extends ElasticSearch[Token] {
 
   def getTyping(txt:String) = 
     s"""
-    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "address._3gram" ] }}
+    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "contractAddress._3gram" ] }}
     """
 }

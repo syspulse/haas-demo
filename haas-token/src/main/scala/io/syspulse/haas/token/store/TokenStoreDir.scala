@@ -36,7 +36,7 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
         try {
           val coin = data.parseJson.convertTo[CoinInfo]
           log.debug(s"coin=${coin}")
-          Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address))
+          Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address,category = coin.categories,icon = Option(coin.image.large)))
         } catch {
           case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
         }

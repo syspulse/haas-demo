@@ -18,6 +18,7 @@ case class Image(thumb:String,small:String,large:String)
 
 case class CoinInfo(id:String,symbol:String, name:String,
   contract_address:Option[String], platforms:Map[String,Option[String]] = Map(),
+  categories:List[String] = List(),
   links:Links = Links(List()),
   image:Image = Image("","",""),
 //  market_data:MarketData,

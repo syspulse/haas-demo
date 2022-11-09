@@ -34,7 +34,14 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     // becasue of VID case class, it is converted unmarchsalled as Map from Elastic (field vid.id)
     override def read(hit: Hit): Try[Token] = {
       val source = hit.sourceAsMap
-      Success(Token(source("id").toString, source("symbol").toString,source("name").toString,None))
+      Success(Token(
+        source("id").toString, 
+        source("symbol").toString,
+        source("name").toString,
+        source.get("contractAddress").map(_.toString),
+        source.get("category").map(_.asInstanceOf[List[String]]).getOrElse(List()),
+        source.get("icon").map(_.toString)
+      ))
     }
   }
   
@@ -88,7 +95,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     { 
       "query_string": {
         "query": "${txt}",
-        "fields": ["symbol", "name"]
+        "fields": ["symbol", "name", "contractAddress","category","icon"]
       }
     }
     """)
@@ -133,7 +140,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
       ElasticDsl
         .search(elasticUri.index)
         .rawQuery(s"""
-    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram", "name" ] }}
+    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram", "name", "contractAddress", "contractAddress._3gram"] }}
     """)        
     }.await
     

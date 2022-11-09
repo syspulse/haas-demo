@@ -45,14 +45,16 @@ class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContex
   import TokenProto._
   import spray.json._
   
-  def reqGetToken(id:Token.ID) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/${id}")
-  def reqSearchToken(txt:String) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/search/${txt}")
+  def reqGetToken(id:Token.ID) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/${id}")  
   def reqGetTokens() = HttpRequest(method = HttpMethods.GET, uri = s"${uri}")
   def reqPostToken(id:String,symbol:String,name:String) =  HttpRequest(method = HttpMethods.POST, uri = s"${uri}",
         entity = HttpEntity(ContentTypes.`application/json`, 
           TokenCreateReq(id,symbol,name).toJson.toString)
       )
   def reqDeleteToken(id:Token.ID) = HttpRequest(method = HttpMethods.DELETE, uri = s"${uri}/${id}")
+
+  def reqSearchToken(txt:String) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/search/${txt}")
+  def reqTypingToken(txt:String) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/typing/${txt}")
 
   def delete(id:Token.ID):Future[TokenActionRes] = {
     log.info(s"${id} -> ${reqDeleteToken(id)}")
@@ -82,6 +84,14 @@ class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContex
     log.info(s"${txt} -> ${reqSearchToken(txt)}")
     for {
       rsp <- Http().singleRequest(reqSearchToken(txt))        
+      tokens <- if(rsp.status == StatusCodes.OK) Unmarshal(rsp).to[Tokens] else Future(Tokens(Seq()))
+    } yield tokens
+  }
+
+  def typing(txt:String):Future[Tokens] = {
+    log.info(s"${txt} -> ${reqTypingToken(txt)}")
+    for {
+      rsp <- Http().singleRequest(reqTypingToken(txt))        
       tokens <- if(rsp.status == StatusCodes.OK) Unmarshal(rsp).to[Tokens] else Future(Tokens(Seq()))
     } yield tokens
   }

@@ -33,7 +33,7 @@ case class Config(
   elasticPass:String = "",
   elasticIndex:String = "token",
     
-  datastore:String = "file://store",
+  datastore:String = "resources://", //"file://store",
 
   cmd:String = "server",
   params: Seq[String] = Seq(),
@@ -55,7 +55,7 @@ object App extends skel.Server {
         ArgString('h', "http.host",s"listen host (def: ${d.host})"),
         ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
-        ArgString('d', "datastore",s"datastore [elastic://host:9200/token,mem,dir://store,file://tokens.json,resources://] (def: ${d.datastore})"),
+        ArgString('d', "datastore",s"datastore [elastic://localhost:9200/token, mem, dir://store, file://tokens.json, resources://, resources://file] (def: ${d.datastore})"),
 
         ArgString('_', "elastic.uri",s"Elastic uri (def: ${d.elasticUri})"),
         ArgString('_', "elastic.user",s"Elastic user (def: ${d.elasticUser})"),

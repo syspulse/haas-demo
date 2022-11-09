@@ -15,7 +15,7 @@ object CoingeckoJson extends JsonCommon {
   implicit val jf_md = jsonFormat1(MarketData)
   implicit val jf_ln = jsonFormat1(Links)
   implicit val jf_im = jsonFormat3(Image)
-  implicit val jf_CoinInfo = jsonFormat8(CoinInfo)
+  implicit val jf_CoinInfo = jsonFormat9(CoinInfo)
   implicit val jf_Coin = jsonFormat3(Coin)
   implicit val jf_Coins = jsonFormat1(Coins)
 }

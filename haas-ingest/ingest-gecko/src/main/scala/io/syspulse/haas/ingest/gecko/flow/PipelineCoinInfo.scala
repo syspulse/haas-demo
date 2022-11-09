@@ -54,6 +54,8 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
       } else {
         // assume csv
         val coin = data.split(",").toList match {
+          case id :: symbol :: name :: contract_address :: category :: icon :: Nil => 
+            Some(CoinInfo(id,symbol,name,Some(contract_address),categories = Util.csvToList(category),image = Image("","",icon)))
           case id :: symbol :: name :: contract_address :: Nil => Some(CoinInfo(id,symbol,name,Some(contract_address)))
           case id :: symbol :: name :: Nil => Some(CoinInfo(id,symbol,name,None))
           case _ => {
@@ -71,7 +73,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   }
 
   def transform(cg: CoinInfo): Seq[Token] = {    
-    Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address))
+    Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address,category = cg.categories,icon = Some(cg.image.large)))
   }
 
   override def source() = {
