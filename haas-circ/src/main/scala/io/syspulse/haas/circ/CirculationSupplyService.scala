@@ -20,7 +20,7 @@ import io.syspulse.skel.AwaitableService
 import io.syspulse.haas.circ.client.CirculationSupplyClientHttp
 
 trait CirculationSupplyService extends AwaitableService[CirculationSupplyService] {  
-  def get(id:Circulation.ID):Future[Option[CirculationSupply]]
+  def get(id:CirculationSupply.ID):Future[Option[CirculationSupply]]
   def all():Future[CirculationSupplys]
 }
 
@@ -40,6 +40,6 @@ object CirculationSupplyService {
 
 // --- For tests 
 class CirculationSupplyServiceSim extends CirculationSupplyService {
-  def get(id:Circulation.ID):Future[Option[CirculationSupply]] = Future.successful(None)
+  def get(id:CirculationSupply.ID):Future[Option[CirculationSupply]] = Future.successful(None)
   def all():Future[CirculationSupplys] = Future.successful(CirculationSupplys(Seq()))
 }

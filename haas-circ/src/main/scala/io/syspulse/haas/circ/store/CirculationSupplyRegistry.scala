@@ -18,7 +18,7 @@ object CirculationSupplyRegistry {
   val log = Logger(s"${this}")
   
   final case class GetCirculationSupplys(replyTo: ActorRef[CirculationSupplys]) extends Command
-  final case class GetCirculationSupply(id:Circulation.ID,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
+  final case class GetCirculationSupply(id:CirculationSupply.ID,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
   
   // this var reference is unfortunately needed for Metrics access
   var store: CirculationSupplyStore = null //new CirculationSupplyStoreDB //new CirculationSupplyStoreCache

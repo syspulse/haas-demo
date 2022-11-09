@@ -67,7 +67,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   val metricGetCount: Counter = Counter.build().name("skel_circ_get_total").help("CirculationSupply gets").register(cr)
   
   def getCirculationSupplys(): Future[CirculationSupplys] = registry.ask(GetCirculationSupplys)
-  def getCirculationSupply(id: Circulation.ID): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id, _))  
+  def getCirculationSupply(id: CirculationSupply.ID): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id, _))  
   
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id",
@@ -76,7 +76,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   )
   def getCirculationSupplyRoute(id: String) = get {
     rejectEmptyResponse {
-      onSuccess(getCirculationSupply(Circulation(id))) { r =>
+      onSuccess(getCirculationSupply(CirculationSupply(id))) { r =>
         metricGetCount.inc()
         complete(r)
       }

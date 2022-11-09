@@ -45,10 +45,10 @@ class CirculationSupplyClientHttp(uri:String)(implicit as:ActorSystem[_], ec:Exe
   import CirculationSupplyProto._
   import spray.json._
   
-  def reqGetCirculationSupply(id:Circulation.ID) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/${id}")  
+  def reqGetCirculationSupply(id:CirculationSupply.ID) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/${id}")  
   def reqGetCirculationSupplys() = HttpRequest(method = HttpMethods.GET, uri = s"${uri}")
   
-  def get(id:Circulation.ID):Future[Option[CirculationSupply]] = {
+  def get(id:CirculationSupply.ID):Future[Option[CirculationSupply]] = {
     log.info(s"${id} -> ${reqGetCirculationSupply(id)}")
     for {
       rsp <- Http().singleRequest(reqGetCirculationSupply(id))

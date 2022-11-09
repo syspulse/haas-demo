@@ -13,7 +13,7 @@ import io.syspulse.haas.circ.serde.CirculationSupplyJson
 
 final case class CirculationSupplys(circs: immutable.Seq[CirculationSupply])
 final case class CirculationSupplyRandomReq()
-final case class CirculationSupplyActionRes(status: String,id:Option[Circulation.ID])
+final case class CirculationSupplyActionRes(status: String,id:Option[CirculationSupply.ID])
 final case class CirculationSupplyRes(circ: Option[CirculationSupply])
 
 object CirculationSupplyProto extends JsonCommon {

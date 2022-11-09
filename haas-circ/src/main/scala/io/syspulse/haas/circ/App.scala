@@ -100,7 +100,7 @@ object App extends skel.Server {
           config.params match {
             case "get" :: id :: Nil => CirculationSupplyClientHttp(uri)
                 .withTimeout(timeout)
-                .get(Circulation(id))
+                .get(CirculationSupply(id))
                 .await()
             case "all" :: Nil => CirculationSupplyClientHttp(uri)
                 .withTimeout(timeout)
