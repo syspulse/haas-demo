@@ -343,21 +343,22 @@ lazy val circ_harvest = (project in file("haas-circ/circ-harvest"))
   )
 
 
-// lazy val circ_service = (project in file("haas-circ/circ-service"))
-//   .dependsOn(haas_core)
-//   .enablePlugins(JavaAppPackaging)
-//   .enablePlugins(DockerPlugin)
-//   .enablePlugins(AshScriptPlugin)
-//   .settings (
+lazy val haas_circ = (project in file("haas-circ"))
+  .dependsOn(haas_core,circ_core)
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .settings (
 
-//     sharedConfig,
-//     sharedConfigAssembly,
-//     sharedConfigDocker,
-//     dockerBuildxSettings,
+    sharedConfig,
+    sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
 
-//     appDockerConfig("haas-circ","io.syspulse.haas.circ.App"),
+    appDockerConfig("haas-circ","io.syspulse.haas.circ.App"),
 
-//     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
-//       libSkelCore
-//     ),    
-//   )
+    libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
+      libSkelCore,
+      libSkelAuthCore,
+    ),    
+  )
