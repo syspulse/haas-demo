@@ -6,7 +6,6 @@ Business Service on HaaS Platform
 
 - [circ-core](circ-core)            - Core Entities
 - [circ-harvest](circ-harvest)      - Notebooks and Processing Pipelines!
-- [circ-service](circ-service)      - API 
 
 
 ----
