@@ -9,6 +9,7 @@ case class TotalSupply(totalContract:BigInt,totalHolders:BigInt)
 
 case class BlockTransfer(addr:String,value:BigInt)
 case class BlockSupply(block:Long,totalHolders:Long,totalSupply:BigInt)
+case class Holder(addr:String, v:BigInt)
 
 object Supply {
   def foldBlockTransfer(bts: Array[BlockTransfer]):Array[BlockTransfer] = { 
