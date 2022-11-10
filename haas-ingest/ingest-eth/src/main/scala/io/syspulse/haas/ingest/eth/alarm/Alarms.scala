@@ -11,13 +11,21 @@ import io.syspulse.skel.notify.Notification
 import io.syspulse.skel.notify.Config
 
 import io.syspulse.haas.ingest.eth.intercept.Interception
+import io.syspulse.skel.config._
 
 case class UserAlarm(scriptId:String,to:Seq[String])
 
 class Alarms(throttle:Long = 10000L) {
   protected val log = Logger(s"${this.getClass()}")
 
-  implicit val config = io.syspulse.skel.notify.Config()
+  val c = Configuration.withPriority(Seq(new ConfigurationAkka,new ConfigurationProp,new ConfigurationEnv))
+  val d = io.syspulse.skel.notify.Config()
+  implicit val config = io.syspulse.skel.notify.Config(
+    smtpUri = c.getString("smtp.uri").getOrElse(Configuration.withEnv(d.smtpUri)),
+    smtpFrom = c.getString("smtp.from").getOrElse(d.smtpFrom),
+    snsUri = c.getString("sns.uri").getOrElse(Configuration.withEnv(d.snsUri)),
+    telegramUri = c.getString("telegram.uri").getOrElse(Configuration.withEnv(d.telegramUri)),
+  )
 
   @volatile
   var queue = Queue[Interception]()
@@ -28,26 +36,35 @@ class Alarms(throttle:Long = 10000L) {
       while( true ) {
         Thread.sleep(throttle)
         //log.info(s"${Console.GREEN}ALARM${Console.RESET} -> ${queue}")
-        
-        queue.foreach( ix => {
-          val scriptId = ix.scriptId
-          val userAlarms = Alarms.userAlarms.get(scriptId)
 
-          userAlarms match {
-            case Some(uaa) => {
-              val nrr = uaa.map(ua => Notification.parseUri(ua.to.toList)).map(_._1.receviers).flatten
-              Notification.broadcast(nrr,s"Alarms for ${scriptId}",s"Interception:\n\n${ix}")
+        // group by scriptId
+        val queueScriptId = queue.groupBy(_.scriptId)
+        
+        queueScriptId.foreach{ case(scriptId,intercepts) => {
+          
+          Alarms.userAlarms.get(scriptId) match {
+            case Some(userAlarms) => {
+              // create all UserAlarms distanations without duplicates
+              val allTo = userAlarms.map(_.to).flatten.distinct
+              val allNotify = Notification.parseUri(allTo)._1
+
+              // combile one message from all Interceptions into one
+              val txt = intercepts.foldLeft("")((s,ix) => s + s"Interception: ${ix}\n" )
+
+              // broadcast to all Notifiers              
+              Notification.broadcast(allNotify.receviers,s"Alarms",s"${Console.GREEN}Interception for ${scriptId}:\n${Console.YELLOW}${txt}${Console.RESET}")
             }
             case _ =>
           }          
-        })        
+        }}
         // clear the queue
         queue = Queue()
       }
     }  
   }.start()
 
-  def send(ix:Interception):Alarms = {    
+  def send(ix:Interception):Alarms = {
+    // filter only to where there is UserAlarm associtated
     queue = queue :+ ix
     this
   }

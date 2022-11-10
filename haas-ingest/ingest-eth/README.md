@@ -101,3 +101,9 @@ Run the same pipeline in a simple way
 ./run-intercept-eth.sh -s file://scripts/script-1.js
 ```
 
+Run intercept with Email notifications
+
+```
+./env-dev-aws.sh
+./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="stdout://,email://user-1@mail.org"
+```
