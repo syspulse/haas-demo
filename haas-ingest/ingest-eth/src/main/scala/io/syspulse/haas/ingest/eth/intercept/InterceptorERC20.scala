@@ -24,8 +24,6 @@ import scala.util.Success
 
 import io.syspulse.skel.dsl.JS
 import io.syspulse.haas.core.Tx
-import io.syspulse.haas.ingest.eth.script.Scripts
-import io.syspulse.haas.ingest.eth.Config
 import io.syspulse.haas.ingest.eth.EthEtlJson
 
 import codegen.Decoder
@@ -33,9 +31,9 @@ import codegen.AbiDefinition
 
 import io.syspulse.crypto.eth.abi._
 
-class InterceptorERC20(config:Config) extends InterceptorTx(config) {
+class InterceptorERC20(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long,abi:String) extends InterceptorTx(scripts,alarmsUri,alarmThrottle) {
     
-  val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(config.abi)).load()
+  val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
   
   override def parseTx(tx:Tx):Map[String,Any] = {
     val token = erc20.findToken(tx.toAddress.getOrElse(""))

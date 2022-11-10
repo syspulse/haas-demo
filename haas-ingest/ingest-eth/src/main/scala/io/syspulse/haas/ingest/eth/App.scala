@@ -46,8 +46,13 @@ object App {
         
         ArgString('d', "datastore",s"datastore (def: ${d.datastore})"),
 
+        ArgString('_', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
+
         ArgString('s', "scripts",s"Scripts to execute on TX (or file uri: file://script.js (multiple with ',') (def=${d.scripts})"),
-        ArgString('a', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
+
+        ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
+        ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
+        
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
         ArgCmd("intercept",s"Intercept pipeline (-s script)"),
@@ -74,7 +79,11 @@ object App {
       
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
-      scripts = c.getListString("scripts",d.filter),
+      //scripts = c.getListString("scripts",d.scripts),
+      scripts = c.getString("scripts").getOrElse(d.scripts),
+      alarms = c.getListString("alarms",d.alarms),
+      alarmsThrottle = c.getLong("alarms.throttle").getOrElse(d.alarmsThrottle),
+
       abi = c.getString("abi").getOrElse(d.abi),
       
       cmd = c.getCmd().getOrElse(d.cmd),
@@ -106,15 +115,14 @@ object App {
         } 
 
         (pp,pp.run())
-        
       }
     
       case "intercept" => {
         val pp = config.entity match {
           case "tx" =>
-            new PipelineEthIntercept(config.feed,config.output, new InterceptorTx(config))(config)
+            new PipelineEthIntercept(config.feed,config.output, new InterceptorTx(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
           case "erc20" =>
-            new PipelineEthIntercept(config.feed,config.output, new InterceptorERC20(config))(config)
+            new PipelineEthIntercept(config.feed,config.output, new InterceptorERC20(Seq(config.scripts),config.alarms,config.alarmsThrottle,config.abi))(config)
         }
         (pp,pp.run())
       }

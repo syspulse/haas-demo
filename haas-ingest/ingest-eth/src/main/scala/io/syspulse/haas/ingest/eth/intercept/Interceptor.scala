@@ -22,52 +22,56 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.skel.dsl.JS
 import io.syspulse.haas.core.Tx
-import io.syspulse.haas.ingest.eth.script.Scripts
-import io.syspulse.haas.ingest.eth.Config
-import io.syspulse.haas.ingest.eth.EthEtlJson
 
-abstract class Interceptor(config:Config) {
+import io.syspulse.haas.ingest.eth.EthEtlJson
+import io.syspulse.haas.ingest.eth.script.Script
+import io.syspulse.haas.ingest.eth.script.ScriptTrigger
+import io.syspulse.haas.ingest.eth.alarm.Alarms
+import io.syspulse.haas.ingest.eth.alarm.UserAlarm
+
+
+abstract class Interceptor(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) {
   protected val log = Logger(s"${this.getClass()}")
   
   import EthEtlJson._
   import DefaultJsonProtocol._
 
-  Scripts.++(config.scripts)
+  val scriptTriggers:Seq[ScriptTrigger] = scripts.map(s => {
+    val scriptId = "script-"+Math.abs(s.hashCode).toString
+    Alarms.+(UserAlarm(scriptId,alarmsUri))
+    new ScriptTrigger(scriptId,s)
+  })
   
-  Console.err.println(Scripts.scripts)
+  val alarms = new Alarms(alarmThrottle)
+  
+  log.info(s"triggers=${scriptTriggers}")
 
   def parseTx(tx:Tx):Map[String,Any]
  
   def scan(tx:Tx):Seq[Interception] = {
-    Scripts.scripts.flatMap {
-      case(userScript,userAlarms) => {
-        val js = userScript.javascript()
-        
-        val txData = parseTx(tx)
+    val txData = parseTx(tx)
 
-        // JavaScript returns null !
-        val r = Option(
-          if(js.isSuccess) js.get.run(
-            txData    
-         ) else null
-        )
-
-        log.debug(s"tx: ${tx}: ${userScript}: ${Console.YELLOW}${r}${Console.RESET}")
-
-        if(! r.isDefined) None
-        else {
-          val scriptOutput = s"${r.get}"
+    val ii = scriptTriggers.flatMap( st => {
+      st.getScript() match {
+        case Some(script) => {
+          val r = script.run(txData)
+          log.debug(s"tx: ${tx}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
           
-          userAlarms.filter(_.to.isEnabled).map{ ua => 
-            ua.to.send(scriptOutput)
-          }
-          
-          Some(Interception(tx.blockNumber,tx.hash,scriptOutput))
+          if(! r.isDefined) 
+            None
+          else {
+            val scriptOutput = s"${r.get}"                      
+            Some(Interception(System.currentTimeMillis(),st.getScriptId(),tx.blockNumber,tx.hash,scriptOutput))
+          }          
         }
-      }
-    }.toSeq
-    
+        case None => None
+      }            
+    }).toSeq
+
+    ii.foreach{ 
+      ix => alarms.send(ix) 
+    }
+    ii
   }
 }

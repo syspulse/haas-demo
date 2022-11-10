@@ -135,7 +135,7 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
   }
 
   override def processing:Flow[T,T,_] = Flow[T].map(v => {
-    if(countObj % 1000 == 0) 
+    if(countObj % 1000 == 0)
       log.info(s"processed: ${countInput},${countObj}")
     v
   })

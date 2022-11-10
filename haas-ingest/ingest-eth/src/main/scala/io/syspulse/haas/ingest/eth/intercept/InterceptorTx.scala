@@ -22,13 +22,9 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.skel.dsl.JS
 import io.syspulse.haas.core.Tx
-import io.syspulse.haas.ingest.eth.script.Scripts
-import io.syspulse.haas.ingest.eth.Config
-import io.syspulse.haas.ingest.eth.EthEtlJson
 
-class InterceptorTx(config:Config) extends Interceptor(config) {
+class InterceptorTx(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor(scripts,alarmsUri,alarmThrottle) {
   
   override def parseTx(tx:Tx):Map[String,Any] = {
     Map( 

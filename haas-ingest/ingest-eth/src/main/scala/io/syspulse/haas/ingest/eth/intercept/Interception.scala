@@ -15,8 +15,8 @@ import scala.util.Try
 import scala.util.Success
 import io.syspulse.skel.Ingestable
 
-case class Interception(block:Long,tx:String,output:String) extends Ingestable
+case class Interception(ts:Long,scriptId:String,block:Long,tx:String,output:String,alarm:List[String] = List()) extends Ingestable
 
 object InterceptionJson extends DefaultJsonProtocol with NullOptions {
-  implicit val jf_i = jsonFormat3(Interception)
+  implicit val jf_i = jsonFormat6(Interception)
 }

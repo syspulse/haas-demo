@@ -193,6 +193,7 @@ object Dependencies {
     val libSkelIngestFlow =   "io.syspulse"                     %% "ingest-flow"                   % skelVersion
     val libSkelIngestElastic ="io.syspulse"                     %% "skel-elastic"                  % skelVersion
     val libSkelDSL =          "io.syspulse"                     %% "skel-dsl"                      % skelVersion
+    val libSkelNotify =       "io.syspulse"                     %% "skel-notify"                   % skelVersion
     
     val libEthAbi =           "com.github.lbqds"                     %% "ethabi"                     % "0.4.0"
   }

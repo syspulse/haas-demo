@@ -67,18 +67,30 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   val metricGetCount: Counter = Counter.build().name("skel_circ_get_total").help("CirculationSupply gets").register(cr)
   
   def getCirculationSupplys(): Future[CirculationSupplys] = registry.ask(GetCirculationSupplys)
-  def getCirculationSupply(id: CirculationSupply.ID): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id, _))  
+  def getCirculationSupply(id: CirculationSupply.ID,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id,ts0,ts1, _))  
   
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "CirculationSupply id (uuid)")),
+  @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id (UUID) and time range",
+    parameters = Array(
+      new Parameter(name = "id", in = ParameterIn.PATH, description = "CirculationSupply id (UUID)"),
+      new Parameter(name = "ts0", in = ParameterIn.PATH, description = "Start Timestamp (millisec) (optional)"),
+      new Parameter(name = "ts1", in = ParameterIn.PATH, description = "End Timestamp (millisec) (optional)")
+    ),
     responses = Array(new ApiResponse(responseCode="200",description = "CirculationSupply returned",content=Array(new Content(schema=new Schema(implementation = classOf[CirculationSupply])))))
   )
   def getCirculationSupplyRoute(id: String) = get {
     rejectEmptyResponse {
-      onSuccess(getCirculationSupply(CirculationSupply(id))) { r =>
-        metricGetCount.inc()
-        complete(r)
+      parameters("ts0".as[Long].optional, "ts1".as[Long].optional) { (ts0, ts1) =>
+        if(ts0.isDefined && ts1.isDefined) 
+          onSuccess(getCirculationSupply(CirculationSupply(id),ts0.get,ts1.get)) { r =>
+            metricGetCount.inc()
+            complete(r)
+          }
+        else 
+          onSuccess(getCirculationSupply(CirculationSupply(id),0L,Long.MaxValue)) { r =>
+            metricGetCount.inc()
+            complete(r)
+          }
       }
     }
   }
