@@ -31,21 +31,25 @@ import io.syspulse.haas.ingest.eth.alarm.Alarms
 import io.syspulse.haas.ingest.eth.alarm.UserAlarm
 
 
-abstract class Interceptor(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) {
+abstract class Interceptor(scripts:Seq[String],alarmUri:Seq[String],alarmThrottle:Long) {
   protected val log = Logger(s"${this.getClass()}")
   
   import EthEtlJson._
   import DefaultJsonProtocol._
 
-  val scriptTriggers:Seq[ScriptTrigger] = scripts.map(s => {
-    val scriptId = "script-"+Math.abs(s.hashCode).toString
-    Alarms.+(UserAlarm(scriptId,alarmsUri))
+  val scriptTriggers:Seq[ScriptTrigger] = scripts.map(s => {    
+    val scriptId = s"SCRIPT-${s}"
+    
+    //Alarms.+(UserAlarm(scriptId,alarmUri))
+    Alarms.+(scriptId,alarmUri)
+    
     new ScriptTrigger(scriptId,s)
   })
+
+  log.info(s"triggers=${scriptTriggers}")
   
   val alarms = new Alarms(alarmThrottle)
-  
-  log.info(s"triggers=${scriptTriggers}")
+  log.info(s"alarms: ${Alarms.userAlarms}")
 
   def parseTx(tx:Tx):Map[String,Any]
  

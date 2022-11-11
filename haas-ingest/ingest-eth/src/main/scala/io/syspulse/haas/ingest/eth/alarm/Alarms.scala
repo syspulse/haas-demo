@@ -73,7 +73,31 @@ class Alarms(throttle:Long = 10000L) {
 object Alarms {
   var userAlarms = Map[String,List[UserAlarm]]()
 
-  def +(ua:UserAlarm) = {
+  // format: scriptId:uri;uri
+  // scriptId is currently full path to scipt file with SCRIPT- prefix
+  // exmaple: SCRIPT-file://scripts/script-1.js=email://user@mail.com;stdout://
+  def +(scriptId:String,alarmUri:Seq[String]):Unit = {
+    val userAlarmUri = alarmUri.groupBy(a => a.split("=").toList match {
+      case sid :: ua :: Nil => sid
+      case ua :: Nil => ""
+      case _ => ""
+    })
+    
+    val aa = userAlarmUri.get(scriptId).getOrElse(userAlarmUri.get("").getOrElse(Seq())) 
+    aa.foreach(a => {
+      val uri = a.split("=").toList match {
+        case _ :: ua :: Nil => ua
+        case ua :: Nil => ua
+        case _ => "stdout://"    
+      }
+      
+      Alarms.+(UserAlarm(scriptId,uri.split(";").toSeq))
+    })
+
+    
+  }
+
+  def +(ua:UserAlarm):Unit = {
     userAlarms = userAlarms + (ua.scriptId -> (userAlarms.get(ua.scriptId).getOrElse(List()) :+ ua))
   }
 }

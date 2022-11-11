@@ -13,12 +13,12 @@ import scala.util.{Success,Failure,Try}
 
 import io.syspulse.haas.ingest.eth.alarm.UserAlarm
 
-class ScriptTrigger(id:String,scriptUri:String) {
+case class ScriptTrigger(scriptId:String,scriptUri:String) {
 
   val script = Script(scriptUri)
   
   def getScript():Option[Script] = script.toOption
-  def getScriptId(): String = id 
+  def getScriptId(): String = scriptId 
 }
 
 
