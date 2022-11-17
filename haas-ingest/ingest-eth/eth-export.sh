@@ -2,7 +2,7 @@
 #
 
 #ETH_RPC=${ETH_RPC:-http://api.infura.io}
-ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
+ETH_RPC=${ETH_RPC:-http://geth.hacken.dev:8545}
 
 START_BLOCK=${1:-latest}
 END_BLOCK=${2:-latest}

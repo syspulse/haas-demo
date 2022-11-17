@@ -105,5 +105,12 @@ Run intercept with Email notifications
 
 ```
 ./env-dev-aws.sh
+
 ./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="stdout://,email://user-1@mail.org"
+```
+
+Run intercept with specific script to notification:
+
+```
+./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=1000 --alarms="SCRIPT-file://scripts/script-1.js=stdout://;email://"
 ```
