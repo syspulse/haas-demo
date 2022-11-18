@@ -87,7 +87,7 @@ services:
       USER_URI: http://skel-user:8080/api/v1/user
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
       NOTIFY_EMAIL: ${NOTIFY_EMAIL}
-      CONFIRM_URI: http://localhost:8083
+      CONFIRM_URI: http://demo.hacken.cloud
 
   skel-auth:
     image: syspulse/skel-auth:latest
@@ -150,3 +150,21 @@ services:
   #   command: server
   #   environment:
   #     JAVA_OPTS: -Dgod
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    depends_on:
+      - skel-auth
+      - skel-user
+      - skel-notify
+      - skel-enroll
+      - skel-tag
+      - haas-token
+    restart: always
+    volumes:
+      - "${PWD}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+    ports:
+      - 80:80
+    networks:
+      - demo
