@@ -31,7 +31,19 @@ docker-compose up -d
 docler-compose logs -f 
 ```
 
-By default compose is configured in `permissive` mode for API
+## Check API
+
+```
+curl -i http://localhost/api/v1/auth/health
+curl -i http://localhost/api/v1/user/health
+curl -i http://localhost/api/v1/notify/health
+curl -i http://localhost/api/v1/enroll/health
+curl -i http://localhost/api/v1/tag/health
+curl -i http://localhost/api/v1/token/health
+```
+
+
+By default compose is configured in __permissive__ API mode (no auth)
 
 To enable Authentication and Authorization, modify [docker-compose.yaml]:
 
