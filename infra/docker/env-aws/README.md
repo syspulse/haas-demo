@@ -33,6 +33,8 @@ docler-compose logs -f
 
 ## Check API
 
+Locally
+
 ```
 curl -i http://localhost/api/v1/auth/health
 curl -i http://localhost/api/v1/user/health
@@ -40,6 +42,12 @@ curl -i http://localhost/api/v1/notify/health
 curl -i http://localhost/api/v1/enroll/health
 curl -i http://localhost/api/v1/tag/health
 curl -i http://localhost/api/v1/token/health
+```
+
+Public:
+
+```
+curl -i http://api.hacken.cloud/api/v1/auth/health
 ```
 
 
@@ -51,4 +59,14 @@ Remove: `JAVA_OPTS: -Dgod`
 
 ```
 docker-compose restart
+```
+
+
+## SecurityGroup
+
+Only the following IPs are whitelisted:
+
+```
+188.163.122.27 (vg)
+89.216.24.81 (sc)
 ```
