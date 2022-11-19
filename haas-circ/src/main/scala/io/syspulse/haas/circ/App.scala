@@ -30,14 +30,13 @@ case class Config(
 
   cmd:String = "server",
   params: Seq[String] = Seq(),
-
 )
 
 object App extends skel.Server {
   
   def main(args:Array[String]):Unit = {
     println(s"args: '${args.mkString(",")}'")
-    sys.props.addOne("god" -> "yes")
+    //sys.props.addOne("god" -> "yes")
 
     val d = Config()
     val c = Configuration.withPriority(Seq(
@@ -89,9 +88,7 @@ object App extends skel.Server {
             (CirculationSupplyRegistry(store),"CirculationSupplyRegistry",(r, ac) => new CirculationSupplyRoutes(r)(ac) )
           )
         )
-
-      case "client" => {
-        
+      case "client" => {        
         val host = if(config.host == "0.0.0.0") "localhost" else config.host
         val uri = s"http://${host}:${config.port}${config.uri}"
         val timeout = Duration("3 seconds")

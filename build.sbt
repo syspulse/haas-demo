@@ -215,7 +215,7 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
     assembly / assemblyJarName := jarPrefix + appName + "-" + "assembly" + "-"+  appVersion + ".jar",
   )
 
-// ============================================================================= Modules ==============================
+// ======================================================================================= Modules ==============================
 
 lazy val root = (project in file("."))
   .aggregate(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
@@ -237,7 +237,6 @@ lazy val haas_core = (project in file("haas-core"))
         Seq(
           libSkelCore,
           libUUID, 
-
           libScalaTest % "test"
         ),
     )
