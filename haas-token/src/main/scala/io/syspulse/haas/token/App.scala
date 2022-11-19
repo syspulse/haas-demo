@@ -27,11 +27,6 @@ case class Config(
   limit:Long = 0L,
   freq: Long = 0L,
   logFile:String = "",   
-  
-  elasticUri:String = "http://localhost:9200",
-  elasticUser:String = "",
-  elasticPass:String = "",
-  elasticIndex:String = "token",
     
   datastore:String = "resources://", //"file://store",
 
@@ -44,7 +39,7 @@ object App extends skel.Server {
   
   def main(args:Array[String]):Unit = {
     println(s"args: '${args.mkString(",")}'")
-    sys.props.addOne("god" -> "yes")
+    //sys.props.addOne("god" -> "yes")
 
     val d = Config()
     val c = Configuration.withPriority(Seq(
@@ -56,11 +51,6 @@ object App extends skel.Server {
         ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         ArgString('d', "datastore",s"datastore [elastic://localhost:9200/token, mem, dir://store, file://tokens.json, resources://, resources://file] (def: ${d.datastore})"),
-
-        ArgString('_', "elastic.uri",s"Elastic uri (def: ${d.elasticUri})"),
-        ArgString('_', "elastic.user",s"Elastic user (def: ${d.elasticUser})"),
-        ArgString('_', "elastic.pass",s"Elastic pass (def: ${d.elasticPass})"),
-        ArgString('_', "elastic.index",s"Elastic Index (def: ${d.elasticIndex})"),
         
         ArgCmd("server","Server"),
         ArgCmd("client","Client"),
@@ -72,13 +62,9 @@ object App extends skel.Server {
       host = c.getString("http.host").getOrElse(d.host),
       port = c.getInt("http.port").getOrElse(d.port),
       uri = c.getString("http.uri").getOrElse(d.uri),
+      
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
-      elasticUri = c.getString("elastic.uri").getOrElse(d.elasticUri),
-      elasticIndex = c.getString("elastic.index").getOrElse(d.elasticIndex),
-      elasticUser = c.getString("elastic.user").getOrElse(d.elasticUser),
-      elasticPass = c.getString("elastic.pass").getOrElse(d.elasticPass),
-      
       cmd = c.getCmd().getOrElse(d.cmd),
       params = c.getParams(),
     )

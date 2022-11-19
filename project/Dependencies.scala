@@ -66,8 +66,8 @@ object Dependencies {
 
     val libTypesafeConfig = "com.typesafe"                    % "config"               % "1.4.1"
       
-    val libWsRs =           "javax.ws.rs"                     % "javax.ws.rs-api"       % "2.0.1"
-    val libSwaggerAkkaHttp ="com.github.swagger-akka-http"    %% "swagger-akka-http"   % "2.7.0"
+    val libWsRsJakarta =    "jakarta.ws.rs"                   % "jakarta.ws.rs-api"     % "3.1.0" //"3.0.0"
+    val libSwaggerAkkaHttp ="com.github.swagger-akka-http"    %% "swagger-akka-http"    % "2.7.0"
     
     val libMetrics =        "nl.grons"                        %% "metrics4-scala"       % "4.1.14"
     //val libAkkaHttpMetrics ="fr.davit"                      %% "akka-http-metrics-dropwizard" % "1.6.0"
@@ -164,13 +164,13 @@ object Dependencies {
     val libAkka = Seq(libAkkaActor,libAkkaActorTyped,libAkkaStream)
     val libAlpakka = Seq(libAlpakkaInfluxDB)
     val libPrometheus = Seq(libPrometheusClient,libPrometheusHttp,libPrometheusHotspot)
-    val libHttp = Seq(libAkkaHttp,libAkkaHttpSpray,libAkkaHttpMetrics,libAkkaHttpCors) ++ libPrometheus
+    val libHttp = Seq(libAkkaHttp,libAkkaHttpSpray,libAkkaHttpMetrics,libAkkaHttpCors,libWsRsJakarta,libSwaggerAkkaHttp) ++ libPrometheus
     val libCommon = Seq(libScalaLogging, libSlf4jApi, libLogback, libJanino, libTypesafeConfig )
     
     val libTest = Seq(libOsLib, libScalaTest % Test,libAkkaTestkit % Test,libAkkaTestkitType % Test)
     val libTestLib = Seq(libScalaTest,libAkkaTestkit,libAkkaTestkitType)
 
-    val libSkel = Seq(libWsRs,libSwaggerAkkaHttp,libMetrics,libScopt,libUUID)
+    val libSkel = Seq(libMetrics,libScopt,libUUID)
 
     val libDB = Seq(libQuill,libMySQL, libPostgres)
 

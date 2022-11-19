@@ -89,23 +89,6 @@ services:
       NOTIFY_EMAIL: ${NOTIFY_EMAIL}
       CONFIRM_URI: http://demo.hacken.cloud
 
-  skel-auth:
-    image: syspulse/skel-auth:latest
-    container_name: skel-auth
-    restart: always
-    ports:
-      - 8080:8080
-    networks:
-      - demo
-    command: server
-    environment:
-      JAVA_OPTS: -Dgod
-      USER_URI: http://skel-user:8080/api/v1/user
-      GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
-      GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
-      TWITTER_AUTH_CLIENT_ID: ${TWITTER_AUTH_CLIENT_ID}
-      TWITTER_AUTH_CLIENT_SECRET: ${TWITTER_AUTH_CLIENT_SECRET}
-
   skel-tag:
     image: syspulse/skel-tag:latest
     container_name: skel-tag
@@ -122,6 +105,22 @@ services:
       #DATASTORE: dir:///data
       DATASTORE: resources://
 
+  skel-auth:
+    image: syspulse/skel-auth:latest
+    container_name: skel-auth
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - demo
+    command: server
+    environment:
+      JAVA_OPTS: -Dgod
+      USER_URI: http://skel-user:8080/api/v1/user
+      GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
+      GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
+      TWITTER_AUTH_CLIENT_ID: ${TWITTER_AUTH_CLIENT_ID}
+      TWITTER_AUTH_CLIENT_SECRET: ${TWITTER_AUTH_CLIENT_SECRET}
 
   haas-token:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-token:latest

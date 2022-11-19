@@ -25,8 +25,8 @@ import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.parameters.RequestBody
-import javax.ws.rs.{Consumes, POST, GET, DELETE, Path, Produces}
-import javax.ws.rs.core.MediaType
+import jakarta.ws.rs.{Consumes, POST, GET, DELETE, Path, Produces}
+import jakarta.ws.rs.core.MediaType
 
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
@@ -82,7 +82,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
 
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Return Token by id",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Token id (uuid)")),
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Token id (gecko)")),
     responses = Array(new ApiResponse(responseCode="200",description = "Token returned",content=Array(new Content(schema=new Schema(implementation = classOf[Token])))))
   )
   def getTokenRoute(id: String) = get {
@@ -93,8 +93,6 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
       }
     }
   }
-
-
 
   @GET @Path("/search/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Search Token by term",
@@ -110,7 +108,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   }
 
   @GET @Path("/typing/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("token"),summary = "Search Token by Type-Ahead",
+  @Operation(tags = Array("token"),summary = "Search Token by Type-Ahead (first letters)",
     parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search letters")),
     responses = Array(new ApiResponse(responseCode="200",description = "Found Tokens",content=Array(new Content(schema=new Schema(implementation = classOf[Tokens])))))
   )
