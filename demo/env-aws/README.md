@@ -42,6 +42,7 @@ curl -i http://localhost/api/v1/notify/health
 curl -i http://localhost/api/v1/enroll/health
 curl -i http://localhost/api/v1/tag/health
 curl -i http://localhost/api/v1/token/health
+curl -i http://localhost/api/v1/circ/health
 ```
 
 Public:
