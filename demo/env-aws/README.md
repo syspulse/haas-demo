@@ -36,14 +36,19 @@ docler-compose logs -f
 Locally
 
 ```
-curl -i http://localhost/api/v1/auth/health
-curl -i http://localhost/api/v1/user/health
-curl -i http://localhost/api/v1/notify/health
-curl -i http://localhost/api/v1/enroll/health
-curl -i http://localhost/api/v1/tag/health
-curl -i http://localhost/api/v1/token/health
-curl -i http://localhost/api/v1/circ/health
+curl -i http://localhost/api/v1/{service}/health
 ```
+
+| /api/v1/{serivce} | Description |
+| ----------- | ----------- |
+| auth      | Authentication       |
+| user   | User Service        |
+| enroll   | Enrollment        |
+| notify   | Notification        |
+| tag   | Tag (Label)        |
+| token   | Token Search        |
+| circ   | Circulation Supply        |
+
 
 Public:
 
@@ -60,6 +65,26 @@ Remove: `JAVA_OPTS: -Dgod`
 
 ```
 docker-compose restart
+```
+
+## API Documentation
+
+Every Service exposes API as Swagger (and UI)
+
+```
+curl -i http://api.hacken.cloud/api/v1/{service}/doc/swagger.json | jq .
+```
+
+Examples:
+
+```
+curl -i http://api.hacken.cloud/api/v1/user/doc/swagger.json | jq .
+```
+
+Swagger UI:
+
+```
+http://api.hacken.cloud/api/v1/auth/swagger
 ```
 
 
