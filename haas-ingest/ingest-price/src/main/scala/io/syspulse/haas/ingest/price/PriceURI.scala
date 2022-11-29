@@ -14,7 +14,7 @@ case class PriceURI(priceUri:String,apiSuffix:String="") {
     val prefix = "https://"
 
     priceUri.trim.split("://").toList match {
-      case "http" :: host :: Nil => Some(build("http://",host,"/api/",""))
+      case "http" :: host :: Nil => Some(build("http://",host,"/data/pricemultifull",apiSuffix))
       case "cryptocomp" :: host :: Nil => Some(build("http://",host,"/api/",""))
       case "cryptocomp" :: Nil => Some(build("https","min-api.cryptocompare.com/","/data/pricemultifull",apiSuffix))
       case _ => None

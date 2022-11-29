@@ -30,7 +30,7 @@ case class Config(
   entity:String = "cryptocomp",
 
   datastore:String = "stdout",
-  tokens:Seq[String] = Seq(""),
+  tokens:Seq[String] = Seq("UNI","RBN"),
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
