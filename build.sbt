@@ -219,7 +219,7 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
 
 lazy val root = (project in file("."))
   .aggregate(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
-  .dependsOn(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
+  .dependsOn(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core, ingest_price)
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     
@@ -362,4 +362,26 @@ lazy val haas_circ = (project in file("haas-circ"))
       libSkelCore,
       libSkelAuthCore,
     ),    
+  )
+
+lazy val ingest_price = (project in file("haas-ingest/ingest-price"))
+  .dependsOn(haas_core)
+  .enablePlugins(JavaAppPackaging)
+  .settings (
+    sharedConfig,
+    sharedConfigAssembly,
+    //sharedConfigDocker,
+    //dockerBuildxSettings,
+
+    appAssemblyConfig("ingest-price","io.syspulse.haas.ingest.price.App"),
+    //appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.price.App"),
+    
+    libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
+      libSkelCore,
+      libSkelIngest,
+      libSkelIngestFlow,
+      libSkelIngestElastic,
+      libUpickleLib
+    ),
+     
   )

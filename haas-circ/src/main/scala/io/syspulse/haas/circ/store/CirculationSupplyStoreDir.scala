@@ -20,7 +20,8 @@ class CirculationSupplyStoreDir(dir:String = "store/") extends CirculationSupply
     val storeDir = os.Path(dir,os.pwd)
     log.info(s"Loading dir store: ${storeDir}")
 
-    val vv = os.list(storeDir)
+    val vv = os.walk(storeDir)
+      .filter(_.toIO.isFile())
       .map(f => {
         log.info(s"Loading file: ${f}")
         os.read(f)
