@@ -31,6 +31,7 @@ case class Config(
 
   datastore:String = "stdout",
   tokens:Seq[String] = Seq("UNI","RBN"),
+  ingestCron:String = "360",
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
@@ -65,6 +66,7 @@ object App {
         ArgString('t', "tokens",s"Tokens filter (ex: 'UNI,ETH', def=${d.tokens})"),
         
         ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
+        ArgString('_', "ingest.cron",s"Ingest load cron (currently only seconds interval Tick supported) (def: ${d.ingestCron})"),
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
@@ -87,6 +89,8 @@ object App {
       entity = c.getString("entity").getOrElse(d.entity),
       tokens = c.getListString("tokens",d.tokens),      
       datastore = c.getString("datastore").getOrElse(d.datastore),
+
+      ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
       
       cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),

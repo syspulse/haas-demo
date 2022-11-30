@@ -78,15 +78,24 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   }
 
   override def source() = {
-    // feed.split("://").toList match {
-    //   case "cryptocomp" :: _ => source(PriceURI(feed,apiSuffix()).uri) 
-    //   case "http" :: _ | "https" :: _ => source(PriceURI(feed,apiSuffix()).uri)
-    //   case _ => super.source()
-    // }
     PriceURI(feed,apiSuffix()).parse() match {
       case Some(uri) => source(uri)
       case None => super.source()
     }
+  }
+
+  def fromHttpListAsFlow(req: Seq[HttpRequest],par:Int = 1, frameDelimiter:String="\n",frameSize:Int = 8192,throttle:Long = 10L)(implicit as:ActorSystem) = {
+    val f1 = Flow[String]
+      .throttle(1,FiniteDuration(throttle,TimeUnit.MILLISECONDS))
+      .mapConcat(tick => {
+        req
+      })
+      .mapAsync(par)(r => Flows.fromHttpFuture(r)(as))
+    
+    if(frameDelimiter.isEmpty())
+      f1
+    else
+      f1.via(Framing.delimiter(ByteString(frameDelimiter), maximumFrameLength = frameSize, allowTruncation = true))
   }
 
   override def source(feed:String) = {
@@ -96,10 +105,18 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
         //   HttpRequest(uri = feed.replaceFirst(TOKEN_SLOT,t)).withHeaders(Accept(MediaTypes.`application/json`))
         // )
         val reqs = Seq(
-          HttpRequest(uri = feed.replaceFirst(TOKENS_SLOT,tokensFilter.mkString(","))).withHeaders(Accept(MediaTypes.`application/json`))
+          HttpRequest(uri = feed.replaceFirst(TOKENS_SLOT,tokensFilter.mkString(",")))
+            .withHeaders(Accept(MediaTypes.`application/json`))
         )
         log.info(s"reqs=${reqs}")
-        Flows.fromHttpList(reqs,par = 1, frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
+
+        val s = Source.tick(FiniteDuration(10,TimeUnit.MILLISECONDS), 
+                            FiniteDuration(config.ingestCron.toLong,TimeUnit.SECONDS), 
+                            s"ingest-${System.currentTimeMillis()}-${feed}")
+        .via(
+          fromHttpListAsFlow(reqs,par = 1, frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
+        )
+        s
       }
             
       case _ => super.source(feed)
