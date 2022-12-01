@@ -22,19 +22,18 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.TokenTransfer
 
-class InterceptorTx(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor[Tx](scripts,alarmsUri,alarmThrottle) {
+class InterceptorTokenTransfer(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor[TokenTransfer](scripts,alarmsUri,alarmThrottle) {
   
-  override def decode(tx:Tx):Map[String,Any] = {
-    Map( 
-      ("from_address" -> tx.fromAddress),
-      ("to_address" -> tx.toAddress.getOrElse("null")),
-      ("value" -> tx.value),
-      ("gas" -> tx.value),
-      ("input" -> tx.input),
-      ("block_number" -> tx.blockNumber),
-      ("transaction_hash" -> tx.hash),
+  override def decode(t:TokenTransfer):Map[String,Any] = {
+    Map(
+      ("token_address" -> t.contract), 
+      ("from_address" -> t.from),
+      ("to_address" -> t.to),
+      ("value" -> t.value),
+      ("block_number" -> t.block),
+      ("transaction_hash" -> t.hash),
     )
   }
  

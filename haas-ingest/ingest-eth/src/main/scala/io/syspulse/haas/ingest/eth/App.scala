@@ -15,6 +15,7 @@ import io.syspulse.skel.config._
 import io.syspulse.haas.ingest.eth.flow._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import io.syspulse.haas.ingest.eth.intercept.InterceptorERC20
+import io.syspulse.haas.ingest.eth.intercept.InterceptorTokenTransfer
 
 
 object App {
@@ -106,7 +107,7 @@ object App {
             new PipelineEthBlockTx(config.feed,config.output)(config)
 
           case "token" =>
-            new PipelineEthToken(config.feed,config.output)(config)
+            new PipelineEthTokenTransfer(config.feed,config.output)(config)
 
           case "log" =>
             new PipelineEthLog(config.feed,config.output)(config)
@@ -122,6 +123,9 @@ object App {
           case "tx" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
                 new InterceptorTx(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
+          case "token" =>
+            new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
+                new InterceptorTokenTransfer(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
           case "erc20" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
                 new InterceptorERC20(Seq(config.scripts),config.alarms,config.alarmsThrottle,config.abi))(config)

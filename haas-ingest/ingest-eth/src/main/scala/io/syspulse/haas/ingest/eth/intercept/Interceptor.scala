@@ -67,8 +67,8 @@ abstract class Interceptor[T](scripts:Seq[String],alarmUri:Seq[String],alarmThro
           else {
             val scriptOutput = s"${r.get}"                      
             Some(Interception(System.currentTimeMillis(),st.getScriptId(),
-                 txData.get("blockNumber").getOrElse(0).asInstanceOf[Integer].toLong,
-                 txData.get("hash").getOrElse(0).asInstanceOf[String],
+                 txData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
+                 txData.get("transaction_hash").getOrElse("").asInstanceOf[String],
                  scriptOutput))
           }          
         }

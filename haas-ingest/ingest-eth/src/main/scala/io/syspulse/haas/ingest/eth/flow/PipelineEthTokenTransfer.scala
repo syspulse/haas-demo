@@ -34,21 +34,21 @@ import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block
 
-class PipelineEthToken(feed:String,output:String)(implicit config:Config) extends PipelineEth[TokenTransfer,TokenTransfer](feed,output) {
+class PipelineEthTokenTransfer(feed:String,output:String)(implicit config:Config) extends PipelineEth[EthTokenTransfer,EthTokenTransfer](feed,output) {
   
   override def apiSuffix():String = s"/"
 
-  def transform(tx: TokenTransfer): Seq[TokenTransfer] = {
+  def transform(tx: EthTokenTransfer): Seq[EthTokenTransfer] = {
     Seq(tx)
   }
 
-  override def parse(data:String):Seq[TokenTransfer] = {
+  override def parse(data:String):Seq[EthTokenTransfer] = {
     if(data.isEmpty()) return Seq()
 
     try {
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
-        val tt = data.parseJson.convertTo[TokenTransfer]
+        val tt = data.parseJson.convertTo[EthTokenTransfer]
         
         val ts = tt.blockTimestamp
         latestTs.set(ts * 1000L)
@@ -71,7 +71,7 @@ class PipelineEthToken(feed:String,output:String)(implicit config:Config) extend
                 val ts = block_timestamp.trim.toLong
                 latestTs.set(ts * 1000L)
 
-                Seq(TokenTransfer(
+                Seq(EthTokenTransfer(
                   token_address,
                   from_address,
                   to_address,

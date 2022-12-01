@@ -29,7 +29,7 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.{ Tx, TokenTransfer }
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
@@ -115,6 +115,55 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
               Seq()
           }
           tx
+        }
+      }
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
+  }
+
+  def parseTokenTransfer(data:String):Seq[TokenTransfer] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val tt = data.parseJson.convertTo[EthTokenTransfer]
+        
+        val ts = tt.blockTimestamp
+        latestTs.set(ts * 1000L)
+
+        Seq(TokenTransfer(ts, tt.blockNumber, tt.tokenAddress, tt.from, tt.to, tt.value, tt.txHash))
+      } else {
+        // assume CSV
+        // ignore header
+        // 
+        if(data.stripLeading().startsWith("contract_address")) {
+          Seq.empty
+        } else {
+          val tt = data.split(",").toList match {
+            case contract_address :: from_address :: to_address :: value :: 
+                 transaction_hash :: log_index :: block_number :: block_timestamp :: Nil =>
+                
+                 val ts = block_timestamp.toLong
+                 latestTs.set(ts * 1000L)
+
+                 Seq(TokenTransfer(
+                    ts,
+                    block_number.toLong,
+                    contract_address,
+                    from_address,
+                    to_address,
+                    BigInt(value),
+                    transaction_hash
+                  ))      
+            case _ => 
+              log.error(s"failed to parse: '${data}'")
+              Seq()
+          }
+          tt
         }
       }
     } catch {
