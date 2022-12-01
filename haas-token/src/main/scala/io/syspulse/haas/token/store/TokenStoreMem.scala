@@ -54,7 +54,7 @@ class TokenStoreMem extends TokenStore {
   }
 
   def scan(txt:String):List[Token] = ??(txt)
-  def search(txt:String):List[Token] = ??(txt + ".*")
+  def search(txt:String):List[Token] = ??(txt)
   def grep(txt:String):List[Token] = ??(txt)
-  def typing(txt:String):List[Token] = ??(txt)
+  def typing(txt:String):List[Token] = ??(txt + ".*")
 }
