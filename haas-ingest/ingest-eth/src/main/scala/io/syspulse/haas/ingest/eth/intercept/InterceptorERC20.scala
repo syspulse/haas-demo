@@ -35,7 +35,7 @@ class InterceptorERC20(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:L
     
   val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
   
-  override def parseTx(tx:Tx):Map[String,Any] = {
+  override def decode(tx:Tx):Map[String,Any] = {
     val token = erc20.findToken(tx.toAddress.getOrElse(""))
 
     val (fromAddress,toAddress,value,name) = if(token.isDefined) {    
@@ -63,7 +63,7 @@ class InterceptorERC20(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:L
       } else (tx.fromAddress,"","","")
     } else (tx.fromAddress,"","","")
     
-    super.parseTx(tx) ++ Map( 
+    super.decode(tx) ++ Map( 
       ("token" -> name),
       ("from_address" -> fromAddress),
       ("to_address" -> toAddress),

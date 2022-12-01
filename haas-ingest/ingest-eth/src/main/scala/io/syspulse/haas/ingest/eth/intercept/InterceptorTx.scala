@@ -24,15 +24,17 @@ import scala.util.Success
 
 import io.syspulse.haas.core.Tx
 
-class InterceptorTx(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor(scripts,alarmsUri,alarmThrottle) {
+class InterceptorTx(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor[Tx](scripts,alarmsUri,alarmThrottle) {
   
-  override def parseTx(tx:Tx):Map[String,Any] = {
+  override def decode(tx:Tx):Map[String,Any] = {
     Map( 
       ("from_address" -> tx.fromAddress),
       ("to_address" -> tx.toAddress.getOrElse("null")),
       ("value" -> tx.value),
       ("gas" -> tx.value),
       ("input" -> tx.input),
+      ("block" -> tx.blockNumber),
+      ("hash" -> tx.hash),
     )
   }
  

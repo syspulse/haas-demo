@@ -12,7 +12,7 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import io.syspulse.haas.ingest.eth.flow.{ PipelineEthTx,PipelineEthBlock,PipelineEthIntercept,PipelineEthBlockTx,PipelineEthToken,PipelineEthLog }
+import io.syspulse.haas.ingest.eth.flow._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import io.syspulse.haas.ingest.eth.intercept.InterceptorERC20
 
@@ -120,9 +120,11 @@ object App {
       case "intercept" => {
         val pp = config.entity match {
           case "tx" =>
-            new PipelineEthIntercept(config.feed,config.output, new InterceptorTx(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
+            new PipelineEthInterceptTx(config.feed,config.output, 
+                new InterceptorTx(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
           case "erc20" =>
-            new PipelineEthIntercept(config.feed,config.output, new InterceptorERC20(Seq(config.scripts),config.alarms,config.alarmsThrottle,config.abi))(config)
+            new PipelineEthInterceptTx(config.feed,config.output, 
+                new InterceptorERC20(Seq(config.scripts),config.alarms,config.alarmsThrottle,config.abi))(config)
         }
         (pp,pp.run())
       }

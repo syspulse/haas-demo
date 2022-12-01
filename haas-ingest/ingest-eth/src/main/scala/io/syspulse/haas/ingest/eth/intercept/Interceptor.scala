@@ -31,7 +31,7 @@ import io.syspulse.haas.ingest.eth.alarm.Alarms
 import io.syspulse.haas.ingest.eth.alarm.UserAlarm
 
 
-abstract class Interceptor(scripts:Seq[String],alarmUri:Seq[String],alarmThrottle:Long) {
+abstract class Interceptor[T](scripts:Seq[String],alarmUri:Seq[String],alarmThrottle:Long) {
   protected val log = Logger(s"${this.getClass()}")
   
   import EthEtlJson._
@@ -51,22 +51,25 @@ abstract class Interceptor(scripts:Seq[String],alarmUri:Seq[String],alarmThrottl
   val alarms = new Alarms(alarmThrottle)
   log.info(s"alarms: ${Alarms.userAlarms}")
 
-  def parseTx(tx:Tx):Map[String,Any]
+  def decode(t:T):Map[String,Any]
  
-  def scan(tx:Tx):Seq[Interception] = {
-    val txData = parseTx(tx)
+  def scan(t:T):Seq[Interception] = {
+    val txData = decode(t)
 
     val ii = scriptTriggers.flatMap( st => {
       st.getScript() match {
         case Some(script) => {
           val r = script.run(txData)
-          log.debug(s"tx: ${tx}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
+          log.debug(s"${t}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
           
           if(! r.isDefined) 
             None
           else {
             val scriptOutput = s"${r.get}"                      
-            Some(Interception(System.currentTimeMillis(),st.getScriptId(),tx.blockNumber,tx.hash,scriptOutput))
+            Some(Interception(System.currentTimeMillis(),st.getScriptId(),
+                 txData.get("blockNumber").getOrElse(0).asInstanceOf[Integer].toLong,
+                 txData.get("hash").getOrElse(0).asInstanceOf[String],
+                 scriptOutput))
           }          
         }
         case None => None

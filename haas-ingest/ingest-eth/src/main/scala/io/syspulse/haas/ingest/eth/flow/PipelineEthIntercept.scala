@@ -36,13 +36,12 @@ import io.syspulse.haas.ingest.eth.intercept.InterceptionJson
 import InterceptionJson._
 import io.syspulse.haas.ingest.eth.intercept.Interceptor
 
-class PipelineEthIntercept(feed:String,output:String,interceptor:Interceptor)(implicit config:Config) extends PipelineEth[Tx,Interception](feed,output) {
+abstract class PipelineEthIntercept[T](feed:String,output:String,interceptor:Interceptor[T])(implicit config:Config) extends PipelineEth[T,Interception](feed,output) {
 
   override def apiSuffix():String = s"/"
 
-  override def parse(data:String):Seq[Tx] = parseTx(data)
-
-  def transform(tx: Tx): Seq[Interception] = {
-    interceptor.scan(tx)
+  def transform(t: T): Seq[Interception] = {
+    interceptor.scan(t)
   }
 }
+
