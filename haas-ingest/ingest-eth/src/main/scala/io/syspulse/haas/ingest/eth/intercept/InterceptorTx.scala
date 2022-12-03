@@ -23,8 +23,9 @@ import scala.util.Try
 import scala.util.Success
 
 import io.syspulse.haas.core.Tx
+import io.syspulse.haas.ingest.eth.store.ScriptStore
 
-class InterceptorTx(scripts:Seq[String],alarmsUri:Seq[String],alarmThrottle:Long) extends Interceptor[Tx](scripts,alarmsUri,alarmThrottle) {
+class InterceptorTx(interceptions:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long) extends Interceptor[Tx](interceptions,scriptStore,alarmThrottle) {
   
   override def decode(tx:Tx):Map[String,Any] = {
     Map( 

@@ -5,7 +5,6 @@ import scala.concurrent.duration.Duration
 import scala.util.Random
 
 import com.typesafe.scalalogging.Logger
-import io.jvm.uuid._
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -16,10 +15,5 @@ import scala.util.Try
 import scala.util.Success
 import io.syspulse.skel.Ingestable
 
-import io.syspulse.haas.ingest.eth.script._
+case class InterceptionAlarm(ts:Long,iid:Interception.ID,block:Long,tx:String,output:String,alarm:List[String] = List()) extends Ingestable
 
-case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None) extends Ingestable
-
-object Interception {
-  type ID = UUID
-}

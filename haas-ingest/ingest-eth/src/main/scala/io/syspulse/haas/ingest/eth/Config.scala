@@ -7,9 +7,6 @@ case class Config(
   feed:String = "",
   output:String = "",
 
-  //scripts:Seq[String]=Seq("file://scripts/script-1.js"),
-  scripts:String = "file://scripts/script-1.js",  
-
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
 
@@ -28,7 +25,8 @@ case class Config(
   
   expr:String = "",
   
-  datastore:String = "stdout",
+  datastore:String = "dir://store",
+  scripts:String = "dir://scripts",  
 
   filter:Seq[String] = Seq(),
 

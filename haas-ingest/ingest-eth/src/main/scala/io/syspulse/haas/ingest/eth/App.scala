@@ -7,16 +7,15 @@ import scala.concurrent.Awaitable
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 import com.typesafe.scalalogging.Logger
+import io.jvm.uuid._
 
 import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
 import io.syspulse.haas.ingest.eth.flow._
-import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
-import io.syspulse.haas.ingest.eth.intercept.InterceptorERC20
-import io.syspulse.haas.ingest.eth.intercept.InterceptorTokenTransfer
-
+import io.syspulse.haas.ingest.eth.intercept._
+import io.syspulse.haas.ingest.eth.store._
 
 object App {
   
@@ -39,17 +38,16 @@ object App {
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
 
         ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
-        ArgString('_', "delimiter",s"""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
+        ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
         ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
 
         ArgString('t', "filter",s"Filter (def='${d.filter}')"),
         
-        ArgString('d', "datastore",s"datastore (def: ${d.datastore})"),
-
+        ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
+        ArgString('s', "scripts",s"datastore for Scripts to execute on TX (def=${d.scripts})"),
         ArgString('_', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
 
-        ArgString('s', "scripts",s"Scripts to execute on TX (or file uri: file://script.js (multiple with ',') (def=${d.scripts})"),
 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
@@ -79,8 +77,6 @@ object App {
       filter = c.getListString("filter",d.filter),
       
       datastore = c.getString("datastore").getOrElse(d.datastore),
-
-      //scripts = c.getListString("scripts",d.scripts),
       scripts = c.getString("scripts").getOrElse(d.scripts),
       alarms = c.getListString("alarms",d.alarms),
       alarmsThrottle = c.getLong("alarms.throttle").getOrElse(d.alarmsThrottle),
@@ -93,6 +89,30 @@ object App {
     )
 
     Console.err.println(s"Config: ${config}")
+
+    val datastoreInterceptions = config.datastore.split("://").toList match {
+      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
+      // case "postgres" => new TokenStoreDB(c,"postgres")
+      case "mem" :: _ => new InterceptionStoreMem
+      case "dir" :: dir :: Nil => new InterceptionStoreDir(dir)
+      case "dir" :: Nil => new InterceptionStoreDir()
+      case _ => {
+        Console.err.println(s"Uknown datastore: '${config.datastore}'")
+        sys.exit(1)
+      }
+    }
+
+    val datastoreScripts = config.scripts.split("://").toList match {
+      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
+      // case "postgres" => new TokenStoreDB(c,"postgres")
+      case "mem" :: _ => new ScriptStoreMem
+      case "dir" :: dir :: Nil => new ScriptStoreDir(dir)
+      case "dir" :: Nil => new ScriptStoreDir()
+      case _ => {
+        Console.err.println(s"Uknown datastore: '${config.scripts}'")
+        sys.exit(1)
+      }
+    }
 
     val (pp,r) = config.cmd match {
       case "ingest" => {
@@ -117,18 +137,33 @@ object App {
 
         (pp,pp.run())
       }
-    
+
       case "intercept" => {
+        def buildInterceptions(alarms:Seq[String]):Seq[Interception] = {
+          alarms.map(a => { 
+              val ix:Interception = a.split("=").toList match {
+                case sid :: ua :: Nil => 
+                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList, uid = None)
+                case ua :: Nil => 
+                  Interception(UUID.random, "Ix-2", "script-1.js", ua.split(";").toList, uid = None)
+                case _ => 
+                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"), uid = None)
+              }
+              ix
+            }
+          )
+        }
+
         val pp = config.entity match {
           case "tx" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorTx(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
+                new InterceptorTx(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle))(config)
           case "token" =>
             new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
-                new InterceptorTokenTransfer(Seq(config.scripts),config.alarms,config.alarmsThrottle))(config)
+                new InterceptorTokenTransfer(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle))(config)
           case "erc20" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorERC20(Seq(config.scripts),config.alarms,config.alarmsThrottle,config.abi))(config)
+                new InterceptorERC20(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle,config.abi))(config)
         }
         (pp,pp.run())
       }

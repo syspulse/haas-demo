@@ -30,17 +30,17 @@ import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 
-import io.syspulse.haas.ingest.eth.intercept.Interception
+import io.syspulse.haas.ingest.eth.intercept.InterceptionAlarm
 import io.syspulse.haas.ingest.eth.intercept.InterceptionJson
 
 import InterceptionJson._
 import io.syspulse.haas.ingest.eth.intercept.Interceptor
 
-abstract class PipelineEthIntercept[T](feed:String,output:String,interceptor:Interceptor[T])(implicit config:Config) extends PipelineEth[T,Interception](feed,output) {
+abstract class PipelineEthIntercept[T](feed:String,output:String,interceptor:Interceptor[T])(implicit config:Config) extends PipelineEth[T,InterceptionAlarm](feed,output) {
 
   override def apiSuffix():String = s"/"
 
-  def transform(t: T): Seq[Interception] = {
+  def transform(t: T): Seq[InterceptionAlarm] = {
     interceptor.scan(t)
   }
 }
