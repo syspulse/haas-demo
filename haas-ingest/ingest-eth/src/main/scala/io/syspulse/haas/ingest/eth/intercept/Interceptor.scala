@@ -82,7 +82,8 @@ abstract class Interceptor[T](interceptions:Seq[Interception],scriptStore:Script
                   ix.id,
                   txData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
                   txData.get("transaction_hash").getOrElse("").asInstanceOf[String],
-                  scriptOutput))
+                  scriptOutput,
+                  alarm = ix.alarm))
             }
           } else {
             log.error(s"engine not fonud: ${script.typ}")

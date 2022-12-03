@@ -92,25 +92,30 @@ Intercept tx > 10ETH from captured file
 
 Run from live transactions: [__geth__] -> [__ethereum-etl__] -> [__eth-ingest__]
 ```
-rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC 2>/dev/null | ./run-ingest-eth.sh intercept -f stdin:// -s file://scripts/script-1.js
+rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC 2>/dev/null | ./run-ingest-eth.sh intercept -f stdin:// -a script-1=stdout://
 ```
 
 Run the same pipeline in a simple way
 
 ```
-./run-intercept-eth.sh -s file://scripts/script-1.js
+./run-intercept-eth.sh -s dir://scripts/
 ```
 
-Run intercept with Email notifications
+Run intercept with Alarms
 
 ```
 ./env-dev-aws.sh
 
-./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="stdout://,email://user-1@mail.org"
+./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="script-2.js=stdout://,script-1=email://user-1@mail.org"
 ```
 
 Run intercept with specific script to notification:
 
 ```
-./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=1000 --alarms="SCRIPT-file://scripts/script-1.js=stdout://;email://"
+./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=1000 --alarms="script-1.js=stdout://;email://"
+```
+Run from Eth-Client:
+
+```
+./eth-intercept.sh --alarms.throttle=60000 --alarms="script-1.js=email://user@email.io"
 ```
