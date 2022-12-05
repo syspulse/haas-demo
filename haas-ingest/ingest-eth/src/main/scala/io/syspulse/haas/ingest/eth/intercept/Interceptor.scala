@@ -41,17 +41,30 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   import DefaultJsonProtocol._
 
   @volatile
-  var interceptions = interceptions0
+  var interceptions:Map[Interception.ID,Interception] = interceptions0.map(ix => ix.id -> ix).toMap
 
   def +(ix:Interception) = {
-    interceptions = interceptions :+ ix
+    interceptions = interceptions + (ix.id -> ix)
   }
   def -(id:Interception.ID) = {
-    interceptions = interceptions.filter(_.id != id)
+    interceptions = interceptions - (id)
   }
 
-  def stop(id:Interception.ID) = interceptions.find(_.id == id).map(_.status == "stopped")
-  def start(id:Interception.ID) = interceptions.find(_.id == id).map(_.status == "started")
+  def stop(id:Interception.ID) = {
+    val ix = interceptions.get(id) match {
+      case Some(ix) => val ix1 = ix.copy(status = "stopped"); interceptions = interceptions + (ix.id -> ix1); ix1
+      case None => 
+    }
+    log.info(s"stop: ${ix}")
+  }
+
+  def start(id:Interception.ID) = {
+    val ix = interceptions.get(id) match {
+      case Some(ix) => val ix1 = ix.copy(status = "started"); interceptions = interceptions + (ix.id -> ix1); ix1
+      case None => 
+    }
+    log.info(s"start: ${ix}")
+  }
 
   log.info(s"interceptions: ${interceptions}")
 
@@ -63,6 +76,7 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
     val txData = decode(t)
 
     val ii = interceptions
+      .values
       .filter(_.status == "started")
       .flatMap( ix => {
       //log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")

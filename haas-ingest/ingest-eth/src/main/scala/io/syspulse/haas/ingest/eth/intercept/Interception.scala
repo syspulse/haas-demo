@@ -18,7 +18,7 @@ import io.syspulse.skel.Ingestable
 
 import io.syspulse.haas.ingest.eth.script._
 
-case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None, status:String="running") extends Ingestable
+case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None, status:String="started") extends Ingestable
 
 object Interception {
   type ID = UUID
