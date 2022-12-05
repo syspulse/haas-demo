@@ -32,7 +32,7 @@ class InterceptionStoreMem extends InterceptionStore {
   def del(id:ID):Try[InterceptionStore] = { 
     val sz = interceptions.size
     interceptions = interceptions - id;
-    log.info(s"${id}")
+    log.info(s"deleted: ${id}")
     if(sz == interceptions.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 

@@ -71,7 +71,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
 
   def createInterception(interceptCreate: InterceptionCreateReq): Future[Interception] = registry.ask(CreateInterception(interceptCreate, _))
   def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
-  def randomInterception(): Future[Interception] = registry.ask(RandomInterception(_))
+  def commandInterception(interceptCommand: InterceptionCommandReq): Future[InterceptionActionRes] = registry.ask(CommandInterception(interceptCommand, _))
 
 
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
@@ -89,8 +89,8 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   }
 
   @GET @Path("/search/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("intercept"),summary = "Search Interception by term",
-    parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search term")),
+  @Operation(tags = Array("intercept"),summary = "Search Interception by name",
+    parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search in name")),
     responses = Array(new ApiResponse(responseCode="200",description = "Found Interceptions",content=Array(new Content(schema=new Schema(implementation = classOf[Interceptions])))))
   )
   def getInterceptionSearch(txt: String) = get {
@@ -141,6 +141,20 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
+  @POST @Path("/{id}") @Consumes(Array(MediaType.APPLICATION_JSON))
+  @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Interception Command",
+    requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionCommandReq])))),
+    responses = Array(new ApiResponse(responseCode = "200", description = "Interception updated",content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionActionRes])))))
+  )
+  def commandInterceptionRoute(id:Interception.ID) = post {
+    entity(as[InterceptionCommandReq]) { interceptCommand =>
+      onSuccess(commandInterception(interceptCommand.copy(id = Some(id)))) { r =>
+        complete((StatusCodes.OK, r))
+      }
+    }
+  }
+
 
   override def routes: Route =
       concat(
@@ -164,10 +178,10 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
             authenticate()(authn =>              
               getInterceptionRoute(id)
               ~ 
-              authorize(Permissions.isAdmin(authn)) {
-                deleteInterceptionRoute(id)
-              }
-            )            
+              deleteInterceptionRoute(id)
+              ~
+              commandInterceptionRoute(UUID(id))
+            )        
           }
         }
       )

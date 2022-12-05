@@ -46,21 +46,13 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   def +(ix:Interception) = {
     interceptions = interceptions :+ ix
   }
+  def -(id:Interception.ID) = {
+    interceptions = interceptions.filter(_.id != id)
+  }
 
-  // def reload(interceptions:Seq[Interception]) = {
-  //   val scriptTriggers:Seq[ScriptTrigger] = interceptions.map(ix => {    
-    
-  //     val scriptId = s"${ix.id.toString}-${ix.name}"
-  //     //Alarms.+(scriptId,ix.alarm)
-      
-  //     new ScriptTrigger(scriptId,ix.scriptUri,ix.id)
-  //   })
+  def stop(id:Interception.ID) = interceptions.find(_.id == id).map(_.status == "stopped")
+  def start(id:Interception.ID) = interceptions.find(_.id == id).map(_.status == "started")
 
-  //   log.info(s"triggers=${scriptTriggers}")  
-  //   scriptTriggers
-  // }
-
-  //val scriptTriggers:Seq[ScriptTrigger] = reload(interceptions)
   log.info(s"interceptions: ${interceptions}")
 
   val alarms = new Alarms(alarmThrottle)
@@ -70,7 +62,9 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   def scan(t:T):Seq[InterceptionAlarm] = {
     val txData = decode(t)
 
-    val ii = interceptions.flatMap( ix => {
+    val ii = interceptions
+      .filter(_.status == "started")
+      .flatMap( ix => {
       //log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")
       scriptStore.?(ix.scriptId) match {
         case Some(script) => {

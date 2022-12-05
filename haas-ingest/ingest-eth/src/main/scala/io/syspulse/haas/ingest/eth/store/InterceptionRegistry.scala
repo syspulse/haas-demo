@@ -27,7 +27,7 @@ object InterceptionRegistry {
   final case class TypingInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Interception]) extends Command
-  final case class RandomInterception(replyTo: ActorRef[Interception]) extends Command
+  final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
 
   final case class DeleteInterception(id: ID, replyTo: ActorRef[InterceptionActionRes]) extends Command
   
@@ -87,15 +87,23 @@ object InterceptionRegistry {
         replyTo ! ix
         registry(store1.getOrElse(store),storeScript,interceptor)
 
-      case RandomInterception(replyTo) =>
+      case CommandInterception(c, replyTo) =>
         
-        //replyTo ! InterceptionRandomRes(secret,qrImage)
+        val st = c.command match {
+          case "start" => interceptor.start(c.id.get); "started"
+          case "stop" => interceptor.stop(c.id.get); "stopped"
+          case _ => "unknown"
+        }
+        
+        replyTo ! InterceptionActionRes(st,Some(c.id.toString))
         Behaviors.same
-
       
-      case DeleteInterception(vid, replyTo) =>
-        val store1 = store.del(vid)
-        replyTo ! InterceptionActionRes(s"Success",Some(vid.toString))
+      case DeleteInterception(id, replyTo) =>
+        val store1 = store.del(id)
+
+        interceptor.-(id)
+
+        replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
         registry(store1.getOrElse(store),storeScript,interceptor)
     }
   }

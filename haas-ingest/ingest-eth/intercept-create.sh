@@ -13,4 +13,4 @@ SERVICE_URI=${SERVICE_URI:-http://localhost:8080/api/v1/intercept}
 DATA_JSON="{\"name\":\"$NAME\",\"script\":\"$SCRIPT\",\"alarm\":[\"$ALARM\"]}"
 
 2> echo $DATA_JSON
-curl -s -X POST --data "$DATA_JSON" -H 'Content-Type: application/json' -H "Authorization: Bearer $TOKEN" $SERVICE_URI/
+curl -X POST --data "$DATA_JSON" -H 'Content-Type: application/json' -H "Authorization: Bearer $TOKEN" $SERVICE_URI/

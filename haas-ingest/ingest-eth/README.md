@@ -119,3 +119,11 @@ Run from Eth-Client:
 ```
 ./eth-intercept.sh --alarms.throttle=60000 --alarms="script-1.js=email://user@email.io"
 ```
+
+Run Intercept as Server
+
+```
+OPT=-Dgod ./run-ingest-eth.sh server -f feed/tx-4000.log --throttle=250
+
+./intercept-create.sh
+```

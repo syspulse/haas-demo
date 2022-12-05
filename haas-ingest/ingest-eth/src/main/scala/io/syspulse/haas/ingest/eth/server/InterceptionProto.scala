@@ -18,6 +18,9 @@ final case class InterceptionCreateReq(id:Option[Interception.ID],name:String, s
 final case class InterceptionActionRes(status: String,id:Option[String])
 final case class InterceptionRes(token: Option[Interception])
 
+final case class InterceptionCommandReq(command:String,id:Option[Interception.ID]=None)
+
+
 object InterceptionProto extends JsonCommon {
   
   import InterceptionJson._
@@ -26,5 +29,5 @@ object InterceptionProto extends JsonCommon {
   implicit val jf_InterceptRes = jsonFormat1(InterceptionRes)
   implicit val jf_CreateReq = jsonFormat5(InterceptionCreateReq)
   implicit val jf_ActionRes = jsonFormat2(InterceptionActionRes)
-  
+  implicit val jf_5 = jsonFormat2(InterceptionCommandReq)
 }
