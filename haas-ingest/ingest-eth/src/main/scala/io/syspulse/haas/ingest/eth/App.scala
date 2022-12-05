@@ -17,7 +17,8 @@ import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth.flow._
 import io.syspulse.haas.ingest.eth.intercept._
 import io.syspulse.haas.ingest.eth.store._
-import io.syspulse.haas.ingest.eth.server.InterceptionRoutes
+import io.syspulse.haas.ingest.eth.server._
+import akka.actor.typed.scaladsl.Behaviors
 
 object App extends skel.Server {
   
@@ -130,6 +131,7 @@ object App extends skel.Server {
 
         run( config.host, config.port, config.uri, c,
           Seq(
+            (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
             (InterceptionRegistry(datastoreInterceptions,datastoreScripts,ix),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
