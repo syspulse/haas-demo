@@ -75,7 +75,7 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   def scan(t:T):Seq[InterceptionAlarm] = {
     val txData = decode(t)
 
-    val ii = interceptions
+    val ii:Seq[InterceptionAlarm] = interceptions
       .values
       .filter(_.status == "started")
       .flatMap( ix => {
@@ -91,6 +91,9 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
             if(! r.isDefined) 
               None
             else {
+              
+              ix.++(1)
+
               val scriptOutput = s"${r.get}"                      
               Some(InterceptionAlarm(
                   System.currentTimeMillis(),
