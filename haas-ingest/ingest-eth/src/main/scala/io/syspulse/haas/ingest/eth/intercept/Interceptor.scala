@@ -32,13 +32,20 @@ import io.syspulse.haas.ingest.eth.alarm.Alarms
 import io.syspulse.haas.ingest.eth.store.ScriptStore
 import io.syspulse.haas.ingest.eth.script._
 
-abstract class Interceptor[T](interceptions:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long) {
+abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long) {
   protected val log = Logger(s"${this.getClass()}")
   
   //scripts:Seq[String],alarmUri:Seq[String]
 
   import EthEtlJson._
   import DefaultJsonProtocol._
+
+  @volatile
+  var interceptions = interceptions0
+
+  def +(ix:Interception) = {
+    interceptions = interceptions :+ ix
+  }
 
   // def reload(interceptions:Seq[Interception]) = {
   //   val scriptTriggers:Seq[ScriptTrigger] = interceptions.map(ix => {    

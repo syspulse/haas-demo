@@ -13,11 +13,13 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
+import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth.flow._
 import io.syspulse.haas.ingest.eth.intercept._
 import io.syspulse.haas.ingest.eth.store._
+import io.syspulse.haas.ingest.eth.server.InterceptionRoutes
 
-object App {
+object App extends skel.Server {
   
   def main(args:Array[String]):Unit = {
     Console.err.println(s"args: '${args.mkString(",")}'")
@@ -29,7 +31,10 @@ object App {
       new ConfigurationProp,
       new ConfigurationEnv, 
       new ConfigurationArgs(args,"ingest-eth","",
-                
+        ArgString('h', "http.host",s"listen host (def: ${d.host})"),
+        ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
+        ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
+        
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
@@ -52,7 +57,7 @@ object App {
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
         
-        
+        ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
         ArgCmd("intercept",s"Intercept pipeline (-s script)"),
         
@@ -61,6 +66,9 @@ object App {
     ))
 
     val config = Config(
+      host = c.getString("http.host").getOrElse(d.host),
+      port = c.getInt("http.port").getOrElse(d.port),
+      uri = c.getString("http.uri").getOrElse(d.uri),
       
       feed = c.getString("feed").getOrElse(d.feed),
       output = c.getString("output").getOrElse(d.output),
@@ -90,18 +98,6 @@ object App {
 
     Console.err.println(s"Config: ${config}")
 
-    val datastoreInterceptions = config.datastore.split("://").toList match {
-      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
-      // case "postgres" => new TokenStoreDB(c,"postgres")
-      case "mem" :: _ => new InterceptionStoreMem
-      case "dir" :: dir :: Nil => new InterceptionStoreDir(dir)
-      case "dir" :: Nil => new InterceptionStoreDir()
-      case _ => {
-        Console.err.println(s"Uknown datastore: '${config.datastore}'")
-        sys.exit(1)
-      }
-    }
-
     val datastoreScripts = config.scripts.split("://").toList match {
       // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
       // case "postgres" => new TokenStoreDB(c,"postgres")
@@ -114,7 +110,35 @@ object App {
       }
     }
 
-    val (pp,r) = config.cmd match {
+    val datastoreInterceptions = config.datastore.split("://").toList match {
+      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
+      // case "postgres" => new TokenStoreDB(c,"postgres")
+      case "mem" :: _ => new InterceptionStoreMem
+      case "dir" :: dir :: Nil => new InterceptionStoreDir(dir)
+      case "dir" :: Nil => new InterceptionStoreDir()
+      case _ => {
+        Console.err.println(s"Uknown datastore: '${config.datastore}'")
+        sys.exit(1)
+      }
+    }
+
+    
+    val (r,pp) = config.cmd match {
+      case "server" =>
+        val ix = new InterceptorTx(Seq(),datastoreScripts,config.alarmsThrottle) 
+        val pp = new PipelineEthInterceptTx(config.feed,config.output,ix)(config)
+
+        run( config.host, config.port, config.uri, c,
+          Seq(
+            (InterceptionRegistry(datastoreInterceptions,datastoreScripts,ix),
+              "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
+          )
+        )
+        // start pipeline
+        val r = pp.run()
+        
+        (r,Some(pp))
+
       case "ingest" => {
         val pp = config.entity match {
           case "tx" =>
@@ -135,7 +159,7 @@ object App {
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 
 
-        (pp,pp.run())
+        (pp.run(),Some(pp))
       }
 
       case "intercept" => {
@@ -165,7 +189,8 @@ object App {
             new PipelineEthInterceptTx(config.feed,config.output, 
                 new InterceptorERC20(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle,config.abi))(config)
         }
-        (pp,pp.run())
+
+        (pp.run(),Some(pp))
       }
     }
     
@@ -178,7 +203,7 @@ object App {
       case akka.NotUsed => 
     }
 
-    Console.err.println(s"Result: ${pp.countObj}")
+    Console.err.println(s"Result: ${pp.map(_.countObj)}")
     sys.exit(0)
   }
 }

@@ -14,8 +14,7 @@ import io.syspulse.haas.ingest.eth.intercept.InterceptionJson
 import io.syspulse.haas.ingest.eth.script._
 
 final case class Interceptions(tokens: immutable.Seq[Interception])
-final case class InterceptionCreateReq(id:Interception.ID,name:String, scriptId:Script.ID, alarm:List[String], uid:Option[UUID] = None)
-final case class InterceptionRandomReq()
+final case class InterceptionCreateReq(id:Option[Interception.ID],name:String, script:String, alarm:List[String], uid:Option[UUID] = None)
 final case class InterceptionActionRes(status: String,id:Option[String])
 final case class InterceptionRes(token: Option[Interception])
 

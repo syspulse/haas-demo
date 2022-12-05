@@ -3,6 +3,9 @@ package io.syspulse.haas.ingest.eth
 import com.typesafe.scalalogging.Logger
 
 case class Config(  
+  host:String="0.0.0.0",
+  port:Int=8080,
+  uri:String = "/api/v1/intercept",
   
   feed:String = "",
   output:String = "",

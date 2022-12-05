@@ -12,7 +12,11 @@ import io.syspulse.skel.Command
 
 import io.syspulse.haas.ingest.eth.server._
 import io.syspulse.haas.ingest.eth.intercept._
+import io.syspulse.haas.ingest.eth.script._
 import io.syspulse.haas.ingest.eth.intercept.Interception.ID
+import io.syspulse.skel.util.Util
+
+import io.syspulse.haas.ingest.eth.intercept.Interceptor
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
@@ -30,12 +34,12 @@ object InterceptionRegistry {
   // this var reference is unfortunately needed for Metrics access
   var store: InterceptionStore = null //new InterceptionStoreDB //new InterceptionStoreCache
 
-  def apply(store: InterceptionStore = new InterceptionStoreMem): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: InterceptionStore,storeScript:ScriptStore, interceptor:Interceptor[_]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
-    registry(store)
+    registry(store,storeScript,interceptor)
   }
 
-  private def registry(store: InterceptionStore): Behavior[io.syspulse.skel.Command] = {
+  private def registry(store: InterceptionStore,storeScript:ScriptStore,interceptor:Interceptor[_]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
     Behaviors.receiveMessage {
@@ -56,12 +60,32 @@ object InterceptionRegistry {
         Behaviors.same
 
       case CreateInterception(c, replyTo) =>
-        val interception = Interception(c.id, c.name, c.scriptId, c.alarm, c.uid)
-                
-        val store1 = store.+(interception)
+        // 1 = 1 association for user script
 
-        replyTo ! interception
-        registry(store1.getOrElse(store))
+        val src = 
+          if(c.script.trim.startsWith("id://")) {
+            val id = c.script.trim.stripPrefix("id://")
+            val s = storeScript.?(id)
+            if(s.isDefined)
+              s.get.src
+            else
+              ""
+          } else {
+            c.script
+          }
+        
+        val scriptId = Util.sha256(c.script)
+        val script = Script(scriptId,"js",src,c.name)
+        storeScript.+(script)
+        
+        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid)
+        
+        val store1 = store.+(ix)
+
+        interceptor.+(ix)
+
+        replyTo ! ix
+        registry(store1.getOrElse(store),storeScript,interceptor)
 
       case RandomInterception(replyTo) =>
         
@@ -72,7 +96,7 @@ object InterceptionRegistry {
       case DeleteInterception(vid, replyTo) =>
         val store1 = store.del(vid)
         replyTo ! InterceptionActionRes(s"Success",Some(vid.toString))
-        registry(store1.getOrElse(store))
+        registry(store1.getOrElse(store),storeScript,interceptor)
     }
   }
 }

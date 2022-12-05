@@ -101,21 +101,6 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
-  @GET @Path("/typing/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("intercept"),summary = "Search Interception by Type-Ahead (first letters)",
-    parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search letters")),
-    responses = Array(new ApiResponse(responseCode="200",description = "Found Interceptions",content=Array(new Content(schema=new Schema(implementation = classOf[Interceptions])))))
-  )
-  def getInterceptionTyping(txt: String) = get {
-    rejectEmptyResponse {
-      onSuccess(getInterceptionByTyping(txt)) { r =>
-        complete(r)
-      }
-    }
-  }
-
-
-
   @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"), summary = "Return all Interceptions",
     responses = Array(
@@ -148,18 +133,14 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def createInterceptionRoute = post {
     entity(as[InterceptionCreateReq]) { interceptCreate =>
       onSuccess(createInterception(interceptCreate)) { r =>
+
+        
         metricCreateCount.inc()
         complete((StatusCodes.Created, r))
       }
     }
   }
 
-  def createInterceptionRandomRoute() = post { 
-    onSuccess(randomInterception()) { r =>
-      metricCreateCount.inc()
-      complete((StatusCodes.Created, r))
-    }
-  }
 
   override def routes: Route =
       concat(
@@ -173,17 +154,9 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
             ),          
           )
         },
-        pathSuffix("random") {
-          createInterceptionRandomRoute()
-        },
         pathPrefix("search") {
           pathPrefix(Segment) { txt => 
             getInterceptionSearch(txt)
-          }
-        },
-        pathPrefix("typing") {
-          pathPrefix(Segment) { txt => 
-            getInterceptionTyping(txt)
           }
         },
         pathPrefix(Segment) { id =>         

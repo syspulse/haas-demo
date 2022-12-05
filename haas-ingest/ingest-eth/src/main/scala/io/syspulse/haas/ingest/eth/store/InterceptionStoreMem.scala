@@ -25,7 +25,7 @@ class InterceptionStoreMem extends InterceptionStore {
 
   def +(ix:Interception):Try[InterceptionStore] = { 
     interceptions = interceptions + (ix.id -> ix)
-    log.info(s"${Interception}")
+    log.info(s"${ix}")
     Success(this)
   }
 
