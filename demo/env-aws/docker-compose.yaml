@@ -164,6 +164,12 @@ services:
     environment:
       JAVA_OPTS: -Dgod
       SCRIPTS: dir:///scripts
+      FEED: kafka://broker-1.hacken.dev:9092/transactions/group-1
+      # this is temporary, must be replace with NotificationService URI
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
 
   nginx:
     image: nginx
