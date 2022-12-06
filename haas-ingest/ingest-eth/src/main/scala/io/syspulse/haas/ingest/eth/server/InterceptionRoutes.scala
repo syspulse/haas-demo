@@ -42,10 +42,10 @@ import scala.concurrent.duration.Duration
 import io.syspulse.skel.auth.permissions.rbac.Permissions
 import io.syspulse.skel.auth.RouteAuthorizers
 
-
 import io.syspulse.haas.ingest.eth.store.InterceptionRegistry
 import io.syspulse.haas.ingest.eth.store.InterceptionRegistry._
 import io.syspulse.haas.ingest.eth.intercept._
+import io.syspulse.haas.ingest.eth.script._
 
 @Path("/api/v1/intercept")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
@@ -55,6 +55,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   implicit val permissions = Permissions()
 
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+  import ScriptJson._
   import InterceptionJson._
   import InterceptionProto._
   
@@ -64,6 +65,8 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   val metricDeleteCount: Counter = Counter.build().name("skel_intercept_delete_total").help("Interception deletes").register(cr)
   val metricCreateCount: Counter = Counter.build().name("skel_intercept_create_total").help("Interception creates").register(cr)
   
+  def getScript(id: Script.ID): Future[Option[Script]] = registry.ask(GetScript(id, _))
+
   def getInterceptions(): Future[Interceptions] = registry.ask(GetInterceptions)
   def getInterception(id: Interception.ID): Future[Option[Interception]] = registry.ask(GetInterception(id, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
@@ -73,10 +76,9 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
   def commandInterception(interceptCommand: InterceptionCommandReq): Future[InterceptionActionRes] = registry.ask(CommandInterception(interceptCommand, _))
 
-
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Return Interception by id",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id (gecko)")),
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id")),
     responses = Array(new ApiResponse(responseCode="200",description = "Interception returned",content=Array(new Content(schema=new Schema(implementation = classOf[Interception])))))
   )
   def getInterceptionRoute(id: String) = get {
@@ -155,6 +157,19 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
+// -------------------------------------------------------------------------------------------- Script --------------
+  @GET @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Return Script by id",
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Script ID")),
+    responses = Array(new ApiResponse(responseCode="200",description = "Script returned",content=Array(new Content(schema=new Schema(implementation = classOf[Script])))))
+  )
+  def getScriptRoute(id: String) = get {
+    rejectEmptyResponse {
+      onSuccess(getScript(id)) { r =>
+        complete(r)
+      }
+    }
+  }
 
   override def routes: Route =
       concat(
@@ -167,6 +182,11 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
               getInterceptionsRoute()
             ),          
           )
+        },
+        pathPrefix("script") {
+          pathPrefix(Segment) { id => 
+            getScriptRoute(id)
+          }
         },
         pathPrefix("search") {
           pathPrefix(Segment) { txt => 

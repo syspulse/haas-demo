@@ -5,8 +5,6 @@ import DefaultJsonProtocol._
 import io.syspulse.skel.service.JsonCommon
 
 object ScriptJson extends JsonCommon with NullOptions {
-  
-  implicit val jf_1 = jsonFormat4(Script.apply _)
-  
+  implicit val jf_script1 = jsonFormat4(Script.apply _)
 }
 

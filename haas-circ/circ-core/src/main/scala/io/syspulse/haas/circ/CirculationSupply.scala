@@ -7,6 +7,7 @@ import scala.math.BigInt
 //import io.syspulse.skel.Ingestable
 import io.syspulse.haas.core.Token
 
+// "buckets" is a labeled set: Investors, Founders, Hackers, DAO
 case class SupplyBucket(
   label:String,  
   value:BigInt,  

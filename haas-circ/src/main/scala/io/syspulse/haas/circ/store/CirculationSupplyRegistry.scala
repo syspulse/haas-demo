@@ -37,7 +37,7 @@ object CirculationSupplyRegistry {
         Behaviors.same
 
       case GetCirculationSupply(id,ts0,ts1,replyTo) =>
-        replyTo ! store.?(id)
+        replyTo ! store.?(id,ts0,ts1)
         Behaviors.same
       
     }

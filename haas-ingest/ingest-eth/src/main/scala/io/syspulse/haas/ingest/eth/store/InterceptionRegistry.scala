@@ -21,6 +21,8 @@ import io.syspulse.haas.ingest.eth.intercept.Interceptor
 object InterceptionRegistry {
   val log = Logger(s"${this}")
   
+  final case class GetScript(id:Script.ID,replyTo: ActorRef[Option[Script]]) extends Command
+
   final case class GetInterceptions(replyTo: ActorRef[Interceptions]) extends Command
   final case class GetInterception(id:ID,replyTo: ActorRef[Option[Interception]]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
@@ -49,6 +51,10 @@ object InterceptionRegistry {
 
       case GetInterception(id, replyTo) =>
         replyTo ! store.?(id)
+        Behaviors.same
+
+      case GetScript(id, replyTo) =>
+        replyTo ! storeScript.?(id)
         Behaviors.same
 
       case SearchInterception(txt, replyTo) =>

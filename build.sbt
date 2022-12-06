@@ -360,6 +360,7 @@ lazy val haas_circ = (project in file("haas-circ"))
 
     libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
       libSkelCore,
+      libSkelCli,
       libSkelAuthCore,
     ),    
   )

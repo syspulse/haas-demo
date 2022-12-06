@@ -22,13 +22,23 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
   val log = Logger(s"${this}")
   import CirculationSupplyJson._
   
-  var circs: Map[CirculationSupply.ID,CirculationSupply] = Map()
+  var circs: Map[CirculationSupply.ID,immutable.TreeMap[Long,CirculationSupply]] = Map()
 
-  def all:Seq[CirculationSupply] = circs.values.toSeq
+
+  def all:Seq[CirculationSupply] = circs.values.map(_.values.tail).flatten.toSeq
 
   def size:Long = circs.size
 
-  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = circs.get(id)
+  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
+
+  def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):List[CirculationSupply] = {
+    circs.get(id) match {
+      case Some(tmap) => 
+        val ts2 = if(ts1 == Long.MaxValue) ts1 else ts1 + 1
+        tmap.range(ts0,ts2).values.toList
+      case None => List()
+    }
+  }
 
   def parse(data:String) = {
     try {

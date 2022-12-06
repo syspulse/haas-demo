@@ -13,10 +13,10 @@ import io.syspulse.haas.ingest.eth.intercept.Interception
 import io.syspulse.haas.ingest.eth.intercept.InterceptionJson
 import io.syspulse.haas.ingest.eth.script._
 
-final case class Interceptions(tokens: immutable.Seq[Interception])
+final case class Interceptions(interceptions: immutable.Seq[Interception])
 final case class InterceptionCreateReq(id:Option[Interception.ID],name:String, script:String, alarm:List[String], uid:Option[UUID] = None)
 final case class InterceptionActionRes(status: String,id:Option[String])
-final case class InterceptionRes(token: Option[Interception])
+final case class InterceptionRes(interception: Option[Interception])
 
 final case class InterceptionCommandReq(command:String,id:Option[Interception.ID]=None)
 
