@@ -26,13 +26,14 @@ import io.syspulse.haas.core.Tx
 
 import io.syspulse.haas.ingest.eth.EthEtlJson
 import io.syspulse.haas.ingest.eth.script.Script
-//import io.syspulse.haas.ingest.eth.script.ScriptTrigger
+
 import io.syspulse.haas.ingest.eth.alarm.Alarms
-//import io.syspulse.haas.ingest.eth.alarm.UserAlarm
+
+import io.syspulse.haas.ingest.eth.store.InterceptionStore
 import io.syspulse.haas.ingest.eth.store.ScriptStore
 import io.syspulse.haas.ingest.eth.script._
 
-abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long) {
+abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions0:Seq[Interception]) {
   protected val log = Logger(s"${this.getClass()}")
   
   //scripts:Seq[String],alarmUri:Seq[String]
@@ -41,7 +42,9 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   import DefaultJsonProtocol._
 
   @volatile
-  var interceptions:Map[Interception.ID,Interception] = interceptions0.map(ix => ix.id -> ix).toMap
+  var interceptions:Map[Interception.ID,Interception] = 
+    interceptionStore.all.map(ix => ix.id -> ix).toMap ++
+    interceptions0.map(ix => ix.id -> ix).toMap
 
   def +(ix:Interception) = {
     interceptions = interceptions + (ix.id -> ix)
@@ -51,19 +54,11 @@ abstract class Interceptor[T](interceptions0:Seq[Interception],scriptStore:Scrip
   }
 
   def stop(id:Interception.ID) = {
-    val ix = interceptions.get(id) match {
-      case Some(ix) => val ix1 = ix.copy(status = "stopped"); interceptions = interceptions + (ix.id -> ix1); ix1
-      case None => 
-    }
-    log.info(s"stop: ${ix}")
+    // mutable, nothing to do
   }
 
   def start(id:Interception.ID) = {
-    val ix = interceptions.get(id) match {
-      case Some(ix) => val ix1 = ix.copy(status = "started"); interceptions = interceptions + (ix.id -> ix1); ix1
-      case None => 
-    }
-    log.info(s"start: ${ix}")
+    // mutable, nothing to do
   }
 
   log.info(s"interceptions: ${interceptions}")

@@ -31,8 +31,10 @@ import codegen.AbiDefinition
 
 import io.syspulse.crypto.eth.abi._
 import io.syspulse.haas.ingest.eth.store.ScriptStore
+import io.syspulse.haas.ingest.eth.store.InterceptionStore
 
-class InterceptorERC20(interceptions:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long,abi:String) extends InterceptorTx(interceptions,scriptStore,alarmThrottle) {
+class InterceptorERC20(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,abi:String,interceptions:Seq[Interception] = Seq()) 
+  extends InterceptorTx(interceptionStore,scriptStore,alarmThrottle,interceptions) {
     
   val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
   

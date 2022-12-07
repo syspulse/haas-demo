@@ -51,8 +51,23 @@ class InterceptionStoreMem extends InterceptionStore {
     ).toList
   }
 
-  def scan(txt:String):List[Interception] = ??(txt)
   def search(txt:String):List[Interception] = ??(txt)
-  def grep(txt:String):List[Interception] = ??(txt)
-  def typing(txt:String):List[Interception] = ??(txt + ".*")
+
+  def stop(id:Interception.ID):Option[Interception] = {
+    val ix = interceptions.get(id) match {
+      case Some(ix) => ix.status = "stopped"; Some(ix)
+      case None => None
+    }
+    log.info(s"stop: ${ix}")
+    ix
+  }
+
+  def start(id:Interception.ID):Option[Interception] = {
+    val ix = interceptions.get(id) match {
+      case Some(ix) => ix.status = "started"; Some(ix)
+      case None => None
+    }
+    log.info(s"start: ${ix}")
+    ix
+  }
 }

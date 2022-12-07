@@ -26,7 +26,6 @@ object InterceptionRegistry {
   final case class GetInterceptions(replyTo: ActorRef[Interceptions]) extends Command
   final case class GetInterception(id:ID,replyTo: ActorRef[Option[Interception]]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
-  final case class TypingInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Interception]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
@@ -61,10 +60,7 @@ object InterceptionRegistry {
         replyTo ! Interceptions(store.search(txt))
         Behaviors.same
       
-      case TypingInterception(txt, replyTo) =>
-        replyTo ! Interceptions(store.typing(txt))
-        Behaviors.same
-
+     
       case CreateInterception(c, replyTo) =>
         // 1 = 1 association for user script
 
@@ -95,13 +91,21 @@ object InterceptionRegistry {
 
       case CommandInterception(c, replyTo) =>
         
-        val st = c.command match {
-          case "start" => interceptor.start(c.id.get); "started"
-          case "stop" => interceptor.stop(c.id.get); "stopped"
+        val status = c.command match {
+          case "start" => 
+            val st = store.start(c.id.get)
+            interceptor.start(c.id.get)
+            st.toString
+            
+          case "stop" => 
+            val st = store.stop(c.id.get)
+            interceptor.stop(c.id.get);
+            st.toString
+
           case _ => "unknown"
         }
         
-        replyTo ! InterceptionActionRes(st,Some(c.id.toString))
+        replyTo ! InterceptionActionRes(status,Some(c.id.toString))
         Behaviors.same
       
       case DeleteInterception(id, replyTo) =>

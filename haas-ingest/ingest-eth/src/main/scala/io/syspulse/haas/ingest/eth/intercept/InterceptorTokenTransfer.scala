@@ -24,8 +24,10 @@ import scala.util.Success
 
 import io.syspulse.haas.core.TokenTransfer
 import io.syspulse.haas.ingest.eth.store.ScriptStore
+import io.syspulse.haas.ingest.eth.store.InterceptionStore
 
-class InterceptorTokenTransfer(interceptions:Seq[Interception],scriptStore:ScriptStore,alarmThrottle:Long) extends Interceptor[TokenTransfer](interceptions,scriptStore,alarmThrottle) {
+class InterceptorTokenTransfer(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends Interceptor[TokenTransfer](interceptionStore,scriptStore,alarmThrottle,interceptions) {
   
   override def decode(t:TokenTransfer):Map[String,Any] = {
     Map(

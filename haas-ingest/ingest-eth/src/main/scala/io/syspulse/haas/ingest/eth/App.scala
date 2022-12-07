@@ -126,7 +126,7 @@ object App extends skel.Server {
     
     val (r,pp) = config.cmd match {
       case "server" =>
-        val ix = new InterceptorTx(Seq(),datastoreScripts,config.alarmsThrottle) 
+        val ix = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle) 
         val pp = new PipelineEthInterceptTx(config.feed,config.output,ix)(config)
 
         run( config.host, config.port, config.uri, c,
@@ -183,13 +183,13 @@ object App extends skel.Server {
         val pp = config.entity match {
           case "tx" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorTx(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle))(config)
+                new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "token" =>
             new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
-                new InterceptorTokenTransfer(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle))(config)
+                new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "erc20" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorERC20(buildInterceptions(config.alarms),datastoreScripts,config.alarmsThrottle,config.abi))(config)
+                new InterceptorERC20(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,config.abi,buildInterceptions(config.alarms)))(config)
         }
 
         (pp.run(),Some(pp))

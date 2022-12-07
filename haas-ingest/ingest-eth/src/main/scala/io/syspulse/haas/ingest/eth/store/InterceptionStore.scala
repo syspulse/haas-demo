@@ -22,8 +22,8 @@ trait InterceptionStore extends Store[Interception,ID] {
 
   def ??(txt:String):List[Interception]
 
-  def scan(txt:String):List[Interception]
   def search(txt:String):List[Interception]
-  def grep(txt:String):List[Interception]
-  def typing(txt:String):List[Interception]
+  
+  def stop(id:Interception.ID):Option[Interception]
+  def start(id:Interception.ID):Option[Interception]
 }
