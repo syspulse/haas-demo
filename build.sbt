@@ -69,7 +69,9 @@ val sharedConfigDocker = Seq(
 
   //dockerBaseImage := "openjdk:8-jre-alpine",
   //dockerBaseImage := "openjdk:18-slim",
-  dockerBaseImage := "openjdk-s3fs:18-slim",
+  //dockerBaseImage := "openjdk-s3fs:18-slim",
+  dockerBaseImage := "openjdk-s3fs:11-slim",  // WARNING: this image is needed for JavaScript Nashorn !
+
   // Add S3 mount options
   // Requires running docker: 
   // --privileged -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e S3_BUCKET=haas-data-dev
@@ -100,6 +102,7 @@ val sharedConfigDocker = Seq(
 // Also, Spark has problems with /tmp (java.io.IOException: Failed to create a temp directory (under /tmp) after 10 attempts!)
 val sharedConfigDockerSpark = sharedConfigDocker ++ Seq(
   //dockerBaseImage := "openjdk:8-jre-alpine",
+  //dockerBaseImage := "openjdk:8-jre-slim",
   dockerBaseImage := "openjdk:11-jre-slim",
   Docker / daemonUser := "root"
 )

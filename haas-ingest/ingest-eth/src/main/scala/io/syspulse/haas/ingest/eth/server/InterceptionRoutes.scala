@@ -18,6 +18,9 @@ import akka.http.scaladsl.server.RejectionHandler
 import akka.http.scaladsl.model.StatusCodes._
 import com.typesafe.scalalogging.Logger
 
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
+
 import io.jvm.uuid._
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -171,7 +174,9 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
-  override def routes: Route =
+  val corsAllow = CorsSettings(system.classicSystem).withAllowGenericHttpRequests(true)
+
+  override def routes: Route = cors() {
       concat(
         pathEndOrSingleSlash {
           concat(
@@ -205,5 +210,5 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           }
         }
       )
-    
+  }
 }

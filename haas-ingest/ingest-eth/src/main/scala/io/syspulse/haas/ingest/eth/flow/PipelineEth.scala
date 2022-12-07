@@ -35,7 +35,7 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(implicit config:Config,implicit val fmt:JsonFormat[O])
+abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,reportFreq:Long = 10000000)(implicit config:Config,implicit val fmt:JsonFormat[O])
   extends Pipeline[T,T,O](feed,output,config.throttle,config.delimiter,config.buffer) {
 
   protected val log = Logger(s"${this}")
@@ -184,7 +184,7 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String)(im
   }
 
   override def processing:Flow[T,T,_] = Flow[T].map(v => {
-    if(countObj % 1000 == 0)
+    if(countObj % reportFreq == 0)
       log.info(s"processed: ${countInput},${countObj}")
     v
   })
