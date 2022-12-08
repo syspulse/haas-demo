@@ -20,32 +20,27 @@ import io.syspulse.haas.circ.serde.CirculationSupplyJson
 
 class CirculationSupplyStoreMem extends CirculationSupplyStore {
   val log = Logger(s"${this}")
-  import CirculationSupplyJson._
   
-  var circs: Map[CirculationSupply.ID,immutable.TreeMap[Long,CirculationSupply]] = Map()
+  var circs: Map[CirculationSupply.ID,CirculationSupply] = Map()
 
-
-  def all:Seq[CirculationSupply] = circs.values.map(_.values.tail).flatten.toSeq
+  def all:Seq[CirculationSupply] = circs.values.toSeq
 
   def size:Long = circs.size
 
-  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
+  def +(c:CirculationSupply):Try[CirculationSupplyStore] = {
+    circs = circs + (c.id -> c)
+    Success(this)
+  }
 
-  def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):List[CirculationSupply] = {
+  def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply] = {
     circs.get(id) match {
-      case Some(tmap) => 
+      case Some(cs) => 
         val ts2 = if(ts1 == Long.MaxValue) ts1 else ts1 + 1
-        tmap.range(ts0,ts2).values.toList
-      case None => List()
+        // WARNING: A bit too much objects for sorting
+        val history = immutable.SortedSet.from(cs.history).range(Circulation(ts = ts0),Circulation(ts = ts1))
+        Some(cs.copy(history = history.toList))
+      case None => None
     }
   }
 
-  def parse(data:String) = {
-    try {
-      val cs = data.parseJson.convertTo[CirculationSupply]
-      Seq(cs)
-    } catch {
-      case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
-    } 
-  }
 }

@@ -71,8 +71,6 @@ object App extends skel.Server {
       // case "mysql" | "db" => new CirculationSupplyStoreDB(c,"mysql")
       // case "postgres" => new CirculationSupplyStoreDB(c,"postgres")
       case "mem" :: _ => new CirculationSupplyStoreMem
-      case "file" :: file :: Nil => new CirculationSupplyStoreFile(file)
-      case "file" :: Nil => new CirculationSupplyStoreFile()
       case "dir" :: dir :: Nil => new CirculationSupplyStoreDir(dir)
       case "dir" :: Nil => new CirculationSupplyStoreDir()
       case _ => {

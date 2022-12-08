@@ -17,11 +17,14 @@ import io.syspulse.haas.circ.Circulation
 
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
 
-  def +(yell:CirculationSupply):Try[CirculationSupplyStore] = Failure(new NotImplementedError())
-  def -(yell:CirculationSupply):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
+  def +(c:CirculationSupply):Try[CirculationSupplyStore]
+  
+  def -(c:CirculationSupply):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
   def del(id:CirculationSupply.ID):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
 
-  def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):List[CirculationSupply]
+  def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply]
+
+  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
   
   def all:Seq[CirculationSupply]
   def size:Long

@@ -6,34 +6,50 @@ import scala.math.BigInt
 
 //import io.syspulse.skel.Ingestable
 import io.syspulse.haas.core.Token
+import scala.collection.SortedSet
 
 // "buckets" is a labeled set: Investors, Founders, Hackers, DAO
 case class SupplyBucket(
   label:String,  
   value:BigInt,  
   ratio:Double,
-  change:Double
+  change:Double = 0.0
 )
 
-case class Circulation(
-  ts:Long = System.currentTimeMillis(),
+// Circulations by Timestamp (daily snapshots)
+case class Circulation (
+  ts:Long,
+
   totalSupply:BigInt = 0,
   supply:BigInt = 0,
   inflation:Double = 0.0,
 
-  buckets: List[SupplyBucket] = List(),
+  buckets: List[SupplyBucket] = List(), // buckets of holders
 
   holders:Seq[SupplyHolder] = Seq.empty,
   holdersTotal:Long = 0L,
   holdersUp:Long = 0L,
   holdersDown:Long = 0L
-)
 
+) extends Ordered[Circulation] {
+  
+  def compare (that: Circulation):Int = {
+    if (this.ts == that.ts)
+      0
+    else if (this.ts > that.ts)
+      1
+    else
+      -1
+  }
+}
+
+// Circulation Supply 
 case class CirculationSupply(
   id: CirculationSupply.ID,
-  tid:Token.ID,  
+  tokenId:Token.ID,  
   name:String = s"Supply",
-  history:List[Circulation] = List()
+  //history:SortedSet[Circulation] = SortedSet() // sorted list of Daily snapshots
+  history:List[Circulation] = List() // sorted list of Daily snapshots
 
   ) {//extends Ingestable {
   
