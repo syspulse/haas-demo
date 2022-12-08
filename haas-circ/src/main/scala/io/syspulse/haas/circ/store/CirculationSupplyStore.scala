@@ -18,7 +18,7 @@ import io.syspulse.haas.circ.Circulation
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
 
   def +(c:CirculationSupply):Try[CirculationSupplyStore]
-  
+
   def -(c:CirculationSupply):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
   def del(id:CirculationSupply.ID):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
 
@@ -29,4 +29,5 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
   def all:Seq[CirculationSupply]
   def size:Long
 
+  //def getByToken(tokenId:Token.ID)
 }
