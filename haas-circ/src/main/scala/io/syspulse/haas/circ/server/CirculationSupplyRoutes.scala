@@ -69,7 +69,8 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   val metricGetCount: Counter = Counter.build().name("skel_circ_get_total").help("CirculationSupply gets").register(cr)
   
   def getCirculationSupplys(): Future[CirculationSupplys] = registry.ask(GetCirculationSupplys)
-  def getCirculationSupply(id: CirculationSupply.ID,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id,ts0,ts1, _))  
+  def getCirculationSupply(id: CirculationSupply.ID,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id,ts0,ts1, _))
+  def getCirculationSupplyByToken(tid: String,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupplyByToken(tid,ts0,ts1, _))  
   
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id (UUID) and time range",
@@ -84,6 +85,27 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getCirculationSupply( CirculationSupply(id), 
+            CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+            
+            metricGetCount.inc()
+            complete(r)
+        }}
+    }
+  }
+
+  @GET @Path("/token/{tid}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("circ"),summary = "Return CirculationSupply by Token (address or Id) and time range",
+    parameters = Array(
+      new Parameter(name = "tid", in = ParameterIn.PATH, description = "Token (address or id)"),
+      new Parameter(name = "ts0", in = ParameterIn.PATH, description = "Start Timestamp (millisec) (optional)"),
+      new Parameter(name = "ts1", in = ParameterIn.PATH, description = "End Timestamp (millisec) (optional)")
+    ),
+    responses = Array(new ApiResponse(responseCode="200",description = "CirculationSupply returned",content=Array(new Content(schema=new Schema(implementation = classOf[CirculationSupply])))))
+  )
+  def getCirculationSupplyByTokenRoute(tid: String) = get {
+    rejectEmptyResponse {
+      parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
+        onSuccess(getCirculationSupplyByToken( tid, 
             CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
             
             metricGetCount.inc()
@@ -110,6 +132,11 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
             getCirculationSupplysRoute()            
           )
         )
+      },
+      pathPrefix("token") {
+        pathPrefix(Segment) { tid => 
+          getCirculationSupplyByTokenRoute(tid)
+        }
       },
       pathPrefix(Segment) { id =>         
         pathEndOrSingleSlash {

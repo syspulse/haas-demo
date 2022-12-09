@@ -46,7 +46,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         (f,os.read(f))
       })
       .flatMap{ case (f,data) => {
-        parseCirculation(data).map(c => TokenCirculating("Uniswap",c))
+        parseCirculation(data).map{ case(tid,c) => TokenCirculating(tid,c)}
       }}
       
     log.info(s"Circulations: ${circs}")
@@ -54,7 +54,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
     circs.groupBy(_.tokenId).map{ case(tid,circ) => {
       CirculationSupply(
         id = UUID.random,
-        name = tid,
+        name = s"Uniswap",
         tokenId = tid,
 
         history = circ.map(_.circ).toList
@@ -63,12 +63,12 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
     
   }
 
-  def parseCirculation(data:String):Option[Circulation] = {
+  def parseCirculation(data:String):Option[(String,Circulation)] = {
     try {
       val csFile = data.parseJson.convertTo[Circulating]
       
       val cs = Circulation(
-        ts = csFile.timestamp.getOrElse(System.currentTimeMillis),
+        ts = csFile.timestamp.getOrElse(System.currentTimeMillis / 1000L) * 1000L,
         totalSupply = csFile.totalSupply,
         supply = csFile.circulatingSupply,
         inflation = csFile.inflation,
@@ -79,7 +79,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         holders = csFile.topHolders.map(h => SupplyHolder(addr = h.address,v = h.quantity,r = h.ratio.getOrElse(0.0)))
       )
 
-      Some(cs)
+      Some((csFile.token_address.getOrElse(""),cs))
     } catch {
       case e:Exception => log.error(s"could not parse data: ${data}",e); None
     } 

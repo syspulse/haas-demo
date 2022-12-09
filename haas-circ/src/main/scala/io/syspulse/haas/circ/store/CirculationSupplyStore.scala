@@ -23,6 +23,7 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
   def del(id:CirculationSupply.ID):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
 
   def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply]
+  def findByToken(tid:String,ts0:Long,ts1:Long):Option[CirculationSupply]
 
   def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
   

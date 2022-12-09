@@ -43,4 +43,18 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
     }
   }
 
+  def findByToken(tid:String,ts0:Long,ts1:Long):Option[CirculationSupply] = {
+    circs.values.find(
+      c => c.tokenId.toLowerCase == tid.toLowerCase() ||
+           c.name.toLowerCase == tid.toLowerCase()
+    ) match {
+      case Some(cs) => 
+        val ts2 = if(ts1 == Long.MaxValue) ts1 else ts1 + 1
+        // WARNING: A bit too much objects for sorting
+        val history = immutable.SortedSet.from(cs.history).range(Circulation(ts = ts0),Circulation(ts = ts1))
+        Some(cs.copy(history = history.toList))
+      case None => None
+    }
+  }
+
 }
