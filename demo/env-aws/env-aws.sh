@@ -12,3 +12,5 @@ export GOOGLE_AUTH_CLIENT_SECRET=""
 
 export TWITTER_AUTH_CLIENT_ID=""
 export TWITTER_AUTH_CLIENT_SECRET=""
+
+export S3_BUCKET=haas-data-dev
