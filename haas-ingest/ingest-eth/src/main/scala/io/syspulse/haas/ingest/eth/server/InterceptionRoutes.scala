@@ -175,7 +175,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
 
   val corsAllow = CorsSettings(system.classicSystem).withAllowGenericHttpRequests(true)
 
-  override def routes: Route = cors() {
+  override def routes: Route = cors(corsAllow) {
       concat(
         pathEndOrSingleSlash {
           concat(

@@ -28,6 +28,9 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
 import jakarta.ws.rs.{Consumes, POST, GET, DELETE, Path, Produces}
 import jakarta.ws.rs.core.MediaType
 
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
+
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
 
@@ -124,7 +127,9 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
     complete(getCirculationSupplys())
   }
 
-  override def routes: Route =
+  val corsAllow = CorsSettings(system.classicSystem).withAllowGenericHttpRequests(true)
+
+  override def routes: Route = cors(corsAllow) {
     concat(
       pathEndOrSingleSlash {
         authenticate()(authn => 
@@ -146,4 +151,5 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
         }
       }
     )
+  }
 }
