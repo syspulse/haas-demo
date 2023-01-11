@@ -73,10 +73,15 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         supply = csFile.circulatingSupply,
         inflation = csFile.inflation,
         
-        buckets = csFile.locks.map(lock => SupplyBucket(label = lock.address,value = lock.quantity, ratio = lock.ratio.getOrElse(0.0))),
+        buckets = csFile.locks.map(lock => SupplyBucket(label = lock.addr,value = lock.value, ratio = lock.r.getOrElse(0.0))),
         
         holdersTotal = csFile.totalHolders,
-        holders = csFile.topHolders.map(h => SupplyHolder(addr = h.address,v = h.quantity,r = h.ratio.getOrElse(0.0)))
+        holders = csFile.topHolders.map(h => SupplyHolder(
+          addr = h.addr,
+          v = h.value,
+          r = h.r.getOrElse(0.0),
+          lb = h.info.getOrElse(List()).map(_.label)
+        ))
       )
 
       Some((csFile.token_address.getOrElse(""),cs))
