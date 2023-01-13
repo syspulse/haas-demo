@@ -61,3 +61,11 @@ cast call 0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419 'latestRound()(uint256)'
 ```
 curl -X GET 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD' -H 'accept: application/json'| jq .
 ```
+
+### Ingester:
+
+__WARNING__: Delimiter must be empty !
+
+```
+./run-price.sh -f cryptocomp:// -o stdout:// --delimiter=
+ ```

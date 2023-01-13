@@ -22,7 +22,7 @@ case class Config(
   size:Long = Long.MaxValue,
   limit:Long = Long.MaxValue,
   freq: Long = 0L,
-  delimiter:String = "\r\n",
+  delimiter:String = "",//"\r\n",
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
   throttleSource:Long = 1000L,

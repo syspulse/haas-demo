@@ -46,6 +46,7 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   override def processing:Flow[CryptoComp,CryptoComp,_] = Flow[CryptoComp].map(v => v)
 
   def parse(data:String):Seq[CryptoComp] = {
+    log.debug(s"data=${data}")
     if(data.isEmpty()) return Seq()
     try {
       if(data.stripLeading().startsWith("{")) {
@@ -62,6 +63,7 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
             None
           }
         }
+        log.info(s"price=${price}")
         price.toSeq
       }
     } catch {
@@ -87,10 +89,13 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   def fromHttpListAsFlow(req: Seq[HttpRequest],par:Int = 1, frameDelimiter:String="\n",frameSize:Int = 8192,throttle:Long = 10L)(implicit as:ActorSystem) = {
     val f1 = Flow[String]
       .throttle(1,FiniteDuration(throttle,TimeUnit.MILLISECONDS))
-      .mapConcat(tick => {
+      .mapConcat(tick => {        
         req
       })
-      .mapAsync(par)(r => Flows.fromHttpFuture(r)(as))
+      .mapAsync(par)(r => {
+        log.info(s"--> ${req}")
+        Flows.fromHttpFuture(r)(as)
+      })      
     
     if(frameDelimiter.isEmpty())
       f1
@@ -113,8 +118,12 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
         val s = Source.tick(FiniteDuration(10,TimeUnit.MILLISECONDS), 
                             FiniteDuration(config.ingestCron.toLong,TimeUnit.SECONDS), 
                             s"ingest-${System.currentTimeMillis()}-${feed}")
+        .map(h => {
+          log.info(s"Cron --> ${h}")
+          h
+        })
         .via(
-          fromHttpListAsFlow(reqs,par = 1, frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
+          fromHttpListAsFlow(reqs, par = 1, frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
         )
         s
       }
