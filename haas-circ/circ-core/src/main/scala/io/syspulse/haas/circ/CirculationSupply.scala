@@ -16,6 +16,11 @@ case class SupplyBucket(
   change:Double = 0.0
 )
 
+case class SupplyCategory(
+  label:String,  
+  value:BigInt
+)
+
 // Circulations by Timestamp (daily snapshots)
 case class Circulation (
   ts:Long,
@@ -29,7 +34,9 @@ case class Circulation (
   holders:Seq[SupplyHolder] = Seq.empty,
   holdersTotal:Long = 0L,
   holdersUp:Long = 0L,
-  holdersDown:Long = 0L
+  holdersDown:Long = 0L,
+
+  category:List[SupplyCategory] = List(),
 
 ) extends Ordered[Circulation] {
   

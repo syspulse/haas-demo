@@ -81,7 +81,9 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
           v = h.value,
           r = h.r.getOrElse(0.0),
           lb = h.info.getOrElse(List()).map(_.label)
-        ))
+        )),
+
+        category = csFile.categories.map(kv => SupplyCategory(kv._1,kv._2)).toList
       )
 
       Some((csFile.token_address.getOrElse(""),cs))
