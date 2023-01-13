@@ -9,4 +9,5 @@ case class CryptoCompData(`FROMSYMBOL`:String,`PRICE`:Double,`LASTUPDATE`:Long)
 
 case class CryptoCompUSD(`USD`:CryptoCompData)
 
-case class CryptoComp(`RAW`:Map[String,CryptoCompUSD]) extends Ingestable
+//case class CryptoComp(`RAW`:Map[String,CryptoCompUSD]) extends Ingestable
+case class CryptoComp(`RAW`:Map[String,Map[String,CryptoCompData]]) extends Ingestable

@@ -40,9 +40,11 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
 
   import CryptoCompJson._
 
+  val sourceID = Price.id("cryptocomp")
+
   val TOKENS_SLOT = "COINS"
 
-  override def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=USD"
+  override def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
   override def processing:Flow[CryptoComp,CryptoComp,_] = Flow[CryptoComp].map(v => v)
 
   def parse(data:String):Seq[CryptoComp] = {
@@ -51,19 +53,19 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
     try {
       if(data.stripLeading().startsWith("{")) {
         val price = data.parseJson.convertTo[CryptoComp]
-        log.info(s"price=${price}")
+        //log.info(s"price=${price}")
         Seq(price)
       } else {
         // assume csv
         val price = data.split(",").toList match {
           case id :: ts :: v :: Nil => 
-            Some(CryptoComp(`RAW` = Map(id -> CryptoCompUSD(`USD` = CryptoCompData(id,v.toDouble,ts.toLong)))))
+            Some(CryptoComp(`RAW` = Map(id -> Map("USD" -> CryptoCompData(id,v.toDouble,ts.toLong)))))
           case _ => {
             log.error(s"failed to parse: '${data}'")
             None
           }
         }
-        log.info(s"price=${price}")
+        //log.info(s"price=${price}")
         price.toSeq
       }
     } catch {
@@ -74,9 +76,15 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   }
 
   def transform(p: CryptoComp): Seq[Price] = {
-    p.`RAW`.map{ case(token,info) =>
-      Price(token,info.`USD`.`LASTUPDATE`, info.`USD`.`PRICE`)
-    }.toSeq
+    p.`RAW`.map{ case(token,pair) =>
+      pair.map{ case(p,info) => 
+        config.priceFormat match {
+          case "price" => Price(token, info.`LASTUPDATE`, info.`PRICE`,pair = Some(p), src = sourceID)
+          case "telemetry" => Price(s"${token}-${p}", info.`LASTUPDATE`, info.`PRICE`,None, src = sourceID)
+        }
+        
+      }      
+    }.flatten.toSeq
   }
 
   override def source() = {

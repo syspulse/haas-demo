@@ -28,9 +28,11 @@ case class Config(
   throttleSource:Long = 1000L,
   
   entity:String = "cryptocomp",
+  priceFormat:String = "price",
 
   datastore:String = "stdout",
   tokens:Seq[String] = Seq("UNI","RBN"),
+  tokensPair:Seq[String] = Seq("USD"),
   ingestCron:String = "360",
 
   cmd:String = "ingest",
@@ -52,8 +54,11 @@ object App {
                 
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) (def=${d.output})"),
-        ArgString('e', "entity",s"Ingest entity: (coin,coins) (def=${d.entity})"),
 
+        ArgString('e', "entity",s"Ingest entity: (coin,coins) (def=${d.entity})"),
+        ArgString('t', "tokens",s"Tokens filter (ex: 'UNI,ETH', def=${d.tokens})"),
+        ArgString('_', "tokens.pair",s"Tokens pair (ex: 'ETH', def=${d.tokensPair})"),
+        
         ArgLong('_', "limit",s"Limit (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
         ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
@@ -62,8 +67,8 @@ object App {
         ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
         ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
         ArgLong('_', "throttle.source",s"Throttle source (e.g. http, (def: ${d.throttleSource}))"),
-
-        ArgString('t', "tokens",s"Tokens filter (ex: 'UNI,ETH', def=${d.tokens})"),
+        
+        ArgString('_', "price.format",s"Output formats (price,telemetry), def=${d.priceFormat})"),
         
         ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
         ArgString('_', "ingest.cron",s"Ingest load cron (currently only seconds interval Tick supported) (def: ${d.ingestCron})"),
@@ -87,7 +92,10 @@ object App {
       throttleSource = c.getLong("throttle.source").getOrElse(d.throttleSource),
 
       entity = c.getString("entity").getOrElse(d.entity),
-      tokens = c.getListString("tokens",d.tokens),      
+      tokens = c.getListString("tokens",d.tokens),
+      tokensPair = c.getListString("tokens.pair",d.tokensPair),
+      priceFormat = c.getString("price.format").getOrElse(d.priceFormat),
+
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
       ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
@@ -106,14 +114,15 @@ object App {
         println(s"r=${r}")
         r match {
           case a:Awaitable[_] => {
-            val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
+            val rr = Await.result(a,Duration.Inf)
             Console.err.println(s"result: ${rr}")
           }
           case akka.NotUsed => 
+            
         }
 
         Console.err.println(s"Tokens: ${pp.countInput},${pp.countObj},${pp.countOutput}")
-        sys.exit(0)
+        sys.exit(0)        
       }
 
     }
