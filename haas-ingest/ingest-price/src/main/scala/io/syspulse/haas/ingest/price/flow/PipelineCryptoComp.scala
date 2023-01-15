@@ -79,8 +79,8 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
     p.`RAW`.map{ case(token,pair) =>
       pair.map{ case(p,info) => 
         config.priceFormat match {
-          case "price" => Price(token, info.`LASTUPDATE`, info.`PRICE`,pair = Some(p), src = sourceID)
-          case "telemetry" => Price(s"${token}-${p}", info.`LASTUPDATE`, info.`PRICE`,None, src = sourceID)
+          case "price" => Price(token, info.`LASTUPDATE` * 1000L, info.`PRICE`,pair = Some(p), src = sourceID)
+          case "telemetry" => Price(s"${token}-${p}", info.`LASTUPDATE` * 1000L, info.`PRICE`,None, src = sourceID)
         }
         
       }      
