@@ -32,9 +32,10 @@ import io.syspulse.haas.core.Price
 import io.syspulse.haas.ingest.price.CryptoCompJson
 import io.syspulse.haas.ingest.price._
 
-import io.syspulse.haas.core.serde.PriceJson._
+import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
+import io.syspulse.haas.serde.PriceDecoder
 
 class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) extends PipelinePrice[CryptoComp](feed,output) {
 
@@ -47,8 +48,7 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   override def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
   override def processing:Flow[CryptoComp,CryptoComp,_] = Flow[CryptoComp].map(v => v)
 
-  def parse(data:String):Seq[CryptoComp] = {
-    log.debug(s"data=${data}")
+  def parseCryptoComp(data:String):Seq[CryptoComp] = {
     if(data.isEmpty()) return Seq()
     try {
       if(data.stripLeading().startsWith("{")) {
@@ -73,6 +73,13 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
         log.error(s"failed to parse: '${data}'",e)
         Seq()
     }
+  }
+
+  def parse(data:String):Seq[CryptoComp] = {
+    log.debug(s"data=${data}")
+    if(data.isEmpty()) return Seq()
+
+    parseCryptoComp(data)
   }
 
   def transform(p: CryptoComp): Seq[Price] = {

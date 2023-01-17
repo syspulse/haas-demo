@@ -7,9 +7,9 @@ import scala.util.Random
 import spray.json._
 import DefaultJsonProtocol._
 
-import io.syspulse.haas.core.Token
+import io.syspulse.haas.core.Price
 
-object TokenJson extends DefaultJsonProtocol {
+object PriceJson extends DefaultJsonProtocol {
   
-  implicit val jf_token = jsonFormat6(Token.apply _)
+  implicit val jf_price = jsonFormat5(Price.apply _)
 }

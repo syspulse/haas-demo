@@ -30,7 +30,7 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
 
-import io.syspulse.haas.core.serde.TokenJson._
+import io.syspulse.haas.serde.TokenJson._
 
 class PipelineCoins(feed:String,output:String)(implicit config:Config) extends PipelineGecko[Coin](feed,output) {
 
