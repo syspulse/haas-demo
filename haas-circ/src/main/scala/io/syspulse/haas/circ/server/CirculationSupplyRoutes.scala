@@ -56,7 +56,7 @@ import io.syspulse.haas.circ.store.CirculationSupplyRegistry._
 import io.syspulse.haas.circ.server._
 
 
-@Path("/api/v1/circ")
+@Path("/")
 class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
   implicit val system: ActorSystem[_] = context.system

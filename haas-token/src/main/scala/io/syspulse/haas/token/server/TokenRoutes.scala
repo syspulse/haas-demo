@@ -56,7 +56,7 @@ import io.syspulse.haas.token.store.TokenRegistry._
 import io.syspulse.haas.token.server._
 
 
-@Path("/api/v1/token")
+@Path("/")
 class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
   implicit val system: ActorSystem[_] = context.system

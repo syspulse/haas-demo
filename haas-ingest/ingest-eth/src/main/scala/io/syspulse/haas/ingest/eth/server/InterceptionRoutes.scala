@@ -50,7 +50,7 @@ import io.syspulse.haas.ingest.eth.store.InterceptionRegistry._
 import io.syspulse.haas.ingest.eth.intercept._
 import io.syspulse.haas.ingest.eth.script._
 
-@Path("/api/v1/intercept")
+@Path("/")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
   implicit val system: ActorSystem[_] = context.system
