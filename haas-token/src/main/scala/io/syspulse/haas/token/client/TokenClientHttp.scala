@@ -34,10 +34,10 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.service.JsonCommon
 
 import io.syspulse.haas.token._
-import io.syspulse.haas.core.serde._
 import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Token
+import io.syspulse.haas.serde.TokenJson
 
 class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContext) extends ClientHttp(uri)(as,ec) with TokenService {
   

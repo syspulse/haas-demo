@@ -11,7 +11,7 @@ import akka.actor.typed.ActorSystem
 import com.typesafe.scalalogging.Logger
 
 import io.syspulse.haas.circ._
-import io.syspulse.haas.core.serde._
+import io.syspulse.haas.serde._
 import io.syspulse.haas.circ.server.CirculationSupplyProto
 import io.syspulse.haas.circ.server._
 import io.syspulse.haas.circ.CirculationSupply

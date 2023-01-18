@@ -140,7 +140,9 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
       },
       pathPrefix("token") {
         pathPrefix(Segment) { tid => 
-          getCirculationSupplyByTokenRoute(tid)
+          authenticate()(authn => 
+            getCirculationSupplyByTokenRoute(tid)
+          )
         }
       },
       pathPrefix(Segment) { id =>         

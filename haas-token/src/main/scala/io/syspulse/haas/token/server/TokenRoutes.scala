@@ -49,7 +49,7 @@ import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
-import io.syspulse.haas.core.serde.TokenJson
+import io.syspulse.haas.serde.TokenJson
 
 import io.syspulse.haas.token.store.TokenRegistry
 import io.syspulse.haas.token.store.TokenRegistry._
