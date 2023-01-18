@@ -77,4 +77,15 @@ class InterceptionStoreMem extends InterceptionStore {
     log.info(s"start: ${ix}")
     ix
   }
+
+  def remember(ix:Interception,ia:InterceptionAlarm):Option[Interception] = {
+    ix.remember(ia)
+    val r = Some(ix)
+    flush(r)
+    r
+  }
+
+  def flush(ix:Option[Interception]):Try[InterceptionStore] = {
+    Success(this)
+  }
 }

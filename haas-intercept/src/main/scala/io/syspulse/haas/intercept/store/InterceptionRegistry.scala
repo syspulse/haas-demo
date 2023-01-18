@@ -28,7 +28,7 @@ object InterceptionRegistry {
   final case class FindInterceptionsByUser(uid:ID,replyTo: ActorRef[Interceptions]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   
-  final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Interception]) extends Command
+  final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Option[Interception]]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
 
   final case class DeleteInterception(id: ID, replyTo: ActorRef[InterceptionActionRes]) extends Command
@@ -36,12 +36,12 @@ object InterceptionRegistry {
   // this var reference is unfortunately needed for Metrics access
   var store: InterceptionStore = null //new InterceptionStoreDB //new InterceptionStoreCache
 
-  def apply(store: InterceptionStore,storeScript:ScriptStore, interceptor:Interceptor[_]): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: InterceptionStore,storeScript:ScriptStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
-    registry(store,storeScript,interceptor)
+    registry(store,storeScript,interceptors)
   }
 
-  private def registry(store: InterceptionStore,storeScript:ScriptStore,interceptor:Interceptor[_]): Behavior[io.syspulse.skel.Command] = {
+  private def registry(store: InterceptionStore,storeScript:ScriptStore,interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
     Behaviors.receiveMessage {
@@ -90,26 +90,34 @@ object InterceptionRegistry {
         val script = Script(scriptId,"js",src,c.name)
         storeScript.+(script)
         
-        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid)
+        val entity = c.entity.getOrElse("tx")
+        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity)
         
         val store1 = store.+(ix)
 
-        interceptor.+(ix)
+        interceptors.get(entity) match {
+          case Some(interceptor) => 
+            interceptor.+(ix)
+            replyTo ! Some(ix)
+          case None => 
+            log.warn(s"Interceptor not found for: '${entity}'")
+            replyTo ! None
+        }
 
-        replyTo ! ix
-        registry(store1.getOrElse(store),storeScript,interceptor)
+        //replyTo ! ix
+        registry(store1.getOrElse(store),storeScript,interceptors)
 
       case CommandInterception(c, replyTo) =>
         
         val status = c.command match {
           case "start" => 
             val st = store.start(c.id.get)
-            interceptor.start(c.id.get)
+            interceptors.values.foreach(_.start(c.id.get))
             st.toString
             
           case "stop" => 
             val st = store.stop(c.id.get)
-            interceptor.stop(c.id.get);
+            interceptors.values.foreach(_.stop(c.id.get))
             st.toString
 
           case _ => "unknown"
@@ -121,10 +129,11 @@ object InterceptionRegistry {
       case DeleteInterception(id, replyTo) =>
         val store1 = store.del(id)
 
-        interceptor.-(id)
+        interceptors.values.foreach(intx => intx.-(id))
 
         replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
-        registry(store1.getOrElse(store),storeScript,interceptor)
+        
+        registry(store1.getOrElse(store),storeScript,interceptors)
     }
   }
 }

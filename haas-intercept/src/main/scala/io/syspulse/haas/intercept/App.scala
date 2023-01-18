@@ -27,6 +27,9 @@ case class Config(
   
   feed:String = "",
   output:String = "",
+  
+  feedTx:String = "",
+  feedBlock:String = "",
 
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
@@ -76,6 +79,9 @@ object App extends skel.Server {
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
 
+        ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
+        ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
+
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
 
@@ -109,6 +115,9 @@ object App extends skel.Server {
       feed = c.getString("feed").getOrElse(d.feed),
       output = c.getString("output").getOrElse(d.output),
       entity = c.getString("entity").getOrElse(d.entity),
+
+      feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
+      feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
@@ -161,20 +170,25 @@ object App extends skel.Server {
     
     val (r,pp) = config.cmd match {
       case "server" => {
-        val ix = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle) 
-        val pp = new PipelineEthInterceptTx(config.feed,config.output,ix)(config)
+        val ixTx = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+        val ppTx = new PipelineEthInterceptTx(if(config.feedTx.nonEmpty) config.feedTx else config.feed, config.output,ixTx)(config)
+
+        val ixBlock = new InterceptorBlock(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+        val ppBlock = new PipelineEthInterceptBlock(if(config.feedBlock.nonEmpty) config.feedBlock else config.feed, config.output,ixBlock)(config)
 
         run( config.host, config.port, config.uri, c,
           Seq(
             (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
-            (InterceptionRegistry(datastoreInterceptions,datastoreScripts,ix),
+            (InterceptionRegistry(datastoreInterceptions,
+                                  datastoreScripts,
+                                  Map("tx" -> ixTx, "block" -> ixBlock)),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
         )
         // start pipeline
-        val r = pp.run()
+        val r = ppTx.run()
         
-        (r,Some(pp))
+        (r,Some(ppTx))
       }
 
       case "intercept" => {        

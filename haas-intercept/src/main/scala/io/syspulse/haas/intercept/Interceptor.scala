@@ -100,7 +100,9 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
                     scriptOutput,
                     alarm = ix.alarm)
                 
-                ix.remember(ia)              
+                // memorize 
+                interceptionStore.remember(ix,ia)
+
                 Some(ia)
               }
             } else {

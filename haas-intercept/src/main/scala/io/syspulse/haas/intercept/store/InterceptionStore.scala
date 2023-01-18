@@ -28,4 +28,8 @@ trait InterceptionStore extends Store[Interception,ID] {
   
   def stop(id:Interception.ID):Option[Interception]
   def start(id:Interception.ID):Option[Interception]
+
+  def remember(ix:Interception,ia:InterceptionAlarm):Option[Interception]
+
+  def flush(ix:Option[Interception]):Try[InterceptionStore] 
 }
