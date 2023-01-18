@@ -42,6 +42,13 @@ class InterceptionStoreMem extends InterceptionStore {
 
   def ?(id:ID):Option[Interception] = interceptions.get(id)
 
+  def findByUser(uid:UUID):List[Interception] = {    
+    interceptions.values.filter(i => {
+        i.uid.isDefined && i.uid.get == uid
+      }
+    ).toList
+  }
+
   def ??(txt:String):List[Interception] = {    
     interceptions.values.filter(v => {
         v.name.toLowerCase.matches(txt.toLowerCase) 

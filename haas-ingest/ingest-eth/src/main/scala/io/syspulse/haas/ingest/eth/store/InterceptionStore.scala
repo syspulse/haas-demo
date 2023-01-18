@@ -17,6 +17,8 @@ trait InterceptionStore extends Store[Interception,ID] {
   def -(ix:Interception):Try[InterceptionStore]
   def del(id:ID):Try[InterceptionStore]
   def ?(id:ID):Option[Interception]
+
+  def findByUser(uid:ID):List[Interception]
   def all:Seq[Interception]
   def size:Long
 
