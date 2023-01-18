@@ -15,6 +15,7 @@ import DefaultJsonProtocol._
 import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.intercept.script.Script.ID
 
+import io.syspulse.haas.intercept.script.ScriptJson
 // Preload from file during start
 class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
   import ScriptJson._
@@ -41,6 +42,9 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
             case "js" => {
               Seq(Script(id, "js", src, name = f.toString))
             }
+            case "json" => {
+              Seq(data.parseJson.convertTo[Script])
+            }
             case t => log.error(s"Unknown script type: ${t}"); 
               Seq()
           }
@@ -57,6 +61,18 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     vv.foreach(v => this.+(v))
 
     log.info(s"Loaded store: ${size}")
+  }
+
+  override def +(sc:Script):Try[ScriptStore] = { 
+    super.+(sc)
+    os.write.over(os.Path(dir,os.pwd) / s"${sc.id}.json",sc.toJson.prettyPrint)
+    Success(this)
+  }
+
+  override def -(sc:Script):Try[ScriptStore] = { 
+    super.-(sc)
+    os.remove(os.Path(dir,os.pwd) / s"${sc.id}.json")
+    Success(this)
   }
 
 }

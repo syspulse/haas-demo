@@ -9,7 +9,7 @@ CONF=`echo $APP | awk -F"-" '{print $2}'`
 
 export SITE=${SITE:-$CONF}
 
-SCRIPT=${SCRIPT:-file://scripts/script-1.js}
+# SCRIPT=${SCRIPT:-file://scripts/script-1.js}
 
 MAIN=io.syspulse.haas.intercept.App
 
@@ -20,7 +20,7 @@ S3_BUCKET=haas-data-dev
 >&2 echo "app: $APP"
 >&2 echo "site: $SITE"
 >&2 echo "main: $MAIN"
->&2 echo "script: $SCRIPT"
+# >&2 echo "script: $SCRIPT"
 >&2 echo "ETH_RPC: $ETH_RPC"
 
 if [ "$DOCKER" != "" ]; then

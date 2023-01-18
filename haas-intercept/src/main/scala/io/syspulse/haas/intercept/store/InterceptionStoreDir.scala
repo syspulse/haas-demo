@@ -46,4 +46,15 @@ class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
     log.info(s"Loaded store: ${size}")
   }
 
+  override def +(ix:Interception):Try[InterceptionStore] = { 
+    super.+(ix)
+    os.write.over(os.Path(dir,os.pwd) / s"${ix.id}.json",ix.toJson.prettyPrint)
+    Success(this)
+  }
+
+  override def -(ix:Interception):Try[InterceptionStore] = { 
+    super.-(ix)
+    os.remove(os.Path(dir,os.pwd) / s"${ix.id}.json")
+    Success(this)
+  }
 }

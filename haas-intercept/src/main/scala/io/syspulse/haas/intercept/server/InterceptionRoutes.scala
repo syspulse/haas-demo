@@ -50,6 +50,7 @@ import io.syspulse.haas.intercept.store.InterceptionRegistry._
 import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.script._
 
+import io.syspulse.haas.intercept.script.ScriptJson
 @Path("/")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
@@ -68,6 +69,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   val metricDeleteCount: Counter = Counter.build().name("skel_intercept_delete_total").help("Interception deletes").register(cr)
   val metricCreateCount: Counter = Counter.build().name("skel_intercept_create_total").help("Interception creates").register(cr)
   
+  def getScripts(): Future[Scripts] = registry.ask(GetScripts)
   def getScript(id: Script.ID): Future[Option[Script]] = registry.ask(GetScript(id, _))
 
   def getInterceptions(): Future[Interceptions] = registry.ask(GetInterceptions)
@@ -160,6 +162,14 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   }
 
 // -------------------------------------------------------------------------------------------- Script --------------
+  @GET @Path("/script/") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Return All Scripts",
+    responses = Array(new ApiResponse(responseCode="200",description = "Scripts",content=Array(new Content(schema=new Schema(implementation = classOf[List[Script]])))))
+  )
+  def getScriptsRoute() = get {
+    complete(getScripts())
+  }
+
   @GET @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Return Script by id",
     parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Script ID")),
@@ -188,9 +198,14 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           )
         },
         pathPrefix("script") {
-          pathPrefix(Segment) { id => 
-            getScriptRoute(id)
-          }
+          authenticate()(authn => {
+            pathPrefix(Segment) { id => 
+              getScriptRoute(id)
+            } ~ 
+            pathEndOrSingleSlash {
+              getScriptsRoute()
+            }
+          })
         },
         pathPrefix("search") {
           pathPrefix(Segment) { txt => 

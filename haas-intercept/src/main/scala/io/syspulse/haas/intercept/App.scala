@@ -59,7 +59,7 @@ case class Config(
 object App extends skel.Server {
   
   def main(args:Array[String]):Unit = {
-    Console.err.println(s"args: '${args.mkString(",")}'")
+    Console.err.println(s"args: '${args.mkString(",")}': ${args.toList}")
 
     val d = Config()
 
@@ -160,7 +160,7 @@ object App extends skel.Server {
 
     
     val (r,pp) = config.cmd match {
-      case "server" =>
+      case "server" => {
         val ix = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle) 
         val pp = new PipelineEthInterceptTx(config.feed,config.output,ix)(config)
 
@@ -175,9 +175,9 @@ object App extends skel.Server {
         val r = pp.run()
         
         (r,Some(pp))
+      }
 
-
-      case "intercept" => {
+      case "intercept" => {        
         def buildInterceptions(alarms:Seq[String]):Seq[Interception] = {
           alarms.map(a => { 
               val ix:Interception = a.split("=").toList match {
