@@ -31,7 +31,8 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 
-class PipelineEthBlock(feed:String,output:String)(implicit config:Config) extends PipelineEth[Block,Block](feed,output) {
+class PipelineEthBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
+  PipelineEth[Block,Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
 
   import EthEtlJson._
   

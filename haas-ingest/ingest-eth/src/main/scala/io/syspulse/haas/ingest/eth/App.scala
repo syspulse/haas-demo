@@ -5,6 +5,7 @@ import scala.concurrent.duration.{Duration,FiniteDuration}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Awaitable
 import scala.concurrent.{Await, ExecutionContext, Future}
+import akka.actor.typed.scaladsl.Behaviors
 
 import com.typesafe.scalalogging.Logger
 import io.jvm.uuid._
@@ -15,10 +16,6 @@ import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth.flow._
-import io.syspulse.haas.ingest.eth.intercept._
-import io.syspulse.haas.ingest.eth.store._
-import io.syspulse.haas.ingest.eth.server._
-import akka.actor.typed.scaladsl.Behaviors
 
 object App extends skel.Server {
   
@@ -51,12 +48,7 @@ object App extends skel.Server {
         ArgString('t', "filter",s"Filter (def='${d.filter}')"),
         
         ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
-        ArgString('s', "scripts",s"datastore for Scripts to execute on TX (def=${d.scripts})"),
         ArgString('_', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
-
-
-        ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
-        ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
         
         ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
@@ -86,10 +78,7 @@ object App extends skel.Server {
       filter = c.getListString("filter",d.filter),
       
       datastore = c.getString("datastore").getOrElse(d.datastore),
-      scripts = c.getString("scripts").getOrElse(d.scripts),
-      alarms = c.getListString("alarms",d.alarms),
-      alarmsThrottle = c.getLong("alarms.throttle").getOrElse(d.alarmsThrottle),
-
+      
       abi = c.getString("abi").getOrElse(d.abi),
       
       cmd = c.getCmd().getOrElse(d.cmd),
@@ -99,101 +88,30 @@ object App extends skel.Server {
 
     Console.err.println(s"Config: ${config}")
 
-    val datastoreScripts = config.scripts.split("://").toList match {
-      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
-      // case "postgres" => new TokenStoreDB(c,"postgres")
-      case "mem" :: _ => new ScriptStoreMem
-      case "dir" :: dir :: Nil => new ScriptStoreDir(dir)
-      case "dir" :: Nil => new ScriptStoreDir()
-      case _ => {
-        Console.err.println(s"Uknown datastore: '${config.scripts}'")
-        sys.exit(1)
-      }
-    }
-
-    val datastoreInterceptions = config.datastore.split("://").toList match {
-      // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
-      // case "postgres" => new TokenStoreDB(c,"postgres")
-      case "mem" :: _ => new InterceptionStoreMem
-      case "dir" :: dir :: Nil => new InterceptionStoreDir(dir)
-      case "dir" :: Nil => new InterceptionStoreDir()
-      case _ => {
-        Console.err.println(s"Uknown datastore: '${config.datastore}'")
-        sys.exit(1)
-      }
-    }
-
     
     val (r,pp) = config.cmd match {
-      case "server" =>
-        val ix = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle) 
-        val pp = new PipelineEthInterceptTx(config.feed,config.output,ix)(config)
-
-        run( config.host, config.port, config.uri, c,
-          Seq(
-            (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
-            (InterceptionRegistry(datastoreInterceptions,datastoreScripts,ix),
-              "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
-          )
-        )
-        // start pipeline
-        val r = pp.run()
-        
-        (r,Some(pp))
-
       case "ingest" => {
         val pp = config.entity match {
           case "tx" =>
-            new PipelineEthTx(config.feed,config.output)(config)
+            new PipelineEthTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
                     
           case "block" =>
-            new PipelineEthBlock(config.feed,config.output)(config)            
+            new PipelineEthBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
           
           case "block-tx" =>
-            new PipelineEthBlockTx(config.feed,config.output)(config)
+            new PipelineEthBlockTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
 
           case "token" =>
-            new PipelineEthTokenTransfer(config.feed,config.output)(config)
+            new PipelineEthTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
 
           case "log" =>
-            new PipelineEthLog(config.feed,config.output)(config)
+            new PipelineEthLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
 
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
         } 
 
         (pp.run(),Some(pp))
-      }
-
-      case "intercept" => {
-        def buildInterceptions(alarms:Seq[String]):Seq[Interception] = {
-          alarms.map(a => { 
-              val ix:Interception = a.split("=").toList match {
-                case sid :: ua :: Nil => 
-                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList, uid = None)
-                case ua :: Nil => 
-                  Interception(UUID.random, "Ix-2", "script-1.js", ua.split(";").toList, uid = None)
-                case _ => 
-                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"), uid = None)
-              }
-              ix
-            }
-          )
-        }
-
-        val pp = config.entity match {
-          case "tx" =>
-            new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
-          case "token" =>
-            new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
-                new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
-          case "erc20" =>
-            new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorERC20(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,config.abi,buildInterceptions(config.alarms)))(config)
-        }
-
-        (pp.run(),Some(pp))
-      }
+      }       
     }
     
     Console.err.println(s"r=${r}")

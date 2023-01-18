@@ -35,8 +35,8 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,reportFreq:Long = 100000)(implicit config:Config,implicit val fmt:JsonFormat[O])
-  extends Pipeline[T,T,O](feed,output,config.throttle,config.delimiter,config.buffer) {
+abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[O])
+  extends Pipeline[T,T,O](feed,output,throttle,delimiter,buffer) {
 
   protected val log = Logger(s"${this}")
 
@@ -49,8 +49,8 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,rep
       latestTs.get()
     })
 
-  override def getFileLimit():Long = config.limit
-  override def getFileSize():Long = config.size
+  override def getFileLimit():Long = limit
+  override def getFileSize():Long = size
 
   def parseTx(data:String):Seq[Tx] = {
     if(data.isEmpty()) return Seq()
@@ -173,7 +173,7 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,rep
     }
   }
 
-  def filter:Seq[String] = config.filter
+  def filter():Seq[String] = filter
   def apiSuffix():String
 
   override def source() = {

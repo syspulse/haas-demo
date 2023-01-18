@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.intercept.flow.eth
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -28,16 +28,20 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthEtlJson._
+import io.syspulse.haas.intercept.store.ScriptStore
+import io.syspulse.haas.intercept.store.InterceptionStore
 
-class PipelineEthTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[Tx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
-  
-  override def apiSuffix():String = s"/"
+import io.syspulse.haas.intercept.Config
+import io.syspulse.haas.intercept.Interceptor
+import io.syspulse.haas.intercept.Interception
+import io.syspulse.haas.intercept.InterceptionAlarm
+import io.syspulse.haas.intercept.flow.eth.InterceptorTx
+import io.syspulse.haas.intercept.store.ScriptStore
+import io.syspulse.haas.intercept.store.InterceptionStore
+import io.syspulse.haas.intercept.InterceptionJson._
+
+class PipelineEthInterceptTx(feed:String,output:String,interceptor:Interceptor[Tx])(implicit config:Config) extends PipelineEthIntercept[Tx](feed,output,interceptor) {
 
   override def parse(data:String):Seq[Tx] = parseTx(data)
-
-  def transform(tx: Tx): Seq[Tx] = {
-    Seq(tx)
-  }
 }
+

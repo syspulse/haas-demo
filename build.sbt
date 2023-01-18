@@ -389,3 +389,31 @@ lazy val ingest_price = (project in file("haas-ingest/ingest-price"))
     ),
      
   )
+
+lazy val haas_intercept = (project in file("haas-intercept"))
+  .dependsOn(haas_core,ingest_eth)
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .settings (
+
+    sharedConfig,
+    sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
+
+    appDockerConfig("haas-intercept","io.syspulse.haas.intercept.App"),
+
+    libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
+      libSkelCore,
+      libSkelIngest,
+      libSkelIngestFlow,
+      libSkelDSL,
+      libSkelNotify,
+      libUpickleLib,
+
+      libSkelCrypto,
+      //libEthAbi,
+      libScalaTest % "test"
+    ),
+  )

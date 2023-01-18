@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-import io.syspulse.haas.ingest.eth.intercept.InterceptorTx
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block
 
-class PipelineEthTokenTransfer(feed:String,output:String)(implicit config:Config) extends PipelineEth[EthTokenTransfer,EthTokenTransfer](feed,output) {
+class PipelineEthTokenTransfer(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
+  PipelineEth[EthTokenTransfer,EthTokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
   override def apiSuffix():String = s"/"
 

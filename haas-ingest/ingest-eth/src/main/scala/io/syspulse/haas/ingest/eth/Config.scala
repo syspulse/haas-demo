@@ -5,14 +5,11 @@ import com.typesafe.scalalogging.Logger
 case class Config(  
   host:String="0.0.0.0",
   port:Int=8080,
-  uri:String = "/api/v1/intercept",
+  uri:String = "/api/v1/eth",
   
   feed:String = "",
   output:String = "",
-
-  alarms:Seq[String] = Seq("stdout://"),
-  alarmsThrottle:Long = 10000L,
-
+  
   abi:String = "abi/",
   source:String="",
   
@@ -29,7 +26,6 @@ case class Config(
   expr:String = "",
   
   datastore:String = "dir://store",
-  scripts:String = "dir://scripts",  
 
   filter:Seq[String] = Seq(),
 
