@@ -74,6 +74,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
 
   def getInterceptions(): Future[Interceptions] = registry.ask(GetInterceptions)
   def getInterception(id: Interception.ID): Future[Option[Interception]] = registry.ask(GetInterception(id, _))
+  def findInterceptionsByUser(uid: UUID): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
   
   def createInterception(interceptCreate: InterceptionCreateReq): Future[Interception] = registry.ask(CreateInterception(interceptCreate, _))
@@ -88,6 +89,20 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def getInterceptionRoute(id: String) = get {
     rejectEmptyResponse {
       onSuccess(getInterception(UUID(id))) { r =>
+        metricGetCount.inc()
+        complete(r)
+      }
+    }
+  }
+
+  @GET @Path("/user/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Find Interception by uid",
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id")),
+    responses = Array(new ApiResponse(responseCode="200",description = "Interception returned",content=Array(new Content(schema=new Schema(implementation = classOf[Interception])))))
+  )
+  def getInterceptionsFindByUserRoute(uid: String) = get {
+    rejectEmptyResponse {
+      onSuccess(findInterceptionsByUser(UUID(uid))) { r =>
         metricGetCount.inc()
         complete(r)
       }
@@ -190,7 +205,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
         pathEndOrSingleSlash {
           concat(
             authenticate()(authn =>
-              authorize(Permissions.isAdmin(authn)) {              
+              authorize(Permissions.isAdmin(authn)) {
                 createInterceptionRoute  
               } ~
               getInterceptionsRoute()
@@ -211,6 +226,18 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           pathPrefix(Segment) { txt => 
             getInterceptionSearch(txt)
           }
+        },
+        pathPrefix("user") {
+          authenticate()(authn => {
+            pathPrefix(Segment) { uid => 
+              authorize(Permissions.isUser(UUID(uid),authn)) {
+                getInterceptionsFindByUserRoute(uid)
+              }
+            } ~ 
+            pathEndOrSingleSlash {
+              getScriptsRoute()
+            }
+          })
         },
         pathPrefix(Segment) { id =>         
           pathEndOrSingleSlash {

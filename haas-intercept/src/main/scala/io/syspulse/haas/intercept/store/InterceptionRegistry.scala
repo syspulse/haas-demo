@@ -25,6 +25,7 @@ object InterceptionRegistry {
 
   final case class GetInterceptions(replyTo: ActorRef[Interceptions]) extends Command
   final case class GetInterception(id:ID,replyTo: ActorRef[Option[Interception]]) extends Command
+  final case class FindInterceptionsByUser(uid:ID,replyTo: ActorRef[Interceptions]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Interception]) extends Command
@@ -60,6 +61,10 @@ object InterceptionRegistry {
         replyTo ! store.?(id)
         Behaviors.same
       
+      case FindInterceptionsByUser(uid, replyTo) =>
+        replyTo ! Interceptions(store.findByUser(uid))
+        Behaviors.same
+      
       case SearchInterception(txt, replyTo) =>
         replyTo ! Interceptions(store.search(txt))
         Behaviors.same
@@ -69,6 +74,7 @@ object InterceptionRegistry {
         // 1 = 1 association for user script
 
         val src = 
+          // special case to reference script body
           if(c.script.trim.startsWith("id://")) {
             val id = c.script.trim.stripPrefix("id://")
             val s = storeScript.?(id)
