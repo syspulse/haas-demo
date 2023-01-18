@@ -18,10 +18,21 @@ import io.syspulse.skel.Ingestable
 
 import io.syspulse.haas.intercept.script._
 
-case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None, var status:String="started",var count:Long = 0L) extends Ingestable {
+case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None, entity:String = "tx", ts0:Long = System.currentTimeMillis(),
+  var status:String="started",
+  var count:Long = 0L,
+  var history:List[InterceptionAlarm] =  List()) extends Ingestable {
+  
   def ++(value:Long = 1) = count = count + value
+
+  def remember(alarm:InterceptionAlarm) = {
+    if(history.size < Interception.HISTORY_LIMIT)
+      history = history :+ alarm
+  }
 }
 
 object Interception {
   type ID = UUID
+
+  val HISTORY_LIMIT = 10
 }

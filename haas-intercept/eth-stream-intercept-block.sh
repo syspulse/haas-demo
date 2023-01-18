@@ -2,6 +2,6 @@
 
 echo "ETH_RPC: $ETH_RPC"
 
-export ENTITY="token_transfer"
+export ENTITY="block"
 
-./eth-stream.sh 2>/dev/null | ./run-intercept.sh $@ -e token -f stdin://
+./eth-stream.sh 2>/dev/null | ./run-intercept.sh $@ -e block -f stdin://

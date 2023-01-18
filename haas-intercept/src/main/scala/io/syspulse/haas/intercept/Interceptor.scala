@@ -69,47 +69,51 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
   def decode(t:T):Map[String,Any]
  
   def scan(t:T):Seq[InterceptionAlarm] = {
-    val txData = decode(t)
+    val onchainData = decode(t)
 
     val ii:Seq[InterceptionAlarm] = interceptions
       .values
       .filter(_.status == "started")
       .flatMap( ix => {
-      //log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")
-      scriptStore.?(ix.scriptId) match {
-        case Some(script) => {
-          
-          val engine = ScriptEngine.engines.get(script.typ)
-          if(engine.isDefined) {
-            val r = engine.get.run(script.src,txData)
-            log.debug(s"${t}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
+        log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")
+      
+        scriptStore.?(ix.scriptId) match {
+          case Some(script) => {
             
-            if(! r.isDefined) 
-              None
-            else {
+            val engine = ScriptEngine.engines.get(script.typ)
+            if(engine.isDefined) {
+              val r = engine.get.run(script.src,onchainData)
+              log.debug(s"${t}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
               
-              ix.++(1)
+              if(! r.isDefined) 
+                None
+              else {
+                
+                ix.++(1)
 
-              val scriptOutput = s"${r.get}"                      
-              Some(InterceptionAlarm(
-                  System.currentTimeMillis(),
-                  ix.id,
-                  txData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
-                  txData.get("transaction_hash").getOrElse("").asInstanceOf[String],
-                  scriptOutput,
-                  alarm = ix.alarm))
-            }
-          } else {
-            log.error(s"engine not fonud: ${script.typ}")
-            None
-          }          
-        }
-        case None => None
-      }            
-    }).toSeq
+                val scriptOutput = s"${r.get}"
+                val ia = InterceptionAlarm(
+                    System.currentTimeMillis(),
+                    ix.id,
+                    onchainData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
+                    onchainData.get("hash").getOrElse("").asInstanceOf[String],
+                    scriptOutput,
+                    alarm = ix.alarm)
+                
+                ix.remember(ia)              
+                Some(ia)
+              }
+            } else {
+              log.error(s"engine not fonud: ${script.typ}")
+              None
+            }          
+          }
+          case None => None
+        }            
+      }).toSeq
 
     ii.foreach{ 
-      ix => alarms.send(ix) 
+      ia => alarms.send(ia) 
     }
     ii
   }

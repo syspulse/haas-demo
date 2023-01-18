@@ -14,7 +14,7 @@ import io.syspulse.haas.intercept.InterceptionJson
 import io.syspulse.haas.intercept.script._
 
 final case class Interceptions(interceptions: immutable.Seq[Interception])
-final case class InterceptionCreateReq(id:Option[Interception.ID],name:String, script:String, alarm:List[String], uid:Option[UUID] = None)
+final case class InterceptionCreateReq(id:Option[Interception.ID],name:String, script:String, alarm:List[String], uid:Option[UUID] = None, entity:Option[String] = Some("tx"))
 final case class InterceptionActionRes(status: String,id:Option[String])
 final case class InterceptionRes(interception: Option[Interception])
 
@@ -25,9 +25,9 @@ object InterceptionProto extends JsonCommon {
   
   import InterceptionJson._
 
-  implicit val jf_Intercepts = jsonFormat1(Interceptions)
-  implicit val jf_InterceptRes = jsonFormat1(InterceptionRes)
-  implicit val jf_CreateReq = jsonFormat5(InterceptionCreateReq)
+  implicit val jf_ix = jsonFormat1(Interceptions)
+  implicit val jf_ixs = jsonFormat1(InterceptionRes)
+  implicit val jf_CreateReq = jsonFormat6(InterceptionCreateReq)
   implicit val jf_ActionRes = jsonFormat2(InterceptionActionRes)
   implicit val jf_5 = jsonFormat2(InterceptionCommandReq)
 }

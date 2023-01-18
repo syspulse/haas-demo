@@ -7,7 +7,7 @@ import io.syspulse.skel.service.JsonCommon
 object InterceptionJson extends JsonCommon with NullOptions {
   
   implicit val jf_2 = jsonFormat6(InterceptionAlarm.apply _)
-  implicit val jf_1 = jsonFormat7(Interception.apply _)
+  implicit val jf_1 = jsonFormat10(Interception.apply _)
   
 }
 

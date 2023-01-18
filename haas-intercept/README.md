@@ -1,44 +1,50 @@
 ## Intercept
 
-Intercept tx > 10ETH from captured file
-```
-./run-ingest-eth.sh intercept -f file://feed/tx-1734.log -s file://scripts/script-1.js
-```
-
-Run from live transactions: [__geth__] -> [__ethereum-etl__] -> [__eth-ingest__]
-```
-rm last_synced_block.txt; ethereumetl stream -e transaction --start-block `eth-last-block.sh` --provider-uri $ETH_RPC 2>/dev/null | ./run-ingest-eth.sh intercept -f stdin:// -a script-1=stdout://
-```
-
-Run the same pipeline in a simple way
+Run tx tntercept > 10ETH from captured file 
 
 ```
-./run-intercept-eth.sh -s dir://scripts/
+./run-intercept.sh intercept -f file://feed/tx-1734.log --alarms='script-1.js=tx=stdout://'
 ```
 
-Run intercept with Alarms
+Run interecept all blocks and show gas from captured file
+
+```
+./run-intercept.sh -e block intercept --alarms='script-block-1.js=block=stdout://' -f feed/blocks-1.log --throttle=1000
+```
+
+Run from EVM
+
+```
+ETH_RPC=http://geth:8545 ./eth-stream-intercept-tx.sh intercept --alarms='script-1.js=tx=stdout://'
+```
+
+```
+ETH_RPC=http://geth:8545 ./eth-stream-intercept-block.sh intercept --alarms='script-block-1.js=block=stdout://'
+```
+
+Run Tx intercept with Alarms
 
 ```
 ./env-dev-aws.sh
 
-./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="script-2.js=stdout://,script-1=email://user-1@mail.org"
+./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=10000 --alarms="script-2.js=ws://,script-1.js=email://user-1@mail.org"
 ```
 
-Run intercept with specific script to notification:
+Run Tx intercept with specific script to notification:
 
 ```
 ./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=1000 --alarms="script-1.js=stdout://;email://"
-```
-Run from Eth-Client:
-
-```
-./eth-intercept.sh --alarms.throttle=60000 --alarms="script-1.js=email://user@email.io"
 ```
 
 Run Intercept as Server
 
 ```
-OPT=-Dgod ./run-ingest-eth.sh server -f feed/tx-4000.log --throttle=250
+OPT=-Dgod ./run-ingest-eth.sh server 
+```
 
+Run Intercept as Server and Emulate stream
+
+```
+OPT=-Dgod ./run-ingest-eth.sh server -f feed/tx-4000.log --throttle=250
 ./intercept-create.sh
 ```

@@ -181,12 +181,14 @@ object App extends skel.Server {
         def buildInterceptions(alarms:Seq[String]):Seq[Interception] = {
           alarms.map(a => { 
               val ix:Interception = a.split("=").toList match {
+                case sid :: typ :: ua :: Nil => 
+                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList, entity = typ)
                 case sid :: ua :: Nil => 
-                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList, uid = None)
+                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList)
                 case ua :: Nil => 
-                  Interception(UUID.random, "Ix-2", "script-1.js", ua.split(";").toList, uid = None)
+                  Interception(UUID.random, "Ix-2", "script-1.js", ua.split(";").toList)
                 case _ => 
-                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"), uid = None)
+                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"))
               }
               ix
             }
@@ -194,6 +196,9 @@ object App extends skel.Server {
         }
 
         val pp = config.entity match {
+          case "block" =>
+            new PipelineEthInterceptBlock(config.feed,config.output, 
+                new InterceptorBlock(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "tx" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
                 new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))

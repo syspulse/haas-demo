@@ -40,7 +40,8 @@ class InterceptorTx(interceptionStore:InterceptionStore,scriptStore:ScriptStore,
       ("gas" -> tx.value),
       ("input" -> tx.input),
       ("block_number" -> tx.blockNumber),
-      ("transaction_hash" -> tx.hash),
+      ("hash" -> tx.hash), //("transaction_hash" -> tx.hash),      
+      ("ts" -> tx.ts),
     )
   }
  
