@@ -160,7 +160,7 @@ services:
       AWS_ACCOUNT: ${AWS_ACCOUNT}
 
   haas-intercept:
-    image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ingest-eth:latest
+    image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-intercept:latest
     container_name: haas-intercept
     restart: always
     volumes:
