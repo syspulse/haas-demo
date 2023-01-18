@@ -40,7 +40,8 @@ class InterceptorTokenTransfer(interceptionStore:InterceptionStore,scriptStore:S
       ("to_address" -> t.to),
       ("value" -> t.value),
       ("block_number" -> t.block),
-      ("transaction_hash" -> t.hash),
+      ("hash" -> t.hash), //("transaction_hash" -> t.hash),
+      ("ts" -> t.ts),
     )
   }
  

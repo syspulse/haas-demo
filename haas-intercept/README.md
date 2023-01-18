@@ -14,16 +14,22 @@ Run interecept all blocks and show gas from captured file
 
 Run from EVM
 
+Transactions:
 ```
 ETH_RPC=http://geth:8545 ./eth-stream-intercept-tx.sh intercept --alarms='script-1.js=tx=stdout://'
 ```
 
+Blocks:
 ```
 ETH_RPC=http://geth:8545 ./eth-stream-intercept-block.sh intercept --alarms='script-block-1.js=block=stdout://'
 ```
 
-Run Tx intercept with Alarms
+Stable Coins (USDT,USDC) Transfers:
+```
+ETH_RPC=http://geth2.hacken.cloud:8545 ./eth-stream-intercept-token.sh intercept --alarms='script-token-3.js=token=stdout://
+```
 
+Run Tx intercept with Alarms
 ```
 ./env-dev-aws.sh
 
