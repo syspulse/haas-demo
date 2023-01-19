@@ -188,7 +188,7 @@ object App extends skel.Server {
             (InterceptionRegistry(datastoreInterceptions,
                                   datastoreScripts,
                                   Map(
-                                    ixTx.entity() -> ixTx, 
+                                    ixTx.entity() -> ixTx,
                                     ixBlock.entity() -> ixBlock,
                                     ixToken.entity() -> ixToken,
                                   )),

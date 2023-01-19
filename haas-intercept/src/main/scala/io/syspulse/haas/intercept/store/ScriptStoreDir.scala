@@ -28,6 +28,9 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
 
     val vv = os.walk(storeDir)
       .filter(_.toIO.isFile())
+      .filter( f => {
+        ! f.toIO.getName.toLowerCase.endsWith(".md")
+      })
       .map(f => {
         log.info(s"Loading file: ${f}")
         
