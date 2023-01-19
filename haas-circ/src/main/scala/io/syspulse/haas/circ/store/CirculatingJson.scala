@@ -15,7 +15,7 @@ case class Info(label:String,desc:Option[String]=None)
 
 case class Lock(addr:String,value:BigInt,r:Option[Double]=None,info:Option[List[Info]]=None)
 case class Holder(addr:String,value:BigInt,r:Option[Double]=None,info:Option[List[Info]]=None)
-case class Circulating(token_address:Option[String],timestamp:Option[Long],totalSupply:BigInt,circulatingSupply:BigInt,inflation:Double,locks:List[Lock],totalHolders:Long,topHolders:List[Holder],tokenId:Option[String] = None,categories:Map[String,BigInt]=Map())
+case class Circulating(tokenAddress:Option[String],timestamp:Option[Long],totalSupply:BigInt,circulatingSupply:BigInt,inflation:Double,locks:List[Lock],totalHolders:Long,topHolders:List[Holder],tokenId:Option[String] = None,categories:Map[String,BigInt]=Map())
 
 object CirculatingJson extends JsonCommon {
   import DefaultJsonProtocol._

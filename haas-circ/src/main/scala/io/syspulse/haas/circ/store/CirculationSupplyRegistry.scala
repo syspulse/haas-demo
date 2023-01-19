@@ -20,6 +20,7 @@ object CirculationSupplyRegistry {
   final case class GetCirculationSupplys(replyTo: ActorRef[CirculationSupplys]) extends Command
   final case class GetCirculationSupply(id:CirculationSupply.ID,ts0:Long,ts1:Long,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
   final case class GetCirculationSupplyByToken(tid:String,ts0:Long,ts1:Long,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
+  final case class GetCirculationSupplyLast(sz:Int,tokens:Seq[String],replyTo: ActorRef[CirculationSupplys]) extends Command
   
   // this var reference is unfortunately needed for Metrics access
   var store: CirculationSupplyStore = null //new CirculationSupplyStoreDB //new CirculationSupplyStoreCache
@@ -44,7 +45,10 @@ object CirculationSupplyRegistry {
       case GetCirculationSupplyByToken(tid,ts0,ts1,replyTo) =>
         replyTo ! store.findByToken(tid,ts0,ts1)
         Behaviors.same
-      
+
+      case GetCirculationSupplyLast(sz,tokens,replyTo) =>
+        replyTo ! CirculationSupplys(store.last(sz,tokens))
+        Behaviors.same      
     }
   }
 }

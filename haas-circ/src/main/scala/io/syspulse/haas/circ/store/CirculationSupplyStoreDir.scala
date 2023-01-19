@@ -17,7 +17,7 @@ import os._
 
 
 // temporary structure to catch tokenId
-  case class TokenCirculating(tokenId:String,circ:Circulation)
+  case class TokenCirculating(tid:String,circ:Circulation)
 
 // Preload from file during start
 class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) extends CirculationSupplyStoreMem {
@@ -51,11 +51,11 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
       
     log.info(s"Circulations: ${circs}")
 
-    circs.groupBy(_.tokenId).map{ case(tid,circ) => {
+    circs.groupBy(_.tid).map{ case(tid,circ) => {
       CirculationSupply(
         id = UUID.random,
-        name = s"Uniswap",
-        tokenId = tid,
+        name = tid,
+        tokenId = "uniswap", // FIX ME !
 
         history = circ.map(_.circ).toList
       )
@@ -86,7 +86,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         category = csFile.categories.map(kv => SupplyCategory(kv._1,kv._2)).toList
       )
 
-      Some((csFile.token_address.getOrElse(""),cs))
+      Some((csFile.tokenAddress.getOrElse(""),cs))
     } catch {
       case e:Exception => log.error(s"could not parse data: ${data}",e); None
     } 

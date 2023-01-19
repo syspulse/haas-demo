@@ -1,0 +1,55 @@
+{
+  "tokenAddress": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+  "timestamp": 1605139199,
+  "totalSupply": 1e+27,
+  "circulatingSupply": 584448119989852900000000000,
+  "inflation": 0,
+  "locks": [
+    {
+      "addr": "0xe3953d9d317b834592ab58ab2c7a6ad22b54075d",
+      "value": 1.29e+26,
+      "r": 12.9,
+      "info": null
+    },
+    {
+      "addr": "0x4b4e140d1f131fdad6fb59c13af796fd194e4135",
+      "value": 8.6e+25,
+      "r": 8.6,
+      "info": null
+    }
+  ],
+  "totalHolders": 97526,
+  "totalHoldersGrowth": 281,
+  "holdersHold": 96550,
+  "holdersSold": 695,
+  "topHolders": [
+    {
+      "addr": "0x4750c43867ef5f89869132eccf19b9b6c4286e1a",
+      "value": 157551880010147130000000000,
+      "r": 15.76,
+      "info": null
+    },
+    {
+      "addr": "0xe3953d9d317b834592ab58ab2c7a6ad22b54075d",
+      "value": 1.29e+26,
+      "r": 12.9,
+      "info": null
+    },
+    {
+      "addr": "0x4b4e140d1f131fdad6fb59c13af796fd194e4135",
+      "value": 8.6e+25,
+      "r": 8.6,
+      "info": null
+    }
+  ],
+  "categories": {
+    "CEX": 34909875987524204000000000,
+    "Hackers": 5602074820246897000000,
+    "erc20": 14020850252001633000000000,
+    "wrapped": 621965728490000000000,
+    "Funds": 3932534284299068400000000,
+    "L2 Bridges": 294981163046199000000000,
+    "Black Holes": 55549714459333000000000,
+    "Unsafe": 12489614761509932000000
+  }
+}

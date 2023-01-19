@@ -28,6 +28,8 @@ case class Circulation (
   totalSupply:BigInt = 0,
   supply:BigInt = 0,
   inflation:Double = 0.0,
+  price:Double = 0.0, // always USD precomputed
+  marketCap:Double = 0.0, // always USD 
 
   buckets: List[SupplyBucket] = List(), // buckets of holders
 

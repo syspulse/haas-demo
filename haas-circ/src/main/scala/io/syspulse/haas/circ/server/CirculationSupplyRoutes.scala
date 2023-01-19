@@ -54,6 +54,7 @@ import io.syspulse.haas.circ.serde.CirculationSupplyJson
 import io.syspulse.haas.circ.store.CirculationSupplyRegistry
 import io.syspulse.haas.circ.store.CirculationSupplyRegistry._
 import io.syspulse.haas.circ.server._
+import io.syspulse.haas.core.Defaults
 
 
 @Path("/")
@@ -73,7 +74,8 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   
   def getCirculationSupplys(): Future[CirculationSupplys] = registry.ask(GetCirculationSupplys)
   def getCirculationSupply(id: CirculationSupply.ID,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id,ts0,ts1, _))
-  def getCirculationSupplyByToken(tid: String,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupplyByToken(tid,ts0,ts1, _))  
+  def getCirculationSupplyByToken(tid: String,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupplyByToken(tid,ts0,ts1, _))
+  def getCirculationSupplyLast(sz:Int,tokens:Seq[String]): Future[CirculationSupplys] = registry.ask(GetCirculationSupplyLast(sz,tokens, _))
   
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id (UUID) and time range",
@@ -117,6 +119,24 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
     }
   }
 
+  @GET @Path("/last") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("circ"),summary = "Return Last CirculationSupplys",
+    parameters = Array(
+      new Parameter(name = "sz", in = ParameterIn.PATH, description = "Size limit"),
+      new Parameter(name = "tokens", in = ParameterIn.PATH, description = "Tokens set (UNI,RBN). Empty for default set"),
+    ),
+    responses = Array(new ApiResponse(responseCode="200",description = "CirculationSupply last set",content=Array(new Content(schema=new Schema(implementation = classOf[Seq[CirculationSupply]])))))
+  )
+  def getCirculationSupplyLastRoute() = get {    
+    parameters("sz".as[Int].optional, "tokens".as[String].optional) { (sz, tokens) =>
+      onSuccess(getCirculationSupplyLast(
+          sz.getOrElse(Defaults.TOKEN_SET.size),
+          if(tokens.isDefined) tokens.get.split(",") else Defaults.TOKEN_SET)) { r =>            
+        complete(r)
+      }}    
+  }
+
+
   @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"), summary = "Return all CirculationSupplys",
     responses = Array(
@@ -127,7 +147,10 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
     complete(getCirculationSupplys())
   }
 
-  val corsAllow = CorsSettings(system.classicSystem).withAllowGenericHttpRequests(true)
+  val corsAllow = CorsSettings(system.classicSystem)
+    //.withAllowGenericHttpRequests(true)
+    .withAllowCredentials(true)
+    .withAllowedMethods(Seq(HttpMethods.OPTIONS,HttpMethods.GET,HttpMethods.POST,HttpMethods.PUT,HttpMethods.DELETE,HttpMethods.HEAD))
 
   override def routes: Route = cors(corsAllow) {
     concat(
@@ -137,6 +160,13 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
             getCirculationSupplysRoute()            
           )
         )
+      },
+      pathPrefix("last") {
+        pathEndOrSingleSlash {
+          authenticate()(authn => 
+            getCirculationSupplyLastRoute()              
+          )            
+        }
       },
       pathPrefix("token") {
         pathPrefix(Segment) { tid => 

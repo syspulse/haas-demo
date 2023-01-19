@@ -14,6 +14,7 @@ import io.syspulse.haas.circ.Config
 
 import io.syspulse.haas.circ.CirculationSupply
 import io.syspulse.haas.circ.Circulation
+import io.syspulse.haas.core.Defaults
 
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
 
@@ -25,10 +26,20 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
   def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply]
   def findByToken(tid:String,ts0:Long,ts1:Long):Option[CirculationSupply]
 
-  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
+  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.last(id)
+
+  def last(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
   
   def all:Seq[CirculationSupply]
   def size:Long
 
-  //def getByToken(tokenId:Token.ID)
+  def lastByToken(tid:String):Option[CirculationSupply] = {
+    this.findByToken(tid,0L,Long.MaxValue).lastOption
+  }
+
+  def last(sz:Int=Defaults.TOKEN_SET.size,defaultTokens:Seq[String] = Defaults.TOKEN_SET):Seq[CirculationSupply] = {
+    defaultTokens.flatMap( tid => {
+      lastByToken(tid) 
+    }).take(sz)
+  }
 }
