@@ -165,6 +165,7 @@ services:
     restart: always
     volumes:
       - "${PWD}/scripts:/scripts"
+      - "${PWD}/interceptors:/interceptors"
     ports:
       - 8093:8080
     networks:
