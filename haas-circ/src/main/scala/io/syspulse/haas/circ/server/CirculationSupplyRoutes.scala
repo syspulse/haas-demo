@@ -75,7 +75,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   def getCirculationSupplys(): Future[CirculationSupplys] = registry.ask(GetCirculationSupplys)
   def getCirculationSupply(id: CirculationSupply.ID,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupply(id,ts0,ts1, _))
   def getCirculationSupplyByToken(tid: String,ts0:Long,ts1:Long): Future[Option[CirculationSupply]] = registry.ask(GetCirculationSupplyByToken(tid,ts0,ts1, _))
-  def getCirculationSupplyLast(sz:Int,tokens:Seq[String]): Future[CirculationSupplys] = registry.ask(GetCirculationSupplyLast(sz,tokens, _))
+  def getCirculationSupplyLast(tokens:Seq[String],from:Int,size:Int): Future[CirculationSupplys] = registry.ask(GetCirculationSupplyLast(tokens,from,size, _))
   
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"),summary = "Return CirculationSupply by id (UUID) and time range",
@@ -121,17 +121,20 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
 
   @GET @Path("/last") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("circ"),summary = "Return Last CirculationSupplys",
-    parameters = Array(
-      new Parameter(name = "sz", in = ParameterIn.PATH, description = "Size limit"),
+    parameters = Array(      
       new Parameter(name = "tokens", in = ParameterIn.PATH, description = "Tokens set (UNI,RBN). Empty for default set"),
+      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page index"),
+      new Parameter(name = "size", in = ParameterIn.PATH, description = "Page Size"),
     ),
     responses = Array(new ApiResponse(responseCode="200",description = "CirculationSupply last set",content=Array(new Content(schema=new Schema(implementation = classOf[Seq[CirculationSupply]])))))
   )
   def getCirculationSupplyLastRoute() = get {    
-    parameters("sz".as[Int].optional, "tokens".as[String].optional) { (sz, tokens) =>
+    parameters("tokens".as[String].optional,"from".as[Int].optional,"size".as[Int].optional) { (tokens,from,size) =>
       onSuccess(getCirculationSupplyLast(
-          sz.getOrElse(Defaults.TOKEN_SET.size),
-          if(tokens.isDefined) tokens.get.split(",") else Defaults.TOKEN_SET)) { r =>            
+          if(tokens.isDefined) tokens.get.split(",") else Defaults.TOKEN_SET,
+          from.getOrElse(0),
+          size.getOrElse(10),
+        )) { r =>
         complete(r)
       }}    
   }

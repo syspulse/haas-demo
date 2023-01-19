@@ -37,9 +37,13 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
     this.findByToken(tid,0L,Long.MaxValue).lastOption
   }
 
-  def last(sz:Int=Defaults.TOKEN_SET.size,defaultTokens:Seq[String] = Defaults.TOKEN_SET):Seq[CirculationSupply] = {
-    defaultTokens.flatMap( tid => {
-      lastByToken(tid) 
-    }).take(sz)
+  def lastByTokens(tokens:Seq[String] = Defaults.TOKEN_SET,from:Int=0,size:Int=10):Seq[CirculationSupply] = {
+    tokens.flatMap( tid => {
+      lastByToken(tid) match {
+        case Some(c) => Some(c)
+        // generate emtpy supplies to have a default list
+        case None => Some(CirculationSupply(id = UUID.fromByteArray(Array.fill(16){0},0),tokenId = tid, name="")) 
+      }
+    }).drop(from).take(size)
   }
 }
