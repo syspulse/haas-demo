@@ -39,7 +39,9 @@ import io.syspulse.haas.intercept.store.InterceptionStore
 
 class InterceptorERC20(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,abi:String,interceptions:Seq[Interception] = Seq()) 
   extends InterceptorTx(interceptionStore,scriptStore,alarmThrottle,interceptions) {
-    
+
+  override def entity():String = "erc20"
+
   val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
   
   override def decode(tx:Tx):Map[String,Any] = {

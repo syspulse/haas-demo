@@ -30,6 +30,7 @@ case class Config(
   
   feedTx:String = "",
   feedBlock:String = "",
+  feedToken:String = "",
 
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
@@ -81,6 +82,7 @@ object App extends skel.Server {
 
         ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
         ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
+        ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -118,6 +120,7 @@ object App extends skel.Server {
 
       feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
       feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
+      feedToken = c.getString("feed.token").getOrElse(d.feedToken),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
@@ -176,19 +179,28 @@ object App extends skel.Server {
         val ixBlock = new InterceptorBlock(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
         val ppBlock = new PipelineEthInterceptBlock(if(config.feedBlock.nonEmpty) config.feedBlock else config.feed, config.output,ixBlock)(config)
 
+        val ixToken = new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+        val ppToken = new PipelineEthInterceptTokenTransfer(if(config.feedToken.nonEmpty) config.feedToken else config.feed, config.output,ixToken)(config)
+
         run( config.host, config.port, config.uri, c,
           Seq(
             (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
             (InterceptionRegistry(datastoreInterceptions,
                                   datastoreScripts,
-                                  Map("tx" -> ixTx, "block" -> ixBlock)),
+                                  Map(
+                                    ixTx.entity() -> ixTx, 
+                                    ixBlock.entity() -> ixBlock,
+                                    ixToken.entity() -> ixToken,
+                                  )),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
         )
         // start pipeline
-        val r = ppTx.run()
+        val r1 = ppTx.run()
+        val r2 = ppBlock.run()
+        val r3 = ppToken.run()
         
-        (r,Some(ppTx))
+        (r1,Some(ppTx))
       }
 
       case "intercept" => {        

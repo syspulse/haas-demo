@@ -16,6 +16,7 @@ import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.intercept.Interception.ID
 import io.syspulse.skel.util.Util
 import io.syspulse.haas.intercept.Interceptor
+import scala.util.Success
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
@@ -93,15 +94,16 @@ object InterceptionRegistry {
         val entity = c.entity.getOrElse("tx")
         val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity)
         
-        val store1 = store.+(ix)
-
-        interceptors.get(entity) match {
+        val store1 = interceptors.get(entity) match {
           case Some(interceptor) => 
+            val store1 = store.+(ix)
             interceptor.+(ix)
             replyTo ! Some(ix)
+            store1
           case None => 
             log.warn(s"Interceptor not found for: '${entity}'")
             replyTo ! None
+            Success(store)
         }
 
         //replyTo ! ix

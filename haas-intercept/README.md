@@ -42,7 +42,7 @@ Run Tx intercept with specific script to notification:
 ./run-intercept-eth.sh -f feed/tx-4000.log --throttle=5 --alarms.throttle=1000 --alarms="script-1.js=stdout://;email://"
 ```
 
-Run Intercept as Server
+## Run Intercept as Server
 
 ```
 OPT=-Dgod ./run-ingest-eth.sh server 
@@ -53,4 +53,10 @@ Run Intercept as Server and Emulate stream
 ```
 OPT=-Dgod ./run-ingest-eth.sh server -f feed/tx-4000.log --throttle=250
 ./intercept-create.sh
+```
+
+Run Server with 2 streams (tx and block)
+
+```
+OPT=-Dgod ./run-intercept.sh server --feed.tx=feed/tx-4000.log --feed.block=feed/blocks-1.log --throttle=100
 ```

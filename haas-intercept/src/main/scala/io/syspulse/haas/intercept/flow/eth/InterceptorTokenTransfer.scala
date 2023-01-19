@@ -33,6 +33,7 @@ import io.syspulse.haas.intercept.store.InterceptionStore
 class InterceptorTokenTransfer(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
   extends Interceptor[TokenTransfer](interceptionStore,scriptStore,alarmThrottle,interceptions) {
   
+  def entity():String = "token"
   override def decode(t:TokenTransfer):Map[String,Any] = {
     Map(
       ("token_address" -> t.contract), 

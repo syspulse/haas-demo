@@ -44,8 +44,17 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
 
   @volatile
   var interceptions:Map[Interception.ID,Interception] = 
-    interceptionStore.all.map(ix => ix.id -> ix).toMap ++
-    interceptions0.map(ix => ix.id -> ix).toMap
+    interceptionStore
+      .all
+      .filter(ix => ix.entity == entity())
+      .map(ix => ix.id -> ix)
+      .toMap ++
+    interceptions0
+      .filter(ix => ix.entity == entity())
+      .map(ix => ix.id -> ix)
+      .toMap
+
+  def entity():String
 
   def +(ix:Interception) = {
     interceptions = interceptions + (ix.id -> ix)

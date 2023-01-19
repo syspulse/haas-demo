@@ -31,6 +31,8 @@ import io.syspulse.haas.intercept.store.InterceptionStore
 
 class InterceptorTx(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
   extends Interceptor[Tx](interceptionStore,scriptStore,alarmThrottle,interceptions) {
+    
+  def entity():String = "tx"
   
   override def decode(tx:Tx):Map[String,Any] = {
     Map( 
