@@ -120,7 +120,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   }
 
   @GET @Path("/last") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("circ"),summary = "Return Last CirculationSupplys",
+  @Operation(tags = Array("circ"),summary = "Return Last Supplys for list of tokens",
     parameters = Array(      
       new Parameter(name = "tokens", in = ParameterIn.PATH, description = "Tokens set (UNI,RBN). Empty for default set"),
       new Parameter(name = "from", in = ParameterIn.PATH, description = "Page index"),
@@ -133,7 +133,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
       onSuccess(getCirculationSupplyLast(
           if(tokens.isDefined) tokens.get.split(",") else Defaults.TOKEN_SET,
           from.getOrElse(0),
-          size.getOrElse(10),
+          size.getOrElse(Defaults.TOKEN_SET.size),
         )) { r =>
         complete(r)
       }}    
