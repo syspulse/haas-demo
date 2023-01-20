@@ -33,7 +33,7 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
         log.info(s"Loading file: ${f}")
         os.read(f)
       })
-      .map(data => {
+      .map(fileData => fileData.split("\n").map { data =>
         try {
           val coin = data.parseJson.convertTo[CoinInfo]
           log.debug(s"coin=${coin}")
@@ -42,7 +42,8 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
           case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
         }
       })
-      .flatten
+      .flatten // file
+      .flatten // files
 
     vv.foreach(v => this.+(v))
 
