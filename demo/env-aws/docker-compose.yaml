@@ -128,7 +128,7 @@ services:
     container_name: haas-token
     restart: always
     volumes:
-      - "${PWD}/tokens:/data"
+      - "${PWD}/tokens/data100:/data"
     ports:
       - 8091:8080
     networks:
