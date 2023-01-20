@@ -19,6 +19,7 @@ object TokenRegistry {
   val log = Logger(s"${this}")
   
   final case class GetTokens(replyTo: ActorRef[Tokens]) extends Command
+  final case class GetTokensPage(from:Int,size:Int,replyTo: ActorRef[Tokens]) extends Command
   final case class GetToken(id:ID,replyTo: ActorRef[Option[Token]]) extends Command
   final case class SearchToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
   final case class TypingToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
@@ -41,7 +42,13 @@ object TokenRegistry {
 
     Behaviors.receiveMessage {
       case GetTokens(replyTo) =>
-        replyTo ! Tokens(store.all)
+        val tt = store.all
+        replyTo ! Tokens(tt,Some(tt.size))
+        Behaviors.same
+
+      case GetTokensPage(from,size,replyTo) =>
+        val tt = store.???(from,size)
+        replyTo ! Tokens(tt,Some(tt.size))
         Behaviors.same
 
       case GetToken(id, replyTo) =>
@@ -49,11 +56,13 @@ object TokenRegistry {
         Behaviors.same
 
       case SearchToken(txt, replyTo) =>
-        replyTo ! Tokens(store.search(txt))
+        val tt = store.search(txt)
+        replyTo ! Tokens(tt,Some(tt.size))
         Behaviors.same
       
       case TypingToken(txt, replyTo) =>
-        replyTo ! Tokens(store.typing(txt))
+        val tt = store.typing(txt)
+        replyTo ! Tokens(tt,Some(tt.size))
         Behaviors.same
 
       case CreateToken(tokenCreate, replyTo) =>
@@ -65,10 +74,8 @@ object TokenRegistry {
         registry(store1.getOrElse(store))
 
       case RandomToken(replyTo) =>
-        
         //replyTo ! TokenRandomRes(secret,qrImage)
         Behaviors.same
-
       
       case DeleteToken(vid, replyTo) =>
         val store1 = store.del(vid)

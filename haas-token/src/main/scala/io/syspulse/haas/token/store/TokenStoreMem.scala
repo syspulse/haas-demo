@@ -21,11 +21,13 @@ class TokenStoreMem extends TokenStore {
 
   def all:Seq[Token] = tokens.values.toSeq
 
+  def ???(from:Int,size:Int=10) = all.drop(from).take(size)
+
   def size:Long = tokens.size
 
-  def +(token:Token):Try[TokenStore] = { 
-    tokens = tokens + (token.id -> token)
-    log.info(s"${Token}")
+  def +(t:Token):Try[TokenStore] = { 
+    tokens = tokens + (t.id -> t)
+    log.info(s"${t}")
     Success(this)
   }
 

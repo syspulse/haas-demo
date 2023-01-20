@@ -11,7 +11,7 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 
 object TokenElasticJson extends  DefaultJsonProtocol {
-  implicit val fmt = jsonFormat6(Token.apply _)
+  implicit val fmt = jsonFormat7(Token.apply _)
 }
 
 object TokenElastic {

@@ -9,7 +9,3 @@ case class Price(id:Token.ID, ts:Long, v:Double, pair:Option[Token.ID]=None, src
 
   override def getId:Option[Any] = Some(id)
 }
-
-object Price {
-  def id(src:String) = math.abs(src.hashCode)
-}

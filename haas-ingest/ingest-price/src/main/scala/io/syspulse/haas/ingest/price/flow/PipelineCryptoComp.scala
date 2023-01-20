@@ -29,6 +29,7 @@ import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
+import io.syspulse.haas.core.DataSource
 import io.syspulse.haas.ingest.price.CryptoCompJson
 import io.syspulse.haas.ingest.price._
 
@@ -41,7 +42,7 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
 
   import CryptoCompJson._
 
-  val sourceID = Price.id("cryptocomp")
+  val sourceID = DataSource.id("cryptocomp")
 
   val TOKENS_SLOT = "COINS"
 

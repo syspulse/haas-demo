@@ -10,7 +10,7 @@ import io.syspulse.skel.service.JsonCommon
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.serde.TokenJson
 
-final case class Tokens(tokens: immutable.Seq[Token])
+final case class Tokens(tokens: immutable.Seq[Token], total:Option[Long] = None)
 final case class TokenCreateReq(id:String,symbol: String, name:String, contractAddress: Option[String] = None)
 final case class TokenRandomReq()
 final case class TokenActionRes(status: String,id:Option[String])
@@ -20,7 +20,7 @@ object TokenProto extends JsonCommon {
   
   import TokenJson._
 
-  implicit val jf_Tokens = jsonFormat1(Tokens)
+  implicit val jf_Tokens = jsonFormat2(Tokens)
   implicit val jf_TokenRes = jsonFormat1(TokenRes)
   implicit val jf_CreateReq = jsonFormat4(TokenCreateReq)
   implicit val jf_ActionRes = jsonFormat2(TokenActionRes)

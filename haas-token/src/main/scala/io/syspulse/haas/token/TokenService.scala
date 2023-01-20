@@ -11,7 +11,6 @@ import akka.actor.typed.ActorSystem
 import com.typesafe.scalalogging.Logger
 
 import io.syspulse.haas.token._
-import io.syspulse.haas.core.serde._
 import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Token
@@ -47,7 +46,6 @@ object TokenService {
     Await.result(service.create(id,symbol,name),timeout.duration)
   }
 }
-
 
 // --- For tests 
 class TokenServiceSim extends TokenService {

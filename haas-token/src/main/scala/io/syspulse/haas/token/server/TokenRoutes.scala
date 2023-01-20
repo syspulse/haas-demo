@@ -54,6 +54,7 @@ import io.syspulse.haas.serde.TokenJson
 import io.syspulse.haas.token.store.TokenRegistry
 import io.syspulse.haas.token.store.TokenRegistry._
 import io.syspulse.haas.token.server._
+import io.syspulse.haas.core.Defaults
 
 
 @Path("/")
@@ -74,6 +75,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   val metricCreateCount: Counter = Counter.build().name("skel_token_create_total").help("Token creates").register(cr)
   
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
+  def getTokensPage(from:Int,size:Int): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
   def getToken(id: Token.ID): Future[Option[Token]] = registry.ask(GetToken(id, _))
   def getTokenBySearch(txt: String): Future[Tokens] = registry.ask(SearchToken(txt, _))
   def getTokenByTyping(txt: String): Future[Tokens] = registry.ask(TypingToken(txt, _))
@@ -123,16 +125,30 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
     }
   }
 
-
-
   @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("token"), summary = "Return all Tokens",
+  @Operation(tags = Array("token"), summary = "Return Tokens",
+    parameters = Array(      
+      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from"),
+      new Parameter(name = "size", in = ParameterIn.PATH, description = "Page size"),
+    ),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "List of Tokens",content = Array(new Content(schema = new Schema(implementation = classOf[Tokens])))))
   )
   def getTokensRoute() = get {
-    metricGetCount.inc()
-    complete(getTokens())
+    parameters("from".as[Int].optional,"size".as[Int].optional) { (from,size) =>
+      if(size.isDefined)
+        onSuccess(getTokensPage(
+            from.getOrElse(0),
+            size.getOrElse(Defaults.TOKEN_SET.size),
+          )) { r =>
+            metricGetCount.inc()
+            complete(r)
+          }
+      else {
+        metricGetCount.inc()
+        complete(getTokens())
+      }
+    }
   }
 
   @DELETE @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
@@ -191,14 +207,18 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
           createTokenRandomRoute()
         },
         pathPrefix("search") {
-          pathPrefix(Segment) { txt => 
-            getTokenSearch(txt)
-          }
+          authenticate()(authn =>
+            pathPrefix(Segment) { txt => 
+              getTokenSearch(txt)
+            }
+          )
         },
         pathPrefix("typing") {
-          pathPrefix(Segment) { txt => 
-            getTokenTyping(txt)
-          }
+          authenticate()(authn =>
+            pathPrefix(Segment) { txt => 
+              getTokenTyping(txt)
+            }
+          )
         },
         pathPrefix(Segment) { id =>         
           pathEndOrSingleSlash {

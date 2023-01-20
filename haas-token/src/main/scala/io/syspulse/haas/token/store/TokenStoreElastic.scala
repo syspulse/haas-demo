@@ -40,7 +40,8 @@ class TokenStoreElastic(uri:String) extends TokenStore {
         source("name").toString,
         source.get("contractAddress").map(_.toString),
         source.get("category").map(_.asInstanceOf[List[String]]).getOrElse(List()),
-        source.get("icon").map(_.toString)
+        source.get("icon").map(_.toString),
+        source.get("src").map(_.asInstanceOf[Long])
       ))
     }
   }
@@ -66,17 +67,30 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     }.await
     r.result.count
   }
+  
+  def ???(from:Int,size:Int=10) = {
+    val r = client.execute {
+      ElasticDsl
+      .search(elasticUri.index)
+      .matchAllQuery()
+      .from(from)
+      .size(size)
+    }.await
 
-  def +(yell:Token):Try[TokenStore] = { 
-    Failure(new UnsupportedOperationException(s"not implemented: ${yell}"))
+    log.info(s"r=${r}")
+    r.result.to[Token].toList
+  }
+
+  def +(t:Token):Try[TokenStore] = { 
+    Failure(new UnsupportedOperationException(s"not implemented: ${t}"))
   }
 
   def del(id:ID):Try[TokenStore] = { 
     Failure(new UnsupportedOperationException(s"not implemented: ${id}"))
   }
 
-  def -(yell:Token):Try[TokenStore] = {     
-    Failure(new UnsupportedOperationException(s"not implemented: ${yell}"))
+  def -(t:Token):Try[TokenStore] = {     
+    Failure(new UnsupportedOperationException(s"not implemented: ${t}"))
   }
 
   def ?(id:ID):Option[Token] = {

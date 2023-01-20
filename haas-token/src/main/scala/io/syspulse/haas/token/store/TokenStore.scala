@@ -21,12 +21,14 @@ trait TokenStore extends Store[Token,ID] {
   def all:Seq[Token]
   def size:Long
 
-  def ??(txt:String):List[Token]
+  def ??(txt:String):Seq[Token]
+
+  def ???(from:Int,size:Int=10):Seq[Token]
 
   def connect(uri:String,index:String):TokenStore = this
 
-  def scan(txt:String):List[Token]
-  def search(txt:String):List[Token]
-  def grep(txt:String):List[Token]
-  def typing(txt:String):List[Token]
+  def scan(txt:String):Seq[Token]
+  def search(txt:String):Seq[Token]
+  def grep(txt:String):Seq[Token]
+  def typing(txt:String):Seq[Token]
 }
