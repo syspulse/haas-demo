@@ -101,7 +101,7 @@ object InterceptionRegistry {
             replyTo ! Some(ix)
             store1
           case None => 
-            log.warn(s"Interceptor not found for: '${entity}'")
+            log.warn(s"Interceptor not found: entity='${entity}'")
             replyTo ! None
             Success(store)
         }
@@ -110,22 +110,29 @@ object InterceptionRegistry {
         registry(store1.getOrElse(store),storeScript,interceptors)
 
       case CommandInterception(c, replyTo) =>
-        
-        val status = c.command match {
-          case "start" => 
-            val st = store.start(c.id.get)
-            interceptors.values.foreach(_.start(c.id.get))
-            st.toString
-            
-          case "stop" => 
-            val st = store.stop(c.id.get)
-            interceptors.values.foreach(_.stop(c.id.get))
-            st.toString
+        val ix = (c.id.flatMap(id => store.?(id)))
 
-          case _ => "unknown"
+        if(! ix.isDefined) {
+          log.warn(s"Interceptor not found: id='${c.id}'")
+          replyTo ! InterceptionActionRes("not found",c.id.map(_.toString))  
+        } else {
+          val id = ix.get.id
+          val status = c.command match {
+            case "start" => 
+              val st = store.start(id)
+              interceptors.values.foreach(_.start(id))
+              st.toString
+              
+            case "stop" => 
+              val st = store.stop(id)
+              interceptors.values.foreach(_.stop(id))
+              st.toString
+
+            case _ => "unknown"
+          }
+          
+          replyTo ! InterceptionActionRes(status,Some(id.toString))
         }
-        
-        replyTo ! InterceptionActionRes(status,Some(c.id.toString))
         Behaviors.same
       
       case DeleteInterception(id, replyTo) =>
