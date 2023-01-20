@@ -57,8 +57,9 @@ case class CirculationSupply(
   id: CirculationSupply.ID,
   tokenId:Token.ID,  
   name:String = s"Supply",
-  //history:SortedSet[Circulation] = SortedSet() // sorted list of Daily snapshots
-  history:List[Circulation] = List() // sorted list of Daily snapshots
+  
+  history:SortedSet[Circulation] = SortedSet() // sorted list of Daily snapshots
+  //history:List[Circulation] = List() // sorted list of Daily snapshots
 
   ) {//extends Ingestable {
   

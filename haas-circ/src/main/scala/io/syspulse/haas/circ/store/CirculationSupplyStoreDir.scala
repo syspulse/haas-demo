@@ -14,10 +14,11 @@ import spray.json._
 import DefaultJsonProtocol._
 
 import os._
+import scala.collection.SortedSet
 
 
 // temporary structure to catch tokenId
-  case class TokenCirculating(tid:String,circ:Circulation)
+case class TokenCirculating(tid:String,circ:Circulation)
 
 // Preload from file during start
 class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) extends CirculationSupplyStoreMem {
@@ -57,7 +58,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         name = tid,
         tokenId = "uniswap", // FIX ME !
 
-        history = circ.map(_.circ).toList
+        history = SortedSet.from[Circulation](circ.map(_.circ))
       )
     }}.toSeq
     

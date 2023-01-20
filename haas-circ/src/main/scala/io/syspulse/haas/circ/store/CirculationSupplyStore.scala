@@ -15,6 +15,7 @@ import io.syspulse.haas.circ.Config
 import io.syspulse.haas.circ.CirculationSupply
 import io.syspulse.haas.circ.Circulation
 import io.syspulse.haas.core.Defaults
+import scala.collection.SortedSet
 
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
 
@@ -34,7 +35,7 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
   def size:Long
 
   def lastByToken(tid:String):Option[CirculationSupply] = {
-    this.findByToken(tid,0L,Long.MaxValue).lastOption
+    this.findByToken(tid,0L,Long.MaxValue).map(cs => cs.copy(history = SortedSet(cs.history.last)))
   }
 
   def lastByTokens(tokens:Seq[String] = Defaults.TOKEN_SET,from:Int=0,size:Int=10):Seq[CirculationSupply] = {

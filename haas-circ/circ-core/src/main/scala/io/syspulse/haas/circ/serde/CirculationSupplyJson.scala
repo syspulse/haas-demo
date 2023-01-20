@@ -14,7 +14,7 @@ import io.syspulse.haas.circ
 import io.syspulse.haas.circ._
 
 object CirculationSupplyJson extends JsonCommon {
-  
+  import JsonCommon._
   import DefaultJsonProtocol._
 
   implicit val jf_sc = jsonFormat2(SupplyCategory.apply _)

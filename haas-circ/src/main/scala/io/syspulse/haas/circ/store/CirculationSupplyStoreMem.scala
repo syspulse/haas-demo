@@ -38,7 +38,7 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
         val ts2 = if(ts1 == Long.MaxValue) ts1 else ts1 + 1
         // WARNING: A bit too much objects for sorting
         val history = immutable.SortedSet.from(cs.history).range(Circulation(ts = ts0),Circulation(ts = ts1))
-        Some(cs.copy(history = history.toList))
+        Some(cs.copy(history = history))
       case None => None
     }
   }
@@ -52,7 +52,7 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
         val ts2 = if(ts1 == Long.MaxValue) ts1 else ts1 + 1
         // WARNING: A bit too much objects for sorting
         val history = immutable.SortedSet.from(cs.history).range(Circulation(ts = ts0),Circulation(ts = ts1))
-        Some(cs.copy(history = history.toList))
+        Some(cs.copy(history = history))
       case None => None
     }
   }
