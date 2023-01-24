@@ -66,6 +66,7 @@ class InterceptionStoreMem extends InterceptionStore {
       case None => None
     }
     log.info(s"stop: ${ix}")
+    flush(ix)
     ix
   }
 
@@ -75,6 +76,7 @@ class InterceptionStoreMem extends InterceptionStore {
       case None => None
     }
     log.info(s"start: ${ix}")
+    flush(ix)
     ix
   }
 

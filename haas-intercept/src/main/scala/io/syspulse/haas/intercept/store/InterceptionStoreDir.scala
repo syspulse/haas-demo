@@ -49,7 +49,7 @@ class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
     log.info(s"Loaded store: ${size}")
   }
 
-  def writeFile(ix:Interception) = os.write.over(os.Path(dir,os.pwd) / s"${ix.id}.json",ix.toJson.prettyPrint)
+  def writeFile(ix:Interception) = os.write.over(os.Path(dir,os.pwd) / s"${ix.id}.json",ix.toJson.compactPrint)
   def delFile(ix:Interception) = os.remove(os.Path(dir,os.pwd) / s"${ix.id}.json")
   def delFile(id:Interception.ID) = os.remove(os.Path(dir,os.pwd) / s"${id}.json")
 

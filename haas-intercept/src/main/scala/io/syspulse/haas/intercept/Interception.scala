@@ -26,13 +26,17 @@ case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, ala
   def ++(value:Long = 1) = count = count + value
 
   def remember(alarm:InterceptionAlarm) = {
-    if(history.size < Interception.HISTORY_LIMIT)
-      history = history :+ alarm
+    if(history.size > Interception.HISTORY_LIMIT)
+      history = history.take(Interception.HISTORY_LIMIT - 1)
+    
+    // add to the head to have it sorted
+    history = history.+:(alarm)
+    println(history)
   }
 }
 
 object Interception {
   type ID = UUID
 
-  val HISTORY_LIMIT = 10
+  val HISTORY_LIMIT = 100
 }

@@ -45,14 +45,14 @@ class Alarms(throttle:Long = 10000L) {
         // group by alarmId
         val queueById = queue.groupBy(_.iid)
         
-        queueById.foreach{ case(iid,ixs) => {
+        queueById.foreach{ case(iid,iaa) => {
           
-          val allTo = ixs.map(_.alarm).flatten.distinct.toList
+          val allTo = iaa.map(_.alarm).flatten.distinct.toList
           val allNotify = Notification.parseUri(allTo)._1
 
           val txt = 
             //ixs.foldLeft("")((s,ia) => s + s"InterceptionAlarm: ${ia}\n" )
-            ixs.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
+            iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
           val msg = //s"${Console.GREEN}InterceptionAlarm for ${iid}:\n${Console.YELLOW}${txt}${Console.RESET}"
             txt
           val title = ""//s"Alarms"
@@ -67,7 +67,9 @@ class Alarms(throttle:Long = 10000L) {
 
   def send(ix:InterceptionAlarm):Alarms = {
     // filter only to where there is UserAlarm associtated
-    queue = queue :+ ix
+
+    // LIFO 
+    queue = queue.prepended(ix)
     this
   }
 }
