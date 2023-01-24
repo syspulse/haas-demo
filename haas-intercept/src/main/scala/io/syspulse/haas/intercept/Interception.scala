@@ -30,8 +30,7 @@ case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, ala
       history = history.take(Interception.HISTORY_LIMIT - 1)
     
     // add to the head to have it sorted
-    history = history.+:(alarm)
-    println(history)
+    history = history.+:(alarm)    
   }
 }
 
