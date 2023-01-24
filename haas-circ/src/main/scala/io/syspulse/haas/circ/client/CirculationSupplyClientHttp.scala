@@ -68,7 +68,7 @@ object CirculationSupplyClientHttp {
   implicit val system = ActorSystem(Behaviors.empty, "CirculationSupplyClientHttp")
   implicit val ec = system.executionContext
 
-  def apply(uri:String):CirculationSupplyClientHttp = {
+  def apply(uri:String):CirculationSupplyService = {
     new CirculationSupplyClientHttp(uri)
   }
 }

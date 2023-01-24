@@ -23,7 +23,7 @@ import io.syspulse.haas.core.Token.ID
 
 import io.syspulse.haas.token.elastic.TokenScan
 import io.syspulse.haas.token.elastic.TokenSearch
-import io.syspulse.skel.ingest.uri.ElasticURI
+import io.syspulse.skel.uri.ElasticURI
 
 class TokenStoreElastic(uri:String) extends TokenStore {
   private val log = Logger(s"${this}")
@@ -89,12 +89,11 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     Failure(new UnsupportedOperationException(s"not implemented: ${id}"))
   }
 
-  def -(t:Token):Try[TokenStore] = {     
-    Failure(new UnsupportedOperationException(s"not implemented: ${t}"))
-  }
-
-  def ?(id:ID):Option[Token] = {
-    search(id.toString).headOption
+  def ?(id:ID):Try[Token] = {
+    search(id.toString).headOption match {      
+      case Some(t) => Success(t)
+      case None => Failure(new Exception(s"not found: ${id}"))
+    }
   }
 
   def ??(txt:String):List[Token] = {

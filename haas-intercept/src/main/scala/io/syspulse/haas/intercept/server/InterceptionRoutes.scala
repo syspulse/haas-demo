@@ -51,6 +51,7 @@ import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.script._
 
 import io.syspulse.haas.intercept.script.ScriptJson
+import scala.util.Try
 @Path("/")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
@@ -70,10 +71,10 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   val metricCreateCount: Counter = Counter.build().name("skel_intercept_create_total").help("Interception creates").register(cr)
   
   def getScripts(): Future[Scripts] = registry.ask(GetScripts)
-  def getScript(id: Script.ID): Future[Option[Script]] = registry.ask(GetScript(id, _))
+  def getScript(id: Script.ID): Future[Try[Script]] = registry.ask(GetScript(id, _))
 
   def getInterceptions(): Future[Interceptions] = registry.ask(GetInterceptions)
-  def getInterception(id: Interception.ID): Future[Option[Interception]] = registry.ask(GetInterception(id, _))
+  def getInterception(id: Interception.ID): Future[Try[Interception]] = registry.ask(GetInterception(id, _))
   def findInterceptionsByUser(uid: UUID): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
   

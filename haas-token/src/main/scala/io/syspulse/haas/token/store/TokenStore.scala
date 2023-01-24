@@ -13,11 +13,12 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 
 trait TokenStore extends Store[Token,ID] {
+  def getKey(t:Token):ID = t.id
   
   def +(yell:Token):Try[TokenStore]
-  def -(yell:Token):Try[TokenStore]
+  
   def del(id:ID):Try[TokenStore]
-  def ?(id:ID):Option[Token]
+  def ?(id:ID):Try[Token]
   def all:Seq[Token]
   def size:Long
 

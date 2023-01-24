@@ -14,13 +14,14 @@ import io.syspulse.haas.token.server._
 import io.syspulse.haas.token._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
+import scala.util.Try
 
 object TokenRegistry {
   val log = Logger(s"${this}")
   
   final case class GetTokens(replyTo: ActorRef[Tokens]) extends Command
   final case class GetTokensPage(from:Int,size:Int,replyTo: ActorRef[Tokens]) extends Command
-  final case class GetToken(id:ID,replyTo: ActorRef[Option[Token]]) extends Command
+  final case class GetToken(id:ID,replyTo: ActorRef[Try[Token]]) extends Command
   final case class SearchToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
   final case class TypingToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
   

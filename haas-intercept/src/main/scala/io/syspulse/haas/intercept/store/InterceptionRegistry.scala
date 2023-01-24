@@ -17,15 +17,16 @@ import io.syspulse.haas.intercept.Interception.ID
 import io.syspulse.skel.util.Util
 import io.syspulse.haas.intercept.Interceptor
 import scala.util.Success
+import scala.util.Try
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
   
   final case class GetScripts(replyTo: ActorRef[Scripts]) extends Command
-  final case class GetScript(id:Script.ID,replyTo: ActorRef[Option[Script]]) extends Command
+  final case class GetScript(id:Script.ID,replyTo: ActorRef[Try[Script]]) extends Command
 
   final case class GetInterceptions(replyTo: ActorRef[Interceptions]) extends Command
-  final case class GetInterception(id:ID,replyTo: ActorRef[Option[Interception]]) extends Command
+  final case class GetInterception(id:ID,replyTo: ActorRef[Try[Interception]]) extends Command
   final case class FindInterceptionsByUser(uid:ID,replyTo: ActorRef[Interceptions]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   
@@ -78,7 +79,7 @@ object InterceptionRegistry {
           // special case to reference script body
           if(c.script.trim.startsWith("id://")) {
             val id = c.script.trim.stripPrefix("id://")
-            val s = storeScript.?(id)
+            val s = storeScript.?(id).toOption
             if(s.isDefined)
               s.get.src
             else
@@ -110,7 +111,7 @@ object InterceptionRegistry {
         registry(store1.getOrElse(store),storeScript,interceptors)
 
       case CommandInterception(c, replyTo) =>
-        val ix = (c.id.flatMap(id => store.?(id)))
+        val ix:Option[Interception] = c.id.flatMap(id => store.?(id).toOption)
 
         if(! ix.isDefined) {
           log.warn(s"Interceptor not found: id='${c.id}'")

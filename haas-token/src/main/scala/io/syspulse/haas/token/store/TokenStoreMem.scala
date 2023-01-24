@@ -38,11 +38,14 @@ class TokenStoreMem extends TokenStore {
     if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
-  def -(token:Token):Try[TokenStore] = {     
-    del(token.id)
-  }
+  // def -(token:Token):Try[TokenStore] = {     
+  //   del(token.id)
+  // }
 
-  def ?(id:ID):Option[Token] = tokens.get(id)
+  def ?(id:ID):Try[Token] = tokens.get(id) match {
+    case Some(t) => Success(t)
+    case None => Failure(new Exception(s"not found: ${id}"))
+  }
 
   def ??(txt:String):List[Token] = {    
     tokens.values.filter(v => {

@@ -36,11 +36,10 @@ class InterceptionStoreMem extends InterceptionStore {
     if(sz == interceptions.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
-  def -(ix:Interception):Try[InterceptionStore] = {     
-    del(ix.id)
+  def ?(id:ID):Try[Interception] = interceptions.get(id) match {
+    case Some(ix) => Success(ix)
+    case None => Failure(new Exception(s"not found: ${id}"))
   }
-
-  def ?(id:ID):Option[Interception] = interceptions.get(id)
 
   def findByUser(uid:UUID):List[Interception] = {    
     interceptions.values.filter(i => {

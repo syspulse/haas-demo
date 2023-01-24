@@ -221,8 +221,28 @@ def appAssemblyConfig(appName:String,appMainClass:String) =
 // ======================================================================================= Modules ==============================
 
 lazy val root = (project in file("."))
-  .aggregate(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core)
-  .dependsOn(haas_core, haas_token, ingest_gecko, ingest_eth, circ_core, ingest_price)
+  .aggregate(
+      haas_core, 
+      haas_token, 
+      ingest_gecko, 
+      ingest_eth,
+      ingest_price,
+      circ_core,
+      circ_harvest,
+      haas_circ,
+      haas_intercept
+  )
+  .dependsOn(
+    haas_core, 
+      haas_token, 
+      ingest_gecko, 
+      ingest_eth,
+      ingest_price,
+      circ_core,
+      circ_harvest,
+      haas_circ,
+      haas_intercept
+  )
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
     

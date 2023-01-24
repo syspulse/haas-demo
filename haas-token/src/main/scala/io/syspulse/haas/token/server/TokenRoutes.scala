@@ -55,6 +55,7 @@ import io.syspulse.haas.token.store.TokenRegistry
 import io.syspulse.haas.token.store.TokenRegistry._
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Defaults
+import scala.util.Try
 
 
 @Path("/")
@@ -76,7 +77,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
   def getTokensPage(from:Int,size:Int): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
-  def getToken(id: Token.ID): Future[Option[Token]] = registry.ask(GetToken(id, _))
+  def getToken(id: Token.ID): Future[Try[Token]] = registry.ask(GetToken(id, _))
   def getTokenBySearch(txt: String): Future[Tokens] = registry.ask(SearchToken(txt, _))
   def getTokenByTyping(txt: String): Future[Tokens] = registry.ask(TypingToken(txt, _))
 

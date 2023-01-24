@@ -109,7 +109,7 @@ object TokenClientHttp {
   implicit val system = ActorSystem(Behaviors.empty, "TokenClientHttp")
   implicit val ec = system.executionContext
 
-  def apply(uri:String):TokenClientHttp = {
+  def apply(uri:String):TokenService = {
     new TokenClientHttp(uri)
   }
 }

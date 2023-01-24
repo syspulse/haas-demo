@@ -33,6 +33,7 @@ import io.syspulse.haas.intercept.alarm.Alarms
 
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.store.ScriptStore
+import scala.util.Failure
 
 abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions0:Seq[Interception]) {
   protected val log = Logger(s"${this.getClass()}")
@@ -87,7 +88,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
         log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")
       
         scriptStore.?(ix.scriptId) match {
-          case Some(script) => {
+          case Success(script) => {
             
             val engine = ScriptEngine.engines.get(script.typ)
             if(engine.isDefined) {
@@ -119,7 +120,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
               None
             }          
           }
-          case None => None
+          case Failure(e) => None
         }            
       }).toSeq
 

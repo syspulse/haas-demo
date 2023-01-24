@@ -12,11 +12,11 @@ import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.Interception.ID
 
 trait InterceptionStore extends Store[Interception,ID] {
-  
+  def getKey(ix: Interception): ID = ix.id
+
   def +(ix:Interception):Try[InterceptionStore]
-  def -(ix:Interception):Try[InterceptionStore]
   def del(id:ID):Try[InterceptionStore]
-  def ?(id:ID):Option[Interception]
+  def ?(id:ID):Try[Interception]
 
   def findByUser(uid:ID):List[Interception]
   def all:Seq[Interception]

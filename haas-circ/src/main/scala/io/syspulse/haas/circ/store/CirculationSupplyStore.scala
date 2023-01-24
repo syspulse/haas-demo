@@ -16,18 +16,21 @@ import io.syspulse.haas.circ.CirculationSupply
 import io.syspulse.haas.circ.Circulation
 import io.syspulse.haas.core.Defaults
 import scala.collection.SortedSet
+import scala.util.Success
 
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
-
+  def getKey(c: CirculationSupply): CirculationSupply.ID = c.id
   def +(c:CirculationSupply):Try[CirculationSupplyStore]
 
-  def -(c:CirculationSupply):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
   def del(id:CirculationSupply.ID):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
 
   def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply]
   def findByToken(tid:String,ts0:Long,ts1:Long):Option[CirculationSupply]
 
-  def ?(id:CirculationSupply.ID):Option[CirculationSupply] = this.last(id)
+  def ?(id:CirculationSupply.ID):Try[CirculationSupply] = this.last(id) match {
+    case Some(y) => Success(y)
+    case None => Failure(new Exception(s"not found: ${id}"))
+  }
 
   def last(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
   

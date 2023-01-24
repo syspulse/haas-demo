@@ -5,6 +5,7 @@ import io.jvm.uuid._
 import scala.concurrent.Future
 import akka.util.Timeout
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import akka.actor.typed.ActorSystem
 
@@ -15,10 +16,11 @@ import io.syspulse.haas.token.server.TokenProto
 import io.syspulse.haas.token.server._
 import io.syspulse.haas.core.Token
 
-import io.syspulse.skel.AwaitableService
+import io.syspulse.skel.ExternalService
 import io.syspulse.haas.token.client.TokenClientHttp
 
-trait TokenService extends AwaitableService[TokenService] {
+trait TokenService extends ExternalService[TokenService] {
+
   def search(txt:String):Future[Tokens]
   def create(id:String,symbol:String,name:String):Future[Option[Token]]
   
@@ -57,4 +59,7 @@ class TokenServiceSim extends TokenService {
 
   def get(id:String):Future[Option[Token]] = Future.successful(None)
   def all():Future[Tokens] = Future.successful(Tokens(Seq()))
+
+  def withAccessToken(token:String):TokenServiceSim = this
+  def withTimeout(timeout:Duration = Duration(1000, TimeUnit.MILLISECONDS)):TokenServiceSim = this
 }

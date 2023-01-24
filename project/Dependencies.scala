@@ -17,8 +17,8 @@ object Dependencies {
     lazy val janinoVersion = "3.0.16" //"3.1.6" //"3.0.16"
     lazy val elastic4sVersion = "7.17.3"
 
-    lazy val skelVersion = "0.0.5"
-    lazy val appVersion = "0.0.1"
+    lazy val skelVersion = "0.0.6"
+    lazy val appVersion = "0.0.2"
     lazy val jarPrefix = "server-"
     
     lazy val appDockerRoot = "/app"
@@ -186,16 +186,16 @@ object Dependencies {
     val libPdfGen = Seq(libFlyingSaucer,libThymeleaf,libNekoHtml,libJSoup)
     
 
-    val libSkelCore =         "io.syspulse"                     %% "skel-core"                     % skelVersion
-    val libSkelAuthCore =     "io.syspulse"                     %% "skel-auth-core"                % skelVersion
-    val libSkelCrypto =       "io.syspulse"                     %% "skel-crypto"                   % skelVersion
-    val libSkelIngest =       "io.syspulse"                     %% "skel-ingest"                   % skelVersion
-    val libSkelIngestFlow =   "io.syspulse"                     %% "ingest-flow"                   % skelVersion
-    val libSkelIngestElastic ="io.syspulse"                     %% "skel-elastic"                  % skelVersion
-    val libSkelDSL =          "io.syspulse"                     %% "skel-dsl"                      % skelVersion
-    val libSkelNotify =       "io.syspulse"                     %% "skel-notify"                   % skelVersion
-    val libSkelCli =          "io.syspulse"                     %% "skel-cli"                   % skelVersion
+    val libSkelCore =         "io.syspulse"                     %% "skel-core"                      % skelVersion
+    val libSkelAuthCore =     "io.syspulse"                     %% "skel-auth-core"                 % skelVersion
+    val libSkelCrypto =       "io.syspulse"                     %% "skel-crypto"                    % skelVersion
+    val libSkelIngest =       "io.syspulse"                     %% "skel-ingest"                    % skelVersion
+    val libSkelIngestFlow =   "io.syspulse"                     %% "ingest-flow"                    % skelVersion
+    val libSkelIngestElastic ="io.syspulse"                     %% "ingest-elastic"                 % skelVersion
+    val libSkelDSL =          "io.syspulse"                     %% "skel-dsl"                       % skelVersion
+    val libSkelNotify =       "io.syspulse"                     %% "skel-notify"                    % skelVersion
+    val libSkelCli =          "io.syspulse"                     %% "skel-cli"                       % skelVersion
     
-    val libEthAbi =           "com.github.lbqds"                     %% "ethabi"                     % "0.4.0"
+    val libEthAbi =           "com.github.lbqds"                %% "ethabi"                         % "0.4.0"
   }
   

@@ -29,8 +29,9 @@ class ScriptStoreMem extends ScriptStore {
     Success(this)
   }
 
-  def ?(id:ID):Option[Script] = {
-    scripts.get(id)
+  def ?(id:ID):Try[Script] = scripts.get(id) match {
+    case Some(s) => Success(s)
+    case None => Failure(new Exception(s"not found: ${id}"))
   }
 
   def ??(txt:String):List[Script] = {    
