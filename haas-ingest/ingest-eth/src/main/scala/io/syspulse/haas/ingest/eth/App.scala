@@ -35,7 +35,7 @@ object App extends skel.Server {
         
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
-        ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
+        ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log|event) def=${d.entity}"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -104,7 +104,7 @@ object App extends skel.Server {
           case "token" =>
             new PipelineEthTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
 
-          case "log" =>
+          case "log" | "event" =>
             new PipelineEthLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
 
           case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)

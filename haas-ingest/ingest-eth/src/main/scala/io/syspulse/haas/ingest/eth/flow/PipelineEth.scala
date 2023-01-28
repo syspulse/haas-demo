@@ -29,7 +29,7 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.{ Block, Tx, TokenTransfer }
+import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
@@ -140,8 +140,8 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
                     transaction_index.toInt,
                     hash,
                     block_number.toLong,
-                    from_address,
-                    Option(to_address),
+                    from_address.toLowerCase(),
+                    Option(to_address.toLowerCase()),
                     gas.toLong,
                     BigInt(gas_price),
                     input,
@@ -158,8 +158,8 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
                     transaction_index.toInt,
                     hash,
                     block_number.toLong,
-                    from_address,
-                    Option(to_address),
+                    from_address.toLowerCase(),
+                    Option(to_address.toLowerCase()),
                     gas.toLong,
                     BigInt(gas_price),
                     input,
@@ -191,7 +191,7 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
         val ts = tt.blockTimestamp
         latestTs.set(ts * 1000L)
 
-        Seq(TokenTransfer(ts, tt.blockNumber, tt.tokenAddress, tt.from, tt.to, tt.value, tt.txHash))
+        Seq(TokenTransfer(ts, tt.blockNumber, tt.tokenAddress.toLowerCase(), tt.from.toLowerCase(), tt.to.toLowerCase(), tt.value, tt.txHash))
       } else {
         // assume CSV
         // ignore header
@@ -209,12 +209,60 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
                  Seq(TokenTransfer(
                     ts,
                     block_number.toLong,
-                    contract_address,
-                    from_address,
-                    to_address,
+                    contract_address.toLowerCase(),
+                    from_address.toLowerCase(),
+                    to_address.toLowerCase(),
                     BigInt(value),
                     transaction_hash
                   ))      
+            case _ => 
+              log.error(s"failed to parse: '${data}'")
+              Seq()
+          }
+          tt
+        }
+      }
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
+  }
+
+  def parseEvent(data:String):Seq[Event] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val tt = data.parseJson.convertTo[EthLog]
+        
+        val ts = tt.block_timestamp
+        latestTs.set(ts * 1000L)
+
+        Seq(Event(ts, tt.block_number, tt.address, tt.data, tt.transaction_hash, tt.topics))
+      } else {
+        // assume CSV
+        // ignore header
+        // 
+        if(data.stripLeading().startsWith("log_index")) {
+          Seq.empty
+        } else {
+          val tt = data.split(",").toList match {
+            case block_timestamp :: block_number :: address :: data :: 
+              transaction_hash :: log_index :: topics :: Nil =>
+            
+              val ts = block_timestamp.toLong
+              latestTs.set(ts * 1000L)
+
+              Seq(Event(
+                ts,
+                block_number.toLong,
+                address.toLowerCase(),
+                data,
+                transaction_hash,
+                Util.csvToList(topics)
+              ))      
             case _ => 
               log.error(s"failed to parse: '${data}'")
               Seq()

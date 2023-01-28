@@ -1,7 +1,7 @@
 export SMTP_HOST=email-smtp.eu-west-1.amazonaws.com:587
 export SMTP_USER=AKIAZOOK72NSPEQHWWXN
 export SMTP_PASS=
-export SMTP_FROM=no-reply@hacken.cloud
+export SMTP_FROM=haas@hacken.cloud
 
 export AWS_ACCOUNT=649502643044
 export AWS_ACCESS_KEY_ID=

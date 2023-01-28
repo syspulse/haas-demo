@@ -52,6 +52,7 @@ import io.syspulse.haas.intercept.script._
 
 import io.syspulse.haas.intercept.script.ScriptJson
 import scala.util.Try
+import akka.http.scaladsl.model.headers.RawHeader
 @Path("/")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
@@ -77,6 +78,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def getInterception(id: Interception.ID): Future[Try[Interception]] = registry.ask(GetInterception(id, _))
   def findInterceptionsByUser(uid: UUID): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
+  def getHistory(id: Interception.ID): Future[Try[String]] = registry.ask(GetHistory(id, _))
   
   def createInterception(interceptCreate: InterceptionCreateReq): Future[Option[Interception]] = registry.ask(CreateInterception(interceptCreate, _))
   def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
@@ -96,16 +98,33 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
-  @GET @Path("/user/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @GET @Path("/user/{uid}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Find Interception by uid",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id")),
-    responses = Array(new ApiResponse(responseCode="200",description = "Interception returned",content=Array(new Content(schema=new Schema(implementation = classOf[Interception])))))
+    parameters = Array(new Parameter(name = "uid", in = ParameterIn.PATH, description = "User id")),
+    responses = Array(new ApiResponse(responseCode="200",description = "Interceptions",content=Array(new Content(schema=new Schema(implementation = classOf[Interception])))))
   )
   def getInterceptionsFindByUserRoute(uid: String) = get {
     rejectEmptyResponse {
       onSuccess(findInterceptionsByUser(UUID(uid))) { r =>
         metricGetCount.inc()
         complete(r)
+      }
+    }
+  }
+
+  @GET @Path("/{id}/history") @Produces(Array(MediaType.TEXT_PLAIN))
+  @Operation(tags = Array("intercept"),summary = "Download history as CSV file",
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "intercept id")),
+    responses = Array(new ApiResponse(responseCode="200",description = "History csv file",content=Array(new Content())))
+  )
+  def getHistoryRoute(id:String) = get {
+    rejectEmptyResponse {
+      onSuccess(getHistory(UUID(id))) { r =>
+        //complete(StatusCodes.OK, List(`Content-Type`(`text/csv(UTF-8)`)), r)
+        val entity = r.map(r => HttpEntity(ContentTypes.`text/csv(UTF-8)`, r))
+        respondWithHeaders(RawHeader("Content-Disposition", s"attachment;filename=${id}.csv")) {
+          complete(OK -> entity)
+        }
       }
     }
   }
@@ -236,6 +255,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
             pathPrefix(Segment) { uid => 
               authorize(Permissions.isUser(UUID(uid),authn)) {
                 getInterceptionsFindByUserRoute(uid)
+                
               }
             } ~ 
             pathEndOrSingleSlash {
@@ -243,14 +263,19 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
             }
           })
         },
-        pathPrefix(Segment) { id =>         
+        pathPrefix(Segment) { id => 
+          authenticate()(authn =>
+            pathPrefix("history") {
+              getHistoryRoute(id)
+            }
+          ) ~
           pathEndOrSingleSlash {
-            authenticate()(authn =>              
+            authenticate()(authn =>
               getInterceptionRoute(id)
               ~ 
               deleteInterceptionRoute(id)
               ~
-              commandInterceptionRoute(UUID(id))
+              commandInterceptionRoute(UUID(id))              
             )        
           }
         }

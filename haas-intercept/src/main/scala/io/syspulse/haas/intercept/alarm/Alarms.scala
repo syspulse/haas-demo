@@ -50,12 +50,10 @@ class Alarms(throttle:Long = 10000L) {
           val allTo = iaa.map(_.alarm).flatten.distinct.toList
           val allNotify = Notification.parseUri(allTo)._1
 
-          val txt = 
-            //ixs.foldLeft("")((s,ia) => s + s"InterceptionAlarm: ${ia}\n" )
-            iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
-          val msg = //s"${Console.GREEN}InterceptionAlarm for ${iid}:\n${Console.YELLOW}${txt}${Console.RESET}"
-            txt
-          val title = ""//s"Alarms"
+          val txt = iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
+          
+          val msg = txt
+          val title = s"Alarms: ${iaa.size} (${iid})"
 
           Notification.broadcast(allNotify.receviers,title,msg)      
         }}

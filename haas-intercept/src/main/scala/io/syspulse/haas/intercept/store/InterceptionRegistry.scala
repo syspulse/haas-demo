@@ -29,6 +29,7 @@ object InterceptionRegistry {
   final case class GetInterception(id:ID,replyTo: ActorRef[Try[Interception]]) extends Command
   final case class FindInterceptionsByUser(uid:ID,replyTo: ActorRef[Interceptions]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
+  final case class GetHistory(id:Interception.ID,replyTo: ActorRef[Try[String]]) extends Command
   
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Option[Interception]]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
@@ -63,6 +64,14 @@ object InterceptionRegistry {
         replyTo ! store.?(id)
         Behaviors.same
       
+      case GetHistory(id, replyTo) =>
+        val ix = store.?(id)
+        val csv = ix.map(ix => {
+          ix.history.foldLeft("")( (o,h) => o + Util.toCSV(h) + "\n")
+        })
+        replyTo ! csv
+        Behaviors.same      
+
       case FindInterceptionsByUser(uid, replyTo) =>
         replyTo ! Interceptions(store.findByUser(uid))
         Behaviors.same

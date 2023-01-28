@@ -14,12 +14,15 @@ import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
+import io.syspulse.skel.crypto.eth.abi._
+
 import io.syspulse.haas.intercept.flow._
 import io.syspulse.haas.intercept.flow.eth._
 import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.store._
 import io.syspulse.haas.intercept.server._
 
+import io.syspulse.haas.intercept.flow.eth.InterceptorTokenTransfer
 case class Config(  
   host:String="0.0.0.0",
   port:Int=8080,
@@ -35,7 +38,10 @@ case class Config(
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
 
-  abi:String = "abi/",
+  abiStore: String = "dir://store/abi",
+  eventStore:String = "dir://store/event",
+  funStore:String = "dir://store/fun",
+
   source:String="",
   
   size:Long = Long.MaxValue,
@@ -50,7 +56,7 @@ case class Config(
   
   expr:String = "",
   
-  datastore:String = "dir://store",
+  datastore:String = "dir://store/intercept",
   scripts:String = "dir://scripts",  
 
   filter:Seq[String] = Seq(),
@@ -96,8 +102,9 @@ object App extends skel.Server {
         
         ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
         ArgString('s', "scripts",s"datastore for Scripts to execute on TX (def=${d.scripts})"),
-        ArgString('_', "abi",s"directory with ABI jsons (format: NAME-0xaddress.json) (def=${d.abi}"),
-
+        ArgString('_', "store.abi",s"ABI definitions store (def: ${d.abiStore})"),
+        ArgString('_', "store.event",s"Event Signatures store (def: ${d.eventStore})"),
+        ArgString('_', "store.fun",s"Function signatures store (def: ${d.funStore})"),
 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
@@ -137,7 +144,9 @@ object App extends skel.Server {
       alarms = c.getListString("alarms",d.alarms),
       alarmsThrottle = c.getLong("alarms.throttle").getOrElse(d.alarmsThrottle),
 
-      abi = c.getString("abi").getOrElse(d.abi),
+      abiStore = c.getString("store.abi").getOrElse(d.abiStore),
+      eventStore = c.getString("store.event").getOrElse(d.eventStore),
+      funStore = c.getString("store.fun").getOrElse(d.funStore),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
@@ -169,6 +178,29 @@ object App extends skel.Server {
         sys.exit(1)
       }
     }
+
+    // val eventStore = config.eventStore.split("://").toList match {
+    //   case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
+    //   case dir :: Nil => new EventSignatureStoreDir(dir)
+    //   case "mem" :: _ => new SignatureStoreMem[EventSignature]()
+    //   case _ => new SignatureStoreMem[EventSignature]()
+    // }
+
+    // val funcStore = config.funStore.split("://").toList match {
+    //   case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
+    //   case dir :: Nil => new FuncSignatureStoreDir(dir)
+    //   case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
+    //   case _ => new SignatureStoreMem[FuncSignature]()
+    // }
+
+    val abiStore = config.abiStore.split("://").toList match {
+      case "dir" :: dir :: _ => new AbiStoreDir(dir) with AbiStoreStoreSignaturesMem
+      case dir :: Nil => new AbiStoreDir(dir) with AbiStoreStoreSignaturesMem
+      case _ => new AbiStoreDir(config.abiStore) with AbiStoreStoreSignaturesMem
+    }
+
+
+    abiStore.load()
 
     
     val (r,pp) = config.cmd match {
@@ -230,10 +262,14 @@ object App extends skel.Server {
                 new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "token" =>
             new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
-                new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+                new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
           case "erc20" =>
+            // not useful Interceptor, only for Testing
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorERC20(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,config.abi,buildInterceptions(config.alarms)))(config)
+                new InterceptorERC20(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+          case "event" | "log" =>
+            new PipelineEthInterceptEvent(config.feed,config.output, 
+                new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                
         }
 
         (pp.run(),Some(pp))

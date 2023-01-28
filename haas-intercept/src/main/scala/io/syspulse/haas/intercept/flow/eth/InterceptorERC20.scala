@@ -29,32 +29,46 @@ import io.syspulse.haas.ingest.eth.EthEtlJson
 import codegen.Decoder
 import codegen.AbiDefinition
 
-import io.syspulse.crypto.eth.abi._
+import io.syspulse.skel.crypto.eth.abi._
 
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
+import io.syspulse.skel.crypto.eth.abi.AbiStoreRepo
+import io.syspulse.skel.crypto.eth.abi.AbiStore
 
-class InterceptorERC20(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,abi:String,interceptions:Seq[Interception] = Seq()) 
+class InterceptorERC20(abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
   extends InterceptorTx(interceptionStore,scriptStore,alarmThrottle,interceptions) {
 
   override def entity():String = "erc20"
 
-  val erc20 = AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
+  val erc20 = abiStore //AbiStoreRepo.build().withRepo(new AbiStoreDir(dir).load().get
+    //AbiRepo.build().withRepo(new AbiRepoFiles(abi)).load()
+
+  val tokenLabels = Map(
+    "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" -> "UNI",
+    "0x6123b0049f904d730db3c36a31167d9d4121fa6b" -> "RBN",
+    "0xdAC17F958D2ee523a2206206994597C13D831ec7" -> "USDT",
+    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" -> "USDC",
+  )
   
   override def decode(tx:Tx):Map[String,Any] = {
-    val token = erc20.findToken(tx.toAddress.getOrElse(""))
+    // find token name from Labels
+    val token = tokenLabels
+      .find{ case(a,t) => tx.toAddress.map(_.toLowerCase == t.toLowerCase()).getOrElse(false)}
+      .map(_._2)
 
-    val (fromAddress,toAddress,value,name) = if(token.isDefined) {    
+    val (fromAddress,toAddress,value,name) = 
+    {    
       
-      val di = erc20.decodeInput(tx.toAddress.get,tx.input)
+      val di = erc20.decodeInput(tx.toAddress.get,Seq(tx.input),"transfer")
 
       log.debug(s"${token}: ${tx.input}: ${di}")
 
       if(di.isSuccess) {
-        val params = di.get.map(ntv => ntv._3)
+        val params = di.get.params.map(ntv => ntv._3)
                 
         val (_from,_to,_value) = params.size match {
           case 2 => (tx.fromAddress,params(0),params(1))
@@ -67,10 +81,10 @@ class InterceptorERC20(interceptionStore:InterceptionStore,scriptStore:ScriptSto
 
         log.debug(s"ERC20: ${token}: ${_from},${_to} -> ${_value}")
         
-        (_from,_to,_value,token.get.name)
+        (_from,_to,_value,token.get)
 
       } else (tx.fromAddress,"","","")
-    } else (tx.fromAddress,"","","")
+    } 
     
     super.decode(tx) ++ Map( 
       ("token" -> name),

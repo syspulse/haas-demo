@@ -332,7 +332,7 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
       libUpickleLib,
 
       libSkelCrypto,
-      //libEthAbi,
+      libEthAbi,
       libScalaTest % "test"
     ),
      
@@ -433,7 +433,7 @@ lazy val haas_intercept = (project in file("haas-intercept"))
       libUpickleLib,
 
       libSkelCrypto,
-      //libEthAbi,
+      libEthAbi,
       libScalaTest % "test"
     ),
   )
