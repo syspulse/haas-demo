@@ -20,6 +20,7 @@ case class Config(
   host:String="0.0.0.0",
   port:Int=8080,
   uri:String = "/api/v1/circ",
+  httpZip:String = "gzip",
   
   cgUri:String = "",  
   limit:Long = 0L,
@@ -47,6 +48,9 @@ object App extends skel.Server {
         ArgString('h', "http.host",s"listen host (def: ${d.host})"),
         ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
+        
+        ArgString('_', "http.zip",s"Compress large response (def: ${d.httpZip})"),
+        
         ArgString('d', "datastore",s"datastore [elastic://localhost:9200/circ, mem, dir://store, file://circs.json, resources://, resources://file] (def: ${d.datastore})"),
         
         ArgCmd("server","Server"),
@@ -59,6 +63,8 @@ object App extends skel.Server {
       host = c.getString("http.host").getOrElse(d.host),
       port = c.getInt("http.port").getOrElse(d.port),
       uri = c.getString("http.uri").getOrElse(d.uri),
+
+      httpZip = c.getString("http.zip").getOrElse(d.httpZip),
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
       cmd = c.getCmd().getOrElse(d.cmd),
@@ -83,7 +89,7 @@ object App extends skel.Server {
       case "server" => 
         run( config.host, config.port,config.uri,c,
           Seq(
-            (CirculationSupplyRegistry(store),"CirculationSupplyRegistry",(r, ac) => new CirculationSupplyRoutes(r)(ac) )
+            (CirculationSupplyRegistry(store),"CirculationSupplyRegistry",(r, ac) => new CirculationSupplyRoutes(r,config)(ac) )
           )
         )
       case "client" => {        

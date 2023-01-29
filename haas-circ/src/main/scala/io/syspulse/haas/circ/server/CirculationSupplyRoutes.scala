@@ -16,8 +16,9 @@ import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.headers.`Content-Type`
 import akka.http.scaladsl.server.RejectionHandler
 import akka.http.scaladsl.model.StatusCodes._
-import com.typesafe.scalalogging.Logger
+import akka.http.scaladsl.coding.Coders
 
+import com.typesafe.scalalogging.Logger
 import io.jvm.uuid._
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -56,9 +57,11 @@ import io.syspulse.haas.circ.store.CirculationSupplyRegistry._
 import io.syspulse.haas.circ.server._
 import io.syspulse.haas.core.Defaults
 
+import io.syspulse.haas.circ.Config
+
 
 @Path("/")
-class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
+class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
   implicit val system: ActorSystem[_] = context.system
   
@@ -114,7 +117,11 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
             CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
             
             metricGetCount.inc()
-            complete(r)
+            
+            config.httpZip match {
+              case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+              case _ => complete(r)
+            }
         }}
     }
   }
@@ -131,7 +138,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command])(implicit context: Act
   def getCirculationSupplyLastRoute() = get {    
     parameters("tokens".as[String].optional,"from".as[Int].optional,"size".as[Int].optional) { (tokens,from,size) =>
       onSuccess(getCirculationSupplyLast(
-          if(tokens.isDefined) tokens.get.split(",") else Defaults.TOKEN_SET,
+          if(tokens.isDefined) tokens.get.split(",").toIndexedSeq else Defaults.TOKEN_SET,
           from.getOrElse(0),
           size.getOrElse(Defaults.TOKEN_SET.size),
         )) { r =>
