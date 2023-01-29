@@ -1,0 +1,7 @@
+
+%livy.spark
+
+val df0 = spark.read.format("json").option("inferSchema", "true").csv("s3://haas-data-dev/data/dev/ethereum/raw/csv/tokens/2020/09/14")
+val df = df0.toDF("token_address","from_address","to_address","value","transaction_hash","log_index","block_number","ts")
+df.printSchema
+df.count

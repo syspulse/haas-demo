@@ -1,0 +1,7 @@
+FROM jupyter/sparkmagic
+
+#USER root
+#COPY notebooks /home/jovyan/notebooks
+#RUN chown -R $NB_USER /home/jovyan/notebooks
+
+CMD ["start-notebook.sh", "--NotebookApp.base_url='sparkmagic'", "--NotebookApp.iopub_data_rate_limit=1000000000"]

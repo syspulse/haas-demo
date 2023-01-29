@@ -20,7 +20,7 @@ case class Config(
   host:String="0.0.0.0",
   port:Int=8080,
   uri:String = "/api/v1/circ",
-  httpZip:String = "gzip",
+  httpZip:String = "",
   
   cgUri:String = "",  
   limit:Long = 0L,
