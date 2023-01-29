@@ -96,7 +96,11 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
             CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
             
             metricGetCount.inc()
-            complete(r)
+            
+            config.httpZip match {
+              case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+              case _ => encodeResponse { complete(r) }
+            }
         }}
     }
   }
@@ -120,7 +124,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
             
             config.httpZip match {
               case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
-              case _ => complete(r)
+              case _ => encodeResponse { complete(r) }
             }
         }}
     }
@@ -141,20 +145,27 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
           if(tokens.isDefined) tokens.get.split(",").toIndexedSeq else Defaults.TOKEN_SET,
           from.getOrElse(0),
           size.getOrElse(Defaults.TOKEN_SET.size),
-        )) { r =>
-        complete(r)
+        )) { r => config.httpZip match {
+            case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+            case _ => encodeResponse { complete(r) }
+          }
       }}    
   }
 
 
   @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
-  @Operation(tags = Array("circ"), summary = "Return all CirculationSupplys",
+  @Operation(tags = Array("circ"), summary = "Return all CirculationSupplys (gzip support)",
     responses = Array(
       new ApiResponse(responseCode = "200", description = "List of CirculationSupplys",content = Array(new Content(schema = new Schema(implementation = classOf[CirculationSupplys])))))
   )
   def getCirculationSupplysRoute() = get {
     metricGetCount.inc()
-    complete(getCirculationSupplys())
+    onSuccess(getCirculationSupplys()) { r => 
+      config.httpZip match {
+          case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+          case _ => encodeResponse { complete(r) }
+        }
+      }    
   }
 
   val corsAllow = CorsSettings(system.classicSystem)
