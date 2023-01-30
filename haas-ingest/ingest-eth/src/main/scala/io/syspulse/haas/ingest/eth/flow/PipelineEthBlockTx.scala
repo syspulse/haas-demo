@@ -26,30 +26,40 @@ import io.syspulse.skel.ingest.flow.Flows
 import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
-import io.syspulse.haas.core.Tx
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-import java.util.concurrent.atomic.AtomicLong
+
 import io.syspulse.haas.core.Block
 
+import io.syspulse.haas.core.Tx
+import io.syspulse.haas.serde.TxJson
+import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.ingest.eth._
+import io.syspulse.haas.ingest.eth.EthEtlJson._
+
+import io.syspulse.haas.core.Block
+import io.syspulse.haas.serde.BlockJson
+import io.syspulse.haas.serde.BlockJson._
+
 class PipelineEthBlockTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[Tx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  PipelineEth[EthTx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
   override def apiSuffix():String = s"/"
 
-  def parse(data:String):Seq[Tx] = {
+  def parse(data:String):Seq[EthTx] = {
     if(data.isEmpty()) return Seq()
 
     try {
       // detect if it is block
       if(data.contains(""""type": "block"""")) {
-        val block = data.parseJson.convertTo[Block]
+        val block = data.parseJson.convertTo[EthBlock]
         latestTs.set(block.timestamp)
         // skip it
         Seq.empty
       } else {
-        val tx = data.parseJson.convertTo[Tx]        
+        val tx = data.parseJson.convertTo[EthTx]        
         Seq(tx.copy(ts = latestTs.get))
       }
     } catch {
@@ -59,7 +69,7 @@ class PipelineEthBlockTx(feed:String,output:String,throttle:Long,delimiter:Strin
     }
   }
 
-  def transform(tx: Tx): Seq[Tx] = {
-    Seq(tx)
+  def transform(tx: EthTx): Seq[Tx] = {
+    Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
   }
 }

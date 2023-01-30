@@ -27,17 +27,20 @@ import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
+import io.syspulse.haas.serde.TxJson
+import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 class PipelineEthTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[Tx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  PipelineEth[EthTx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
   override def apiSuffix():String = s"/"
 
-  override def parse(data:String):Seq[Tx] = parseTx(data)
+  override def parse(data:String):Seq[EthTx] = parseTx(data)
 
-  def transform(tx: Tx): Seq[Tx] = {
-    Seq(tx)
+  def transform(tx: EthTx): Seq[Tx] = {
+    // Seq(tx)
+    Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
   }
 }

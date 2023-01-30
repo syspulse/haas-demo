@@ -33,6 +33,8 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.haas.core.Block
 
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
+
 class PipelineEthLog(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
   PipelineEth[EthLog,EthLog](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   

@@ -27,20 +27,25 @@ import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Block
+import io.syspulse.haas.serde.BlockJson
+import io.syspulse.haas.serde.BlockJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
 class PipelineEthBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[Block,Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
-
-  import EthEtlJson._
+  PipelineEth[EthBlock,Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
   override def apiSuffix():String = s"/"
 
-  def parse(data:String):Seq[Block] = parseBlock(data)
+  def parse(data:String):Seq[EthBlock] = parseBlock(data)
 
-  def transform(block: Block): Seq[Block] = {
-    Seq(block)
+  def transform(block: EthBlock): Seq[Block] = {
+    //Seq(block)
+    Seq(
+      Block(block.number,block.hash,block.parent_hash,block.nonce,block.sha3_uncles,block.logs_bloom,block.transactions_root,block.state_root,
+            block.receipts_root,block.miner,block.difficulty,block.total_difficulty,block.size,block.extra_data, 
+            block.gas_limit, block.gas_used, block.timestamp, block.transaction_count,block.base_fee_per_gas))
   }
 }
