@@ -34,6 +34,7 @@ case class Config(
   feedTx:String = "",
   feedBlock:String = "",
   feedToken:String = "",
+  feedEvent:String = "",
 
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
@@ -89,6 +90,7 @@ object App extends skel.Server {
         ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
         ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
         ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
+        ArgString('_', "feed.event",s"EventLog Feed (def: ${d.feedEvent})"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -128,6 +130,7 @@ object App extends skel.Server {
       feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
       feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
       feedToken = c.getString("feed.token").getOrElse(d.feedToken),
+      feedEvent = c.getString("feed.event").getOrElse(d.feedEvent),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
@@ -199,7 +202,6 @@ object App extends skel.Server {
       case _ => new AbiStoreDir(config.abiStore) with AbiStoreStoreSignaturesMem
     }
 
-
     abiStore.load()
 
     
@@ -214,15 +216,20 @@ object App extends skel.Server {
         val ixToken = new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
         val ppToken = new PipelineEthInterceptTokenTransfer(if(config.feedToken.nonEmpty) config.feedToken else config.feed, config.output,ixToken)(config)
 
+        val ixEvent = new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+        val ppEvent = new PipelineEthInterceptEvent(if(config.feedEvent.nonEmpty) config.feedEvent else config.feed, config.output,ixEvent)(config)
+
         run( config.host, config.port, config.uri, c,
           Seq(
             (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
             (InterceptionRegistry(datastoreInterceptions,
                                   datastoreScripts,
+                                  abiStore,
                                   Map(
                                     ixTx.entity() -> ixTx,
                                     ixBlock.entity() -> ixBlock,
                                     ixToken.entity() -> ixToken,
+                                    ixEvent.entity() -> ixEvent,
                                   )),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
@@ -231,6 +238,7 @@ object App extends skel.Server {
         val r1 = ppTx.run()
         val r2 = ppBlock.run()
         val r3 = ppToken.run()
+        val r4 = ppEvent.run()
         
         (r1,Some(ppTx))
       }

@@ -18,6 +18,9 @@ import io.syspulse.skel.util.Util
 import io.syspulse.haas.intercept.Interceptor
 import scala.util.Success
 import scala.util.Try
+import io.syspulse.skel.crypto.eth.abi.AbiStore
+import org.checkerframework.checker.units.qual.A
+import io.syspulse.skel.crypto.eth.abi.AbiContract
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
@@ -39,12 +42,12 @@ object InterceptionRegistry {
   // this var reference is unfortunately needed for Metrics access
   var store: InterceptionStore = null //new InterceptionStoreDB //new InterceptionStoreCache
 
-  def apply(store: InterceptionStore,storeScript:ScriptStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: InterceptionStore,storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
-    registry(store,storeScript,interceptors)
+    registry(store,storeScript,abiStore,interceptors)
   }
 
-  private def registry(store: InterceptionStore,storeScript:ScriptStore,interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
+  private def registry(store: InterceptionStore, storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
     Behaviors.receiveMessage {
@@ -100,8 +103,13 @@ object InterceptionRegistry {
         val scriptId = Util.sha256(c.script)
         val script = Script(scriptId,"js",src,c.name)
         storeScript.+(script)
-        
+
         val entity = c.entity.getOrElse("tx")
+
+        if(entity == "event" && c.abi.isDefined && c.contract.isDefined) {
+          abiStore.+(AbiContract(c.contract.get,c.abi.get,Some(System.currentTimeMillis)))
+        }
+
         val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity)
         
         val store1 = interceptors.get(entity) match {
@@ -117,7 +125,7 @@ object InterceptionRegistry {
         }
 
         //replyTo ! ix
-        registry(store1.getOrElse(store),storeScript,interceptors)
+        registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
 
       case CommandInterception(c, replyTo) =>
         val ix:Option[Interception] = c.id.flatMap(id => store.?(id).toOption)
@@ -152,7 +160,7 @@ object InterceptionRegistry {
 
         replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
         
-        registry(store1.getOrElse(store),storeScript,interceptors)
+        registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
     }
   }
 }

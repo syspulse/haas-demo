@@ -38,13 +38,17 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
   
   def entity():String = "event"
 
-  def decodeData(addr:String,data:String,topics:List[String]):Map[String,Any] = {
-    abiStore.decodeInput(addr,topics,"event") match {
+  def decodeData(addr:String,data:String,topics:List[String]):Option[Map[String,Any]] = {
+
+    abiStore.decodeInput(addr,topics :+ data,"event") match {
       case Success(r) => 
-        r.params.map{ case(name,k,v) => k -> v}.toMap
+        val sig = r.toString
+        val m = r.params.map{ case(name,k,v) => name -> v}.toMap ++ 
+          Map("event_name" -> r.name, "event_sig" -> sig)
+        Some(m)
       case Failure(e) => 
-        log.warn(s"${addr}: failed to decode: ${data}")
-        Map()
+        log.warn(s"${addr}: failed to decode ABI: ${topics}: ${e.getMessage()}")
+        Some(Map("event_name" -> "", "event_sig" -> ""))
     }    
   }
 
@@ -56,9 +60,9 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
       ("hash" -> t.hash), //("transaction_hash" -> t.hash),      
       ("ts" -> t.ts),
     ) ++ 
-      decodeData(t.contract,t.data,t.topics)
+      decodeData(t.contract,t.data,t.topics).getOrElse(Map())
 
-    log.info(s"m=${m}")
+    log.debug(s"script.map=${m}")
     m
   }
  
