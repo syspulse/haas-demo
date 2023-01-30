@@ -32,15 +32,22 @@ import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
-class PipelineEthTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[EthTx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineEthTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E]) extends 
+  PipelineEth[EthTx,Tx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  override def apiSuffix():String = s"/"
+  def apiSuffix():String = s"/"
 
   override def parse(data:String):Seq[EthTx] = parseTx(data)
 
-  def transform(tx: EthTx): Seq[Tx] = {
-    // Seq(tx)
-    Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
-  }
+  def convert(tx:EthTx):Tx = Tx(tx.ts * 1000L,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value)
+
+  // def transform(tx: Tx): Seq[Tx] = {
+  //   Seq(tx)
+  // }
+}
+
+class PipelineTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
+  extends PipelineEthTx[Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+
+  def transform(tx: Tx): Seq[Tx] = Seq(tx)    
 }

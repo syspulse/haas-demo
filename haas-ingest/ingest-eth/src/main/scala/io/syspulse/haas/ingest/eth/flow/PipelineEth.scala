@@ -35,8 +35,8 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[O])
-  extends Pipeline[T,T,O](feed,output,throttle,delimiter,buffer) with EthDecoder[O] {
+abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[E])
+  extends Pipeline[T,O,E](feed,output,throttle,delimiter,buffer) with EthDecoder[E] {
 
   import EthEtlJson._
   
@@ -51,6 +51,12 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
   def filter():Seq[String] = filter
   def apiSuffix():String
 
+  def convert(t:T):O
+
+  //def transform(o: O) = Seq(o)
+
+  def process:Flow[T,O,_] = Flow[T].map(t => convert(t))
+
   override def source() = {
     feed.split("://").toList match {
       case "eth" :: _ => super.source(EthURI(feed,apiSuffix()).uri)
@@ -58,10 +64,10 @@ abstract class PipelineEth[T,O <: skel.Ingestable](feed:String,output:String,thr
     }
   }
 
-  override def processing:Flow[T,T,_] = Flow[T].map(v => {
-    if(countObj % reportFreq == 0)
-      log.info(s"processed: ${countInput},${countObj}")
-    v
-  })
+  // override def processing:Flow[T,T,_] = Flow[T].map(v => {
+  //   if(countObj % reportFreq == 0)
+  //     log.info(s"processed: ${countInput},${countObj}")
+  //   v
+  // })
 
 }

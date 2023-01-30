@@ -39,12 +39,20 @@ import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
 
-abstract class PipelineEthIntercept[T](feed:String,output:String,interceptor:Interceptor[T])(implicit config:Config) 
-  extends PipelineEth[T,InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) {
+// abstract class PipelineEthIntercept[O](feed:String,output:String,interceptor:Interceptor[O])(implicit config:Config) 
+//   extends PipelineEth[O,InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) {
 
-  override def apiSuffix():String = s"/"
+//   override def apiSuffix():String = s"/"
 
-  def transform(t: T): Seq[InterceptionAlarm] = {
+//   def transform(t: O): Seq[InterceptionAlarm] = {
+//     interceptor.scan(t)
+//   }
+// }
+
+trait PipelineEthIntercept[O] {
+  def interceptor:Interceptor[O] = ???
+  
+  def transform(t: O): Seq[InterceptionAlarm] = {
     interceptor.scan(t)
   }
 }

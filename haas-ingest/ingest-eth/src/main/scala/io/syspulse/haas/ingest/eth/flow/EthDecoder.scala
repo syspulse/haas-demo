@@ -37,9 +37,10 @@ import io.syspulse.haas.ingest.eth.EthURI
 import io.syspulse.haas.ingest.eth.EthEtlJson
 import io.syspulse.haas.ingest.eth.{EthBlock,EthTx,EthTokenTransfer,EthLog}
 
-trait EthDecoder[O] {
+trait EthDecoder[T] {
 
-  implicit val fmt:JsonFormat[O]
+  implicit val fmt:JsonFormat[T]
+
   protected val log = Logger(s"${this}")
 
   import EthEtlJson._
@@ -201,22 +202,22 @@ trait EthDecoder[O] {
         // assume CSV
         // ignore header
         // 
-        if(data.stripLeading().startsWith("contract_address")) {
+        if(data.stripLeading().startsWith("token_address")) {
           Seq.empty
         } else {
           val tt = data.split(",").toList match {
             case tokenAddress :: from_address :: to_address :: value :: 
-                 transaction_hash :: log_index :: block_number :: block_timestamp :: Nil =>
-                
-                 val ts = block_timestamp.toLong
-                 latestTs.set(ts * 1000L)
+              transaction_hash :: log_index :: block_number :: block_timestamp :: Nil =>
+            
+              // ATTENTION: Stupid ethereum-etl insert '\r' !
+              val ts = block_timestamp.trim.toLong
+              latestTs.set(ts * 1000L)
 
-                 Seq(
-                  EthTokenTransfer(
-                    tokenAddress,from_address,to_address,BigInt(value),
-                    transaction_hash,log_index.toInt,block_number.toLong,
-                    ts
-                  ))
+              Seq( EthTokenTransfer(
+                tokenAddress,from_address,to_address,BigInt(value),
+                transaction_hash,log_index.toInt,block_number.toLong,
+                ts
+              ))
             case _ => 
               log.error(s"failed to parse: '${data}'")
               Seq()
@@ -231,7 +232,55 @@ trait EthDecoder[O] {
     }
   }
 
-  def parseEvent(data:String):Seq[Event] = {
+  // def parseEvent(data:String):Seq[Event] = {
+  //   if(data.isEmpty()) return Seq()
+
+  //   try {
+  //     // check it is JSON
+  //     if(data.stripLeading().startsWith("{")) {
+  //       val tt = data.parseJson.convertTo[EthLog]
+        
+  //       val ts = tt.block_timestamp
+  //       latestTs.set(ts * 1000L)
+
+  //       Seq(Event(ts, tt.block_number, tt.address, tt.data, tt.transaction_hash, tt.topics))
+  //     } else {
+  //       // assume CSV
+  //       // ignore header
+  //       // 
+  //       if(data.stripLeading().startsWith("log_index")) {
+  //         Seq.empty
+  //       } else {
+  //         val tt = data.split(",").toList match {
+  //           case block_timestamp :: block_number :: address :: data :: 
+  //             transaction_hash :: log_index :: topics :: Nil =>
+            
+  //             val ts = block_timestamp.toLong
+  //             latestTs.set(ts * 1000L)
+
+  //             Seq(Event(
+  //               ts,
+  //               block_number.toLong,
+  //               address.toLowerCase(),
+  //               data,
+  //               transaction_hash,
+  //               Util.csvToList(topics)
+  //             ))      
+  //           case _ => 
+  //             log.error(s"failed to parse: '${data}'")
+  //             Seq()
+  //         }
+  //         tt
+  //       }
+  //     }
+  //   } catch {
+  //     case e:Exception => 
+  //       log.error(s"failed to parse: '${data}'",e)
+  //       Seq()
+  //   }
+  // }
+
+  def parseEventLog(data:String):Seq[EthLog] = {
     if(data.isEmpty()) return Seq()
 
     try {
@@ -239,32 +288,36 @@ trait EthDecoder[O] {
       if(data.stripLeading().startsWith("{")) {
         val tt = data.parseJson.convertTo[EthLog]
         
-        val ts = tt.block_timestamp
-        latestTs.set(ts * 1000L)
+        val ts = tt.block_timestamp 
+        latestTs.set(ts * 1000L )
+        Seq(tt)
 
-        Seq(Event(ts, tt.block_number, tt.address, tt.data, tt.transaction_hash, tt.topics))
       } else {
-        // assume CSV
         // ignore header
-        // 
-        if(data.stripLeading().startsWith("log_index")) {
+        if(data.stripLeading().startsWith("type")) {
           Seq.empty
         } else {
           val tt = data.split(",").toList match {
-            case block_timestamp :: block_number :: address :: data :: 
-              transaction_hash :: log_index :: topics :: Nil =>
-            
-              val ts = block_timestamp.toLong
+            case log_index :: transaction_hash :: transaction_index :: address :: 
+                 data :: topics :: block_number :: block_timestamp :: block_hash :: 
+                 item_id :: item_timestamp :: Nil =>
+                
+              // ATTENTION: Stupid ethereum-etl insert '\r' !
+              val ts = block_timestamp.trim.toLong
               latestTs.set(ts * 1000L)
 
-              Seq(Event(
-                ts,
-                block_number.toLong,
-                address.toLowerCase(),
-                data,
+              Seq(EthLog(
+                log_index.toInt,
                 transaction_hash,
-                Util.csvToList(topics)
-              ))      
+                transaction_index.toInt,
+                address,
+                data,
+                List(topics),
+                block_number.toLong,
+                ts,
+                block_hash
+              ))
+
             case _ => 
               log.error(s"failed to parse: '${data}'")
               Seq()

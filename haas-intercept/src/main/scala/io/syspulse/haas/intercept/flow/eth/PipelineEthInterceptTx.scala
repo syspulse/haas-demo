@@ -39,9 +39,13 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorTx
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
+import io.syspulse.haas.ingest.eth.flow.PipelineEthTx
 
-class PipelineEthInterceptTx(feed:String,output:String,interceptor:Interceptor[Tx])(implicit config:Config) extends PipelineEthIntercept[Tx](feed,output,interceptor) {
+class PipelineEthInterceptTx(feed:String,output:String,override val interceptor:Interceptor[Tx])(implicit config:Config) 
+  //extends PipelineEthIntercept[Tx](feed,output,interceptor) {
+  extends PipelineEthTx[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
+  with PipelineEthIntercept[Tx] {
 
-  override def parse(data:String):Seq[Tx] = parseTx(data)
+  //override def parse(data:String):Seq[Tx] = parseTx(data)
 }
 

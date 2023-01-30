@@ -27,74 +27,96 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.ingest.eth._
+
+import java.util.concurrent.atomic.AtomicLong
+
+import io.syspulse.haas.core.TokenTransfer
+import io.syspulse.haas.serde.TokenTransferJson
+import io.syspulse.haas.serde.TokenTransferJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-import java.util.concurrent.atomic.AtomicLong
-import io.syspulse.haas.core.Block
 
-class PipelineEthTokenTransfer(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[EthTokenTransfer,EthTokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineEthTokenTransfer[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E]) extends 
+  PipelineEth[EthTokenTransfer,TokenTransfer,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  override def apiSuffix():String = s"/"
+  def apiSuffix():String = s"/token-transfer"
 
-  def transform(tx: EthTokenTransfer): Seq[EthTokenTransfer] = {
-    Seq(tx)
-  }
+  def convert(tt:EthTokenTransfer):TokenTransfer = TokenTransfer(
+    tt.blockTimestamp * 1000L,
+    tt.blockNumber,
+    tt.tokenAddress,
+    tt.from,
+    tt.to,
+    tt.value,
+    tt.txHash
+  )
 
-  override def parse(data:String):Seq[EthTokenTransfer] = {
-    if(data.isEmpty()) return Seq()
+  // override def parse(data:String):Seq[EthTokenTransfer] = {
+  //   if(data.isEmpty()) return Seq()
 
-    try {
-      // check it is JSON
-      if(data.stripLeading().startsWith("{")) {
-        val tt = data.parseJson.convertTo[EthTokenTransfer]
+  //   try {
+  //     // check it is JSON
+  //     if(data.stripLeading().startsWith("{")) {
+  //       val tt = data.parseJson.convertTo[EthTokenTransfer]
         
-        val ts = tt.blockTimestamp
-        latestTs.set(ts * 1000L)
-        //Seq(tt.copy(blockTimestamp = ts))
-        Seq(tt)
+  //       val ts = tt.blockTimestamp
+  //       latestTs.set(ts * 1000L)
+  //       //Seq(tt.copy(blockTimestamp = ts))
+  //       Seq(tt)
 
-      } else {
-        // ignore header
-        if(data.stripLeading().startsWith("token_address")) {
-          Seq.empty
-        } else {
-          val tt = data.split(",").toList match {
-            case token_address :: from_address :: to_address :: 
-                 value :: transaction_hash :: log_index :: 
-                 block_number :: block_timestamp :: Nil =>
+  //     } else {
+  //       // ignore header
+  //       if(data.stripLeading().startsWith("token_address")) {
+  //         Seq.empty
+  //       } else {
+  //         val tt = data.split(",").toList match {
+  //           case token_address :: from_address :: to_address :: 
+  //                value :: transaction_hash :: log_index :: 
+  //                block_number :: block_timestamp :: Nil =>
                 
-              if(filter.isEmpty || filter.contains(token_address)) {
+  //             if(filter.isEmpty || filter.contains(token_address)) {
                 
-                // ATTENTION: Stupid ethereum-etl insert '\r' !
-                val ts = block_timestamp.trim.toLong
-                latestTs.set(ts * 1000L)
+  //               // ATTENTION: Stupid ethereum-etl insert '\r' !
+  //               val ts = block_timestamp.trim.toLong
+  //               latestTs.set(ts * 1000L)
 
-                Seq(EthTokenTransfer(
-                  token_address,
-                  from_address,
-                  to_address,
-                  BigInt(value),                  
-                  transaction_hash,
-                  log_index.toInt,
-                  block_number.toLong,
-                  ts
-                ))
+  //               Seq(EthTokenTransfer(
+  //                 token_address,
+  //                 from_address,
+  //                 to_address,
+  //                 BigInt(value),                  
+  //                 transaction_hash,
+  //                 log_index.toInt,
+  //                 block_number.toLong,
+  //                 ts
+  //               ))
 
-              } else Seq.empty
+  //             } else Seq.empty
 
-            case _ => 
-              log.error(s"failed to parse: '${data}'")
-              Seq()
-          }
-          tt
-        }
-      }
-    } catch {
-      case e:Exception => 
-        log.error(s"failed to parse: '${data}'",e)
-        Seq()
-    }
-  }
+  //           case _ => 
+  //             log.error(s"failed to parse: '${data}'")
+  //             Seq()
+  //         }
+  //         tt
+  //       }
+  //     }
+  //   } catch {
+  //     case e:Exception => 
+  //       log.error(s"failed to parse: '${data}'",e)
+  //       Seq()
+  //   }
+  // }
+
+  override def parse(data:String):Seq[EthTokenTransfer] = parseTokenTransfer(data)
+
+  // def transform(tt: TokenTransfer): Seq[TokenTransfer] = {
+  //   Seq(tt)
+  // }
+}
+
+class PipelineTokenTransfer(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
+  extends PipelineEthTokenTransfer[TokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+
+  def transform(tt: TokenTransfer): Seq[TokenTransfer] = Seq(tt)
 }

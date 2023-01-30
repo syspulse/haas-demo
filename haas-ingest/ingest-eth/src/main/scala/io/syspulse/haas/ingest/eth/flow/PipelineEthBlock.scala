@@ -34,18 +34,29 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-class PipelineEthBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[EthBlock,Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineEthBlock[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E]) extends 
+  PipelineEth[EthBlock,Block,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  override def apiSuffix():String = s"/"
+  def apiSuffix():String = s"/block"
 
   def parse(data:String):Seq[EthBlock] = parseBlock(data)
 
-  def transform(block: EthBlock): Seq[Block] = {
-    //Seq(block)
-    Seq(
+  def convert(block:EthBlock):Block = 
       Block(block.number,block.hash,block.parent_hash,block.nonce,block.sha3_uncles,block.logs_bloom,block.transactions_root,block.state_root,
             block.receipts_root,block.miner,block.difficulty,block.total_difficulty,block.size,block.extra_data, 
-            block.gas_limit, block.gas_used, block.timestamp, block.transaction_count,block.base_fee_per_gas))
-  }
+            block.gas_limit, block.gas_used, 
+            block.timestamp * 1000L, 
+            block.transaction_count,block.base_fee_per_gas)
+
+  // def transform(block: Block): Seq[Block] = {
+  //   Seq(block)
+  // }
+}
+
+class PipelineBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
+  extends PipelineEthBlock[Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+
+  def transform(block: Block): Seq[Block] = {
+    Seq(block)
+  }    
 }

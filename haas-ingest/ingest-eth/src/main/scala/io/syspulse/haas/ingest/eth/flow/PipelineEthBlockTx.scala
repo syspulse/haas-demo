@@ -43,33 +43,38 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.serde.BlockJson
 import io.syspulse.haas.serde.BlockJson._
 
-class PipelineEthBlockTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
-  PipelineEth[EthTx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+// class PipelineEthBlockTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) extends 
+//   PipelineEth[EthTx,Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  override def apiSuffix():String = s"/"
+//   override def apiSuffix():String = s"/block-tx"
 
-  def parse(data:String):Seq[EthTx] = {
-    if(data.isEmpty()) return Seq()
+//   def parse(data:String):Seq[EthTx] = {
+//     if(data.isEmpty()) return Seq()
 
-    try {
-      // detect if it is block
-      if(data.contains(""""type": "block"""")) {
-        val block = data.parseJson.convertTo[EthBlock]
-        latestTs.set(block.timestamp)
-        // skip it
-        Seq.empty
-      } else {
-        val tx = data.parseJson.convertTo[EthTx]        
-        Seq(tx.copy(ts = latestTs.get))
-      }
-    } catch {
-      case e:Exception => 
-        log.error(s"failed to parse: '${data}'",e)
-        Seq.empty
-    }
-  }
+//     try {
+//       // detect if it is block
+//       if(data.contains(""""type": "block"""")) {
+//         val block = data.parseJson.convertTo[EthBlock]
+//         latestTs.set(block.timestamp)
+//         // skip it
+//         Seq.empty
+//       } else {
+//         val tx = data.parseJson.convertTo[EthTx]        
+//         Seq(tx.copy(ts = latestTs.get))
+//       }
+//     } catch {
+//       case e:Exception => 
+//         log.error(s"failed to parse: '${data}'",e)
+//         Seq.empty
+//     }
+//   }
+  
+  
+//   def convert(tx: EthTx) = 
+//     Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value)
 
-  def transform(tx: EthTx): Seq[Tx] = {
-    Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
-  }
-}
+
+//   // def transform(tx: Tx): Seq[Tx] = {
+//   //   Seq(tx)
+//   // }
+// }
