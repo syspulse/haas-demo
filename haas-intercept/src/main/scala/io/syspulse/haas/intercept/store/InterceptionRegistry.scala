@@ -106,11 +106,15 @@ object InterceptionRegistry {
 
         val entity = c.entity.getOrElse("tx")
 
-        if(entity == "event" && c.abi.isDefined && c.contract.isDefined) {
-          abiStore.+(AbiContract(c.contract.get,c.abi.get,Some(System.currentTimeMillis)))
-        }
+        val abiId = 
+          if(entity == "event" && c.abi.isDefined && c.contract.isDefined) {
+            val abiId = c.contract.get
+            abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
+            Some(abiId)
+          } else
+            None
 
-        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity)
+        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, abiId)
         
         val store1 = interceptors.get(entity) match {
           case Some(interceptor) => 

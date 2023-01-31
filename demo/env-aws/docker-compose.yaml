@@ -167,21 +167,25 @@ services:
     container_name: haas-intercept
     restart: always
     volumes:
-      - "${PWD}/scripts:/scripts"
-      - "${PWD}/interceptors:/interceptors"
+      # - "${PWD}/scripts:/scripts"
+      - "${PWD}/store:/store"
     ports:
       - 8093:8080
     networks:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
-      SCRIPTS: dir:///scripts
+      JAVA_OPTS: -Dgod      
       FEED_TX: kafka://broker-1.hacken.dev:9092/transactions/intercept/latest
       FEED_BLOCK: kafka://broker-1.hacken.dev:9092/blocks/intercept/latest
       FEED_TOKEN: kafka://broker-1.hacken.dev:9092/token_transfers/intercept/latest
+      FEED_EVENT: kafka://broker-1.hacken.dev:9092/logs/intercept/latest
       #DATASTORE: mem://
-      DATASTORE: dir:///interceptors
+      DATASTORE: dir:///store/intercept
+      STORE_SCRIPT: dir:///store/script
+      STORE_ABI: dir:///store/abi
+      STORE_EVENT: dir:///store/event
+      STORE_FUNC: dir:///store/func
       # this is temporary, must be replace with NotificationService URI
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}

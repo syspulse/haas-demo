@@ -17,9 +17,17 @@ import scala.util.Success
 import io.syspulse.skel.Ingestable
 
 import io.syspulse.haas.intercept.script._
+import io.syspulse.skel.crypto.eth.abi.AbiStore
 
-case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, alarm:List[String] = List(),uid:Option[UUID] = None, entity:String = "tx", ts0:Long = System.currentTimeMillis(),
-  var status:String="started",
+case class Interception(id:Interception.ID, name:String, 
+  scriptId:Script.ID, 
+  alarm:List[String] = List(),
+  uid:Option[UUID] = None, 
+  entity:String = "tx",
+  aid:Option[AbiStore.ID] = None,
+  ts0:Long = System.currentTimeMillis(),
+  
+  var status:Interception.Status = Interception.STARTED,
   var count:Long = 0L,
   var history:List[InterceptionAlarm] =  List()) extends Ingestable {
   
@@ -36,6 +44,10 @@ case class Interception(id:Interception.ID, name:String, scriptId:Script.ID, ala
 
 object Interception {
   type ID = UUID
+  type Status = String
+
+  val STARTED = "started"
+  val STOPPED = "stopped"
 
   val HISTORY_LIMIT = 100
 }

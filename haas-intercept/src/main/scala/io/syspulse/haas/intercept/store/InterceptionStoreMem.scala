@@ -61,7 +61,7 @@ class InterceptionStoreMem extends InterceptionStore {
 
   def stop(id:Interception.ID):Option[Interception] = {
     val ix = interceptions.get(id) match {
-      case Some(ix) => ix.status = "stopped"; Some(ix)
+      case Some(ix) => ix.status = Interception.STOPPED; Some(ix)
       case None => None
     }
     log.info(s"stop: ${ix}")
@@ -71,7 +71,7 @@ class InterceptionStoreMem extends InterceptionStore {
 
   def start(id:Interception.ID):Option[Interception] = {
     val ix = interceptions.get(id) match {
-      case Some(ix) => ix.status = "started"; Some(ix)
+      case Some(ix) => ix.status = Interception.STARTED; Some(ix)
       case None => None
     }
     log.info(s"start: ${ix}")

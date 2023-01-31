@@ -39,9 +39,11 @@ case class Config(
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
 
+  datastore:String = "dir://store/intercept",
+  scriptStore:String = "dir://store/script",
   abiStore: String = "dir://store/abi",
   eventStore:String = "dir://store/event",
-  funStore:String = "dir://store/fun",
+  funcStore:String = "dir://store/fun",
 
   source:String="",
   
@@ -57,9 +59,6 @@ case class Config(
   
   expr:String = "",
   
-  datastore:String = "dir://store/intercept",
-  scripts:String = "dir://scripts",  
-
   filter:Seq[String] = Seq(),
 
   cmd:String = "intercept",
@@ -103,16 +102,16 @@ object App extends skel.Server {
         ArgString('t', "filter",s"Filter (def='${d.filter}')"),
         
         ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
-        ArgString('s', "scripts",s"datastore for Scripts to execute on TX (def=${d.scripts})"),
+        ArgString('s', "store.script",s"datastore for Scripts to execute on TX (def=${d.scriptStore})"),
         ArgString('_', "store.abi",s"ABI definitions store (def: ${d.abiStore})"),
         ArgString('_', "store.event",s"Event Signatures store (def: ${d.eventStore})"),
-        ArgString('_', "store.fun",s"Function signatures store (def: ${d.funStore})"),
+        ArgString('_', "store.func",s"Function signatures store (def: ${d.funcStore})"),
 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
         
         ArgCmd("server",s"Server"),
-        ArgCmd("intercept",s"Intercept pipeline (-s script)"),
+        ArgCmd("intercept",s"Intercept pipeline"),
         
         ArgParam("<params>","")
       ).withExit(1)
@@ -141,15 +140,15 @@ object App extends skel.Server {
       throttle = c.getLong("throttle").getOrElse(d.throttle),     
 
       filter = c.getListString("filter",d.filter),
-      
-      datastore = c.getString("datastore").getOrElse(d.datastore),
-      scripts = c.getString("scripts").getOrElse(d.scripts),
+            
       alarms = c.getListString("alarms",d.alarms),
       alarmsThrottle = c.getLong("alarms.throttle").getOrElse(d.alarmsThrottle),
 
+      datastore = c.getString("datastore").getOrElse(d.datastore),
+      scriptStore = c.getString("store.script").getOrElse(d.scriptStore),
       abiStore = c.getString("store.abi").getOrElse(d.abiStore),
       eventStore = c.getString("store.event").getOrElse(d.eventStore),
-      funStore = c.getString("store.fun").getOrElse(d.funStore),
+      funcStore = c.getString("store.func").getOrElse(d.funcStore),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
@@ -158,14 +157,14 @@ object App extends skel.Server {
 
     Console.err.println(s"Config: ${config}")
 
-    val datastoreScripts = config.scripts.split("://").toList match {
+    val datastoreScripts = config.scriptStore.split("://").toList match {
       // case "mysql" | "db" => new TokenStoreDB(c,"mysql")
       // case "postgres" => new TokenStoreDB(c,"postgres")
       case "mem" :: _ => new ScriptStoreMem
       case "dir" :: dir :: Nil => new ScriptStoreDir(dir)
       case "dir" :: Nil => new ScriptStoreDir()
       case _ => {
-        Console.err.println(s"Uknown datastore: '${config.scripts}'")
+        Console.err.println(s"Uknown datastore: '${config.scriptStore}'")
         sys.exit(1)
       }
     }
