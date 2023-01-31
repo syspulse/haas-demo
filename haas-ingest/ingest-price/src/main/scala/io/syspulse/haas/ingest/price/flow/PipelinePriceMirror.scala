@@ -41,8 +41,6 @@ class PipelinePriceMirror(feed:String,output:String)(implicit config:Config) ext
   val sourceID = 0 // internal
   val decoder = new PriceDecoder()
 
-  override def processing:Flow[Price,Price,_] = Flow[Price].map(v => v)
-  
   def parse(data:String):Seq[Price] = {
     decoder.parse(data)    
   }

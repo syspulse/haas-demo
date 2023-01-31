@@ -42,8 +42,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
 
   val TOKEN_SLOT = "COIN"
   override def apiSuffix():String = s"/coins/${TOKEN_SLOT}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false"
-  override def processing:Flow[CoinInfo,CoinInfo,_] = Flow[CoinInfo].map(v => v)
-
+  
   def parse(data:String):Seq[CoinInfo] = {
     if(data.isEmpty()) return Seq()
     try {

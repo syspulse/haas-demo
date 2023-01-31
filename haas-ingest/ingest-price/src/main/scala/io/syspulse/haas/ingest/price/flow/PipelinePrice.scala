@@ -45,6 +45,6 @@ abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Confi
 
   def apiSuffix():String = ""
 
-  override def processing:Flow[T,T,_] = Flow[T].map(v => v)
+  def process:Flow[T,T,_] = Flow[T].map(v => v)
 
 }

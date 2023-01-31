@@ -47,7 +47,6 @@ class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) exte
   val TOKENS_SLOT = "COINS"
 
   override def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
-  override def processing:Flow[CryptoComp,CryptoComp,_] = Flow[CryptoComp].map(v => v)
 
   def parseCryptoComp(data:String):Seq[CryptoComp] = {
     if(data.isEmpty()) return Seq()
