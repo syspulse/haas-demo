@@ -26,9 +26,8 @@ import spray.json._
 import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.TokenTransfer
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
-
+import io.syspulse.haas.core.Tx
+import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 
@@ -40,11 +39,11 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorTx
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEthTokenTransfer
+import io.syspulse.haas.ingest.eth.flow.PipelineEthTx
 
-class PipelineEthInterceptTokenTransfer(feed:String,output:String,override val interceptor:InterceptorTokenTransfer)(implicit config:Config) 
-  extends PipelineEthTokenTransfer[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
-  with PipelineEthIntercept[TokenTransfer] {
+class PipelineEthInterceptFunc(feed:String,output:String,override val interceptor:InterceptorFunc)(implicit config:Config) 
+  extends PipelineEthTx[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
+  with PipelineEthIntercept[Tx] {
 
 }
 

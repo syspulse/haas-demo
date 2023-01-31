@@ -32,6 +32,7 @@ import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.skel.crypto.eth.abi.SignatureStore
 import io.syspulse.skel.crypto.eth.abi.EventSignature
 import io.syspulse.skel.crypto.eth.abi.AbiStore
+import io.syspulse.skel.crypto.eth.abi.AbiSignature
 
 class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
   extends Interceptor[Event](interceptionStore,scriptStore,alarmThrottle,interceptions) {
@@ -40,11 +41,11 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
 
   def decodeData(addr:String,data:String,topics:List[String]):Option[Map[String,Any]] = {
 
-    abiStore.decodeInput(addr,topics :+ data,"event") match {
+    abiStore.decodeInput(addr,topics :+ data,AbiStore.EVENT) match {
       case Success(r) => 
-        val sig = r.toString
-        val m = r.params.map{ case(name,k,v) => name -> v}.toMap ++ 
-          Map("event_name" -> r.name, "event_sig" -> sig)
+        val m = r.params.map{ case(name,typ,v) => s"event_param_${name}" -> v}.toMap +
+          ("event_sig" -> r.sig)
+
         Some(m)
       case Failure(e) => 
         //log.warn(s"${addr}: failed to decode ABI: ${topics}: ${e.getMessage()}")
@@ -62,7 +63,7 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
     ) ++ 
       decodeData(t.contract,t.data,t.topics).getOrElse(Map())
 
-    log.debug(s"script.map=${m}")
+    log.debug(s"script inputs: ${m}")
     m
   }
  

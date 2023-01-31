@@ -42,11 +42,9 @@ import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEthLog
 
-class PipelineEthInterceptEvent(feed:String,output:String,override val interceptor:Interceptor[Event])(implicit config:Config) 
-  //extends PipelineEthIntercept[Event](feed,output,interceptor)(config) {
+class PipelineEthInterceptEvent(feed:String,output:String,override val interceptor:InterceptorEvent)(implicit config:Config) 
   extends PipelineEthLog[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
   with PipelineEthIntercept[Event] {
 
-  //override def parse(data:String):Seq[Event] = parseEvent(data)
 }
 

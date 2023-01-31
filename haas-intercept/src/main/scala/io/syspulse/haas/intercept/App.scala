@@ -31,10 +31,11 @@ case class Config(
   feed:String = "",
   output:String = "",
   
-  feedTx:String = "",
-  feedBlock:String = "",
-  feedToken:String = "",
-  feedEvent:String = "",
+  feedTx:String = "null://",
+  feedBlock:String = "null://",
+  feedToken:String = "null://",
+  feedEvent:String = "null://",
+  feedFunc:String = "null://",
 
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
@@ -43,7 +44,7 @@ case class Config(
   scriptStore:String = "dir://store/script",
   abiStore: String = "dir://store/abi",
   eventStore:String = "dir://store/event",
-  funcStore:String = "dir://store/fun",
+  funcStore:String = "dir://store/func",
 
   source:String="",
   
@@ -90,6 +91,7 @@ object App extends skel.Server {
         ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
         ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
         ArgString('_', "feed.event",s"EventLog Feed (def: ${d.feedEvent})"),
+        ArgString('_', "feed.func",s"Function Tx Feed (def: ${d.feedFunc})"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -130,6 +132,7 @@ object App extends skel.Server {
       feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
       feedToken = c.getString("feed.token").getOrElse(d.feedToken),
       feedEvent = c.getString("feed.event").getOrElse(d.feedEvent),
+      feedFunc = c.getString("feed.func").getOrElse(d.feedFunc),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
@@ -218,6 +221,9 @@ object App extends skel.Server {
         val ixEvent = new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
         val ppEvent = new PipelineEthInterceptEvent(if(config.feedEvent.nonEmpty) config.feedEvent else config.feed, config.output,ixEvent)(config)
 
+        val ixFunc = new InterceptorFunc(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+        val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
+
         run( config.host, config.port, config.uri, c,
           Seq(
             (Behaviors.ignore,"",(actor,actorSystem) => new AlarmRoutes("ws")(actorSystem) ),
@@ -229,6 +235,7 @@ object App extends skel.Server {
                                     ixBlock.entity() -> ixBlock,
                                     ixToken.entity() -> ixToken,
                                     ixEvent.entity() -> ixEvent,
+                                    ixFunc.entity() -> ixFunc,
                                   )),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
@@ -238,6 +245,7 @@ object App extends skel.Server {
         val r2 = ppBlock.run()
         val r3 = ppToken.run()
         val r4 = ppEvent.run()
+        val r5 = ppFunc.run()
         
         (r1,Some(ppTx))
       }
@@ -276,7 +284,10 @@ object App extends skel.Server {
                 new InterceptorERC20(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "event" | "log" =>
             new PipelineEthInterceptEvent(config.feed,config.output, 
-                new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                
+                new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+          case "func" =>
+            new PipelineEthInterceptFunc(config.feed,config.output, 
+                new InterceptorFunc(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
         }
 
         (pp.run(),Some(pp))
