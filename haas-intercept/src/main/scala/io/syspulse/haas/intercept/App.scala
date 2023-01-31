@@ -181,24 +181,24 @@ object App extends skel.Server {
       }
     }
 
-    // val eventStore = config.eventStore.split("://").toList match {
-    //   case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
-    //   case dir :: Nil => new EventSignatureStoreDir(dir)
-    //   case "mem" :: _ => new SignatureStoreMem[EventSignature]()
-    //   case _ => new SignatureStoreMem[EventSignature]()
-    // }
+    val eventStore = config.eventStore.split("://").toList match {
+      case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
+      case dir :: Nil => new EventSignatureStoreDir(dir)
+      case "mem" :: _ => new SignatureStoreMem[EventSignature]()
+      case _ => new SignatureStoreMem[EventSignature]()
+    }
 
-    // val funcStore = config.funStore.split("://").toList match {
-    //   case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
-    //   case dir :: Nil => new FuncSignatureStoreDir(dir)
-    //   case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
-    //   case _ => new SignatureStoreMem[FuncSignature]()
-    // }
+    val funcStore = config.funcStore.split("://").toList match {
+      case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
+      case dir :: Nil => new FuncSignatureStoreDir(dir)
+      case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
+      case _ => new SignatureStoreMem[FuncSignature]()
+    }
 
     val abiStore = config.abiStore.split("://").toList match {
-      case "dir" :: dir :: _ => new AbiStoreDir(dir) with AbiStoreStoreSignaturesMem
-      case dir :: Nil => new AbiStoreDir(dir) with AbiStoreStoreSignaturesMem
-      case _ => new AbiStoreDir(config.abiStore) with AbiStoreStoreSignaturesMem
+      case "dir" :: dir :: _ => new AbiStoreDir(dir,funcStore,eventStore) 
+      case dir :: Nil => new AbiStoreDir(dir,funcStore,eventStore) 
+      case _ => new AbiStoreDir(config.abiStore,funcStore,eventStore) 
     }
 
     abiStore.load()

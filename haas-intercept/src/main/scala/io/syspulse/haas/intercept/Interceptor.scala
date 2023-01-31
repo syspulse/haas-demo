@@ -86,6 +86,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
     val ii:Seq[InterceptionAlarm] = interceptions
       .values
       .filter(_.status == Interception.STARTED)
+      .filter(_.entity == this.entity())
       .flatMap( ix => {
         log.debug(s"${ix} => ${scriptStore.?(ix.scriptId)}")
       

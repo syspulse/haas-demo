@@ -53,6 +53,10 @@ import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.intercept.script.ScriptJson
 import scala.util.Try
 import akka.http.scaladsl.model.headers.RawHeader
+import io.syspulse.skel.crypto.eth.abi.AbiContract
+import io.syspulse.skel.crypto.eth.abi.AbiStore
+import io.syspulse.skel.crypto.eth.abi.AbiContractJson
+
 @Path("/")
 class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]) extends CommonRoutes with Routeable with RouteAuthorizers {
   //val log = Logger(s"${this}")
@@ -64,6 +68,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   import ScriptJson._
   import InterceptionJson._
   import InterceptionProto._
+  import AbiContractJson._
   
   // registry is needed because Unit-tests with multiple Routes in Suites will fail (Prometheus libary quirk)
   val cr = new CollectorRegistry(true);
@@ -79,6 +84,8 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def findInterceptionsByUser(uid: UUID,history:Option[Long]): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, history, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
   def getHistory(id: Interception.ID): Future[Try[String]] = registry.ask(GetHistory(id, _))
+  
+  def getInterceptionAbi(id: Interception.ID,aid:AbiStore.ID): Future[Try[AbiContract]] = registry.ask(GetInterceptionAbi(id,aid, _))
   
   def createInterception(interceptCreate: InterceptionCreateReq): Future[Option[Interception]] = registry.ask(CreateInterception(interceptCreate, _))
   def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
@@ -113,6 +120,22 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           encodeResponse { complete(r) }
         }
       }
+    }
+  }
+
+  @GET @Path("/{id}/abi/aid") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Get ABI and Contract info",
+    parameters = Array(
+      new Parameter(name = "id", in = ParameterIn.PATH, description = "intercept id"),
+      new Parameter(name = "aid", in = ParameterIn.PATH, description = "ABI id")),    
+    responses = Array(new ApiResponse(responseCode="200",description = "ABI info for intercept",content=Array(new Content(schema=new Schema(implementation = classOf[AbiContract])))))
+  )
+  def getAbiRoute(id:Interception.ID,aid: AbiStore.ID) = get {
+    rejectEmptyResponse {
+      onSuccess(getInterceptionAbi(id,aid)) { r =>
+        metricGetCount.inc()
+        complete(r)
+      }      
     }
   }
 
@@ -272,6 +295,11 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           authenticate()(authn =>
             pathPrefix("history") {
               getHistoryRoute(id)
+            } ~
+            pathPrefix("abi") { 
+              pathPrefix(Segment) { aid => 
+                getAbiRoute(UUID(id),aid)
+              }
             }
           ) ~
           pathEndOrSingleSlash {

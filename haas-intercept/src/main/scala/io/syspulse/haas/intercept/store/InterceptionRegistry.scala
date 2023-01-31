@@ -34,6 +34,9 @@ object InterceptionRegistry {
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   final case class GetHistory(id:Interception.ID,replyTo: ActorRef[Try[String]]) extends Command
   
+  final case class GetInterceptionAbi(id:ID,aid:AbiStore.ID,replyTo: ActorRef[Try[AbiContract]]) extends Command
+
+  
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Option[Interception]]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
 
@@ -181,6 +184,12 @@ object InterceptionRegistry {
         replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
         
         registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
+
+      case GetInterceptionAbi(id,aid, replyTo) => 
+        val r = abiStore.?(aid)
+        replyTo ! r
+
+        Behaviors.same
     }
   }
 }
