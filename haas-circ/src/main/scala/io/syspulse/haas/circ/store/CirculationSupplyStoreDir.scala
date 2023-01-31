@@ -56,7 +56,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
       CirculationSupply(
         id = UUID.random,
         name = tid,
-        tokenId = "uniswap", // FIX ME !
+        tokenId = tid, // FIX ME !
 
         history = SortedSet.from[Circulation](circ.map(_.circ))
       )

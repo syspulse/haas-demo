@@ -200,7 +200,7 @@ services:
       - skel-user
       - skel-notify
       - skel-enroll
-      - skel-tag
+      # - skel-tag
       - haas-token
       - haas-circ
       - haas-intercept

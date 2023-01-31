@@ -47,7 +47,7 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
           Map("event_name" -> r.name, "event_sig" -> sig)
         Some(m)
       case Failure(e) => 
-        log.warn(s"${addr}: failed to decode ABI: ${topics}: ${e.getMessage()}")
+        //log.warn(s"${addr}: failed to decode ABI: ${topics}: ${e.getMessage()}")
         Some(Map("event_name" -> "", "event_sig" -> ""))
     }    
   }

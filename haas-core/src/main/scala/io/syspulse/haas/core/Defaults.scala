@@ -4,6 +4,7 @@ import scala.jdk.CollectionConverters._
 
 object Defaults {
   val UNI = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+  val RBN = "0x6123b0049f904d730db3c36a31167d9d4121fa6b"
 
   val TOKEN_SET = Seq (
     "aave",
@@ -20,8 +21,11 @@ object Defaults {
     "noia-network",
     "optimism",
     "pollen-coin",
-    "ribbon-finance",
+    // "ribbon-finance",
     "solana",
-    "uniswap",    
+    // "uniswap",
+    UNI,
+    RBN
+
   )
 }

@@ -19,7 +19,8 @@ import io.syspulse.skel.Ingestable
 import io.syspulse.haas.intercept.script._
 import io.syspulse.skel.crypto.eth.abi.AbiStore
 
-case class Interception(id:Interception.ID, name:String, 
+case class Interception(
+  id:Interception.ID, name:String, 
   scriptId:Script.ID, 
   alarm:List[String] = List(),
   uid:Option[UUID] = None, 

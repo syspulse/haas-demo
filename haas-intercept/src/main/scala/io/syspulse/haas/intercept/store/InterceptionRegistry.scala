@@ -28,9 +28,9 @@ object InterceptionRegistry {
   final case class GetScripts(replyTo: ActorRef[Scripts]) extends Command
   final case class GetScript(id:Script.ID,replyTo: ActorRef[Try[Script]]) extends Command
 
-  final case class GetInterceptions(replyTo: ActorRef[Interceptions]) extends Command
-  final case class GetInterception(id:ID,replyTo: ActorRef[Try[Interception]]) extends Command
-  final case class FindInterceptionsByUser(uid:ID,replyTo: ActorRef[Interceptions]) extends Command
+  final case class GetInterceptions(history:Option[Long],replyTo: ActorRef[Interceptions]) extends Command
+  final case class GetInterception(id:ID,history:Option[Long],replyTo: ActorRef[Try[Interception]]) extends Command
+  final case class FindInterceptionsByUser(uid:ID,history:Option[Long],replyTo: ActorRef[Interceptions]) extends Command
   final case class SearchInterception(txt:String,replyTo: ActorRef[Interceptions]) extends Command
   final case class GetHistory(id:Interception.ID,replyTo: ActorRef[Try[String]]) extends Command
   
@@ -59,12 +59,23 @@ object InterceptionRegistry {
         replyTo ! storeScript.?(id)
         Behaviors.same
 
-      case GetInterceptions(replyTo) =>
-        replyTo ! Interceptions(store.all)
+      case GetInterceptions(history,replyTo) =>
+        val ixx = store.all
+        val ixx1 = if(history.isDefined) 
+          ixx.map(ix => ix.copy(history = ix.history.take(history.get.toInt)))
+        else
+          ixx
+        
+        replyTo ! Interceptions(ixx1)
         Behaviors.same
 
-      case GetInterception(id, replyTo) =>
-        replyTo ! store.?(id)
+      case GetInterception(id, history, replyTo) =>
+        val ix = store.?(id)
+        val ix1 = if(history.isDefined && ix.isSuccess) 
+          ix.map(ix => ix.copy(history = ix.history.take(history.get.toInt)))
+        else 
+          ix
+        replyTo ! ix1
         Behaviors.same
       
       case GetHistory(id, replyTo) =>
@@ -75,8 +86,13 @@ object InterceptionRegistry {
         replyTo ! csv
         Behaviors.same      
 
-      case FindInterceptionsByUser(uid, replyTo) =>
-        replyTo ! Interceptions(store.findByUser(uid))
+      case FindInterceptionsByUser(uid, history, replyTo) =>
+        val ixx = store.findByUser(uid)
+        val ixx1 = if(history.isDefined) 
+          ixx.map(ix => ix.copy(history = ix.history.take(history.get.toInt)))
+        else
+          ixx
+        replyTo ! Interceptions(ixx1)
         Behaviors.same
       
       case SearchInterception(txt, replyTo) =>

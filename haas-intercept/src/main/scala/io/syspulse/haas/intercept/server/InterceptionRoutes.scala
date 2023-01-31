@@ -74,9 +74,9 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def getScripts(): Future[Scripts] = registry.ask(GetScripts)
   def getScript(id: Script.ID): Future[Try[Script]] = registry.ask(GetScript(id, _))
 
-  def getInterceptions(): Future[Interceptions] = registry.ask(GetInterceptions)
-  def getInterception(id: Interception.ID): Future[Try[Interception]] = registry.ask(GetInterception(id, _))
-  def findInterceptionsByUser(uid: UUID): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, _))
+  def getInterceptions(history:Option[Long]): Future[Interceptions] = registry.ask(GetInterceptions(history, _))
+  def getInterception(id: Interception.ID,history:Option[Long]): Future[Try[Interception]] = registry.ask(GetInterception(id,history, _))
+  def findInterceptionsByUser(uid: UUID,history:Option[Long]): Future[Interceptions] = registry.ask(FindInterceptionsByUser(uid, history, _))
   def getInterceptionBySearch(txt: String): Future[Interceptions] = registry.ask(SearchInterception(txt, _))
   def getHistory(id: Interception.ID): Future[Try[String]] = registry.ask(GetHistory(id, _))
   
@@ -91,9 +91,11 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   )
   def getInterceptionRoute(id: String) = get {
     rejectEmptyResponse {
-      onSuccess(getInterception(UUID(id))) { r =>
-        metricGetCount.inc()
-        complete(r)
+      parameters("history".as[Long].optional) { (history) => 
+        onSuccess(getInterception(UUID(id),history)) { r =>
+          metricGetCount.inc()
+          encodeResponse { complete(r) }
+        }
       }
     }
   }
@@ -105,9 +107,11 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   )
   def getInterceptionsFindByUserRoute(uid: String) = get {
     rejectEmptyResponse {
-      onSuccess(findInterceptionsByUser(UUID(uid))) { r =>
-        metricGetCount.inc()
-        complete(r)
+      parameters("history".as[Long].optional) { (history) => 
+        onSuccess(findInterceptionsByUser(UUID(uid),history)) { r =>
+          metricGetCount.inc()
+          encodeResponse { complete(r) }
+        }
       }
     }
   }
@@ -137,7 +141,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def getInterceptionSearch(txt: String) = get {
     rejectEmptyResponse {
       onSuccess(getInterceptionBySearch(txt)) { r =>
-        complete(r)
+        encodeResponse { complete(r) }
       }
     }
   }
@@ -148,8 +152,10 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
       new ApiResponse(responseCode = "200", description = "List of Interceptions",content = Array(new Content(schema = new Schema(implementation = classOf[Interceptions])))))
   )
   def getInterceptionsRoute() = get {
-    metricGetCount.inc()
-    complete(getInterceptions())
+    parameters("history".as[Long].optional) { (history) => 
+      metricGetCount.inc()
+      encodeResponse { complete(getInterceptions(history)) }
+    }
   }
 
   @DELETE @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
@@ -175,7 +181,6 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     entity(as[InterceptionCreateReq]) { interceptCreate =>
       onSuccess(createInterception(interceptCreate)) { r =>
 
-        
         metricCreateCount.inc()
         complete((StatusCodes.Created, r))
       }

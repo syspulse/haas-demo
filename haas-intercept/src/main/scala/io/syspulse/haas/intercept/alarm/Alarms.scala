@@ -15,9 +15,7 @@ import io.syspulse.skel.notify.Config
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
 
-//case class UserAlarm(alarmId:String,to:Seq[String])
-
-class Alarms(throttle:Long = 10000L) {
+class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Interception]) {
   protected val log = Logger(s"${this.getClass()}")
 
   val c = Configuration.withPriority(Seq(new ConfigurationAkka,new ConfigurationProp,new ConfigurationEnv))
@@ -52,8 +50,9 @@ class Alarms(throttle:Long = 10000L) {
 
           val txt = iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
           
+          val ix = interceptions.get(iid)
           val msg = txt
-          val title = s"Alarms: ${iaa.size} (${iid})"
+          val title = s"${ix.map(ix => ix.name).getOrElse("")}: ${ix.map(_.history.size)} (${iid})"
 
           Notification.broadcast(allNotify.receviers,title,msg)      
         }}
@@ -63,11 +62,11 @@ class Alarms(throttle:Long = 10000L) {
     }  
   }.start()
 
-  def send(ix:InterceptionAlarm):Alarms = {
+  def send(ia:InterceptionAlarm):Alarms = {
     // filter only to where there is UserAlarm associtated
 
     // LIFO 
-    queue = queue.prepended(ix)
+    queue = queue.prepended(ia)
     this
   }
 }

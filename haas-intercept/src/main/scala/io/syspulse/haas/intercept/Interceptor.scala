@@ -74,7 +74,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
 
   log.info(s"interceptions: ${interceptions}")
 
-  val alarms = new Alarms(alarmThrottle)
+  val alarms = new Alarms(alarmThrottle,interceptions)
   
   def decode(t:T):Map[String,Any]
  
@@ -127,8 +127,9 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
       }).toSeq
 
     ii.foreach{ 
-      ia => alarms.send(ia) 
+      ia => alarms.send(ia)
     }
+    
     ii
   }
 }
