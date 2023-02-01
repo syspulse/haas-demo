@@ -59,6 +59,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
 
   def +(ix:Interception) = {
     interceptions = interceptions + (ix.id -> ix)
+    log.info(s"interceptions = ${interceptions}")
   }
   def -(id:Interception.ID) = {
     interceptions = interceptions - (id)
@@ -80,8 +81,18 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
  
   def scan(t:T):Seq[InterceptionAlarm] = {
 
+    // not interceptions
+    if(interceptions.size == 0) {
+      return Seq()
+    }
+
     // decode
     val onchainData = decode(t)
+
+    // not decoded or not-applicable for script execution
+    if(onchainData.size == 0) {
+      return Seq()
+    }
 
     val ii:Seq[InterceptionAlarm] = interceptions
       .values
@@ -95,28 +106,35 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
             
             val engine = ScriptEngine.engines.get(script.typ)
             if(engine.isDefined) {
-              val r = engine.get.run(script.src,onchainData)
+              
+              val r = engine.get.run(script.src,onchainData)              
+
               log.debug(s"${t}: ${script}: ${Console.YELLOW}${r}${Console.RESET}")
               
-              if(! r.isDefined) 
-                None
-              else {
-                
-                ix.++(1)
+              r match {
+                case Failure(e) => 
+                  log.error(s"script failed: ${script.id}: ${onchainData}: ${e.getMessage()}")
+                  None
+                case Success(null) =>
+                  // ignore, script is not interested
+                  None
+                case Success(r) =>
+                  ix.++(1)
 
-                val scriptOutput = s"${r.get}"
-                val ia = InterceptionAlarm(
+                  val scriptOutput = s"${r}"
+                  val ia = InterceptionAlarm(
                     System.currentTimeMillis(),
                     ix.id,
                     onchainData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
                     onchainData.get("hash").getOrElse("").asInstanceOf[String],
                     scriptOutput,
-                    alarm = ix.alarm)
-                
-                // memorize 
-                interceptionStore.remember(ix,ia)
+                    alarm = ix.alarm
+                  )
+                  
+                  // memorize 
+                  interceptionStore.remember(ix,ia)
 
-                Some(ia)
+                  Some(ia)
               }
             } else {
               log.error(s"engine not fonud: ${script.typ}")

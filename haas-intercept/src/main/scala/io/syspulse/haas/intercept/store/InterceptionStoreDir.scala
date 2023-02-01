@@ -18,7 +18,8 @@ import io.syspulse.haas.intercept.Interception.ID
 class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
   import InterceptionJson._
 
-  load(dir)
+  @volatile
+  var loading = false
 
   def load(dir:String) = {
     val storeDir = os.Path(dir,os.pwd)
@@ -53,8 +54,10 @@ class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
   def delFile(ix:Interception) = os.remove(os.Path(dir,os.pwd) / s"${ix.id}.json")
   def delFile(id:Interception.ID) = os.remove(os.Path(dir,os.pwd) / s"${id}.json")
 
-  override def +(ix:Interception):Try[InterceptionStore] = { 
+  override def +(ix:Interception):Try[InterceptionStore] = {     
     super.+(ix)
+
+    if(loading) return Success(this)
     writeFile(ix)  
     Success(this)
   }
@@ -72,4 +75,8 @@ class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
     }
     Success(this)
   }
+
+  loading = true
+  load(dir)
+  loading = false
 }

@@ -87,7 +87,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   
   def getInterceptionAbi(id: Interception.ID,aid:AbiStore.ID): Future[Try[AbiContract]] = registry.ask(GetInterceptionAbi(id,aid, _))
   
-  def createInterception(interceptCreate: InterceptionCreateReq): Future[Option[Interception]] = registry.ask(CreateInterception(interceptCreate, _))
+  def createInterception(interceptCreate: InterceptionCreateReq): Future[Try[Interception]] = registry.ask(CreateInterception(interceptCreate, _))
   def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
   def commandInterception(interceptCommand: InterceptionCommandReq): Future[InterceptionActionRes] = registry.ask(CommandInterception(interceptCommand, _))
 

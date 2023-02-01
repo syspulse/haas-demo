@@ -40,34 +40,33 @@ class InterceptorFunc(abiStore:AbiStore,interceptionStore:InterceptionStore,scri
 
     abiStore.decodeInput(addr,Seq(data),AbiStore.FUNCTION) match {
       case Success(r) => 
-        val m = r.params.map{ case(name,typ,v) => s"func_param_${name}" -> v}.toMap +
+        val m = 
+          r.params.map{ case(name,typ,v) => s"func_param_${name}" -> v}.toMap ++
+          r.params.zipWithIndex.map{ case((name,typ,v),i) => s"func_param_${i}" -> v}.toMap +
           ("func_sig" -> r.sig)
         
-        log.info(s"${addr}: ${data}: ${m}")
         Some(m)
       case Failure(e) => 
         //log.warn(s"${addr}: failed to decode ABI: ${data}: ${e.getMessage()}")
-        Some(Map("func_name" -> "", "func_sig" -> ""))
+        Some(Map("func_sig" -> ""))
     }    
   }
   
   override def decode(tx:Tx):Map[String,Any] = {
+    // cannot process, because this is not a contract call
+    if(tx.input == "" || tx.input == "0x" || ! tx.toAddress.isDefined)
+      return Map()
+
     Map( 
       ("from_address" -> tx.fromAddress),
-      ("to_address" -> tx.toAddress.getOrElse("null")),
+      ("contract" -> tx.toAddress.get),
       ("value" -> tx.value),
       ("gas" -> tx.value),
       ("input" -> tx.input),
       ("block_number" -> tx.blockNumber),
       ("hash" -> tx.hash), //("transaction_hash" -> tx.hash),      
       ("ts" -> tx.ts),
-    ) ++ {
-      if(tx.input == "" || tx.input == "0x" )
-        Map()
-      else
-        decodeData(tx.toAddress.getOrElse("null"),tx.input).getOrElse(Map())
-    }
-      
+    ) ++       
+      decodeData(tx.toAddress.get,tx.input).getOrElse(Map())      
   }
- 
 }

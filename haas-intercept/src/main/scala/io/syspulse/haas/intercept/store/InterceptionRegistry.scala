@@ -21,6 +21,7 @@ import scala.util.Try
 import io.syspulse.skel.crypto.eth.abi.AbiStore
 import org.checkerframework.checker.units.qual.A
 import io.syspulse.skel.crypto.eth.abi.AbiContract
+import scala.util.Failure
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
@@ -37,7 +38,7 @@ object InterceptionRegistry {
   final case class GetInterceptionAbi(id:ID,aid:AbiStore.ID,replyTo: ActorRef[Try[AbiContract]]) extends Command
 
   
-  final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Option[Interception]]) extends Command
+  final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Try[Interception]]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
 
   final case class DeleteInterception(id: ID, replyTo: ActorRef[InterceptionActionRes]) extends Command
@@ -104,51 +105,113 @@ object InterceptionRegistry {
       
      
       case CreateInterception(c, replyTo) =>
-        // 1 = 1 association for user script
-
-        val src = 
-          // special case to reference script body
-          if(c.script.trim.startsWith("id://")) {
-            val id = c.script.trim.stripPrefix("id://")
-            val s = storeScript.?(id).toOption
-            if(s.isDefined)
-              s.get.src
-            else
-              ""
-          } else {
-            c.script
+        
+        for {
+          script <- {
+            // special case to reference script body
+            if(c.script.trim.startsWith("ref://")) {
+              val scriptId = c.script.trim.stripPrefix("ref://")
+              storeScript.?(scriptId) match {
+                case Success(s) => Some(s)
+                case Failure(e) => 
+                  log.error(s"script not found: ${scriptId}")
+                  replyTo ! Failure(e)
+                  None                  
+              }
+            } else {
+              val scriptId = Util.sha256(c.script)
+              val script = Script(scriptId,"js",c.script,c.name)
+              storeScript.+(script)
+              Some(script)
+            }
           }
+          entity <- Some(c.entity.getOrElse("tx"))
+          abiId <- entity match {          
+            case "event" | "function" => 
+              if(c.abi.isDefined && c.contract.isDefined) {
+                val abiId = c.contract.get
+                abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
+                Some(abiId)
+              } else {
+                log.error(s"ABI or Contract not found: ${entity}")
+                replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))
+                None
+              }
+            case _ => 
+              None
+          }
+          ix <- Some(Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, Some(abiId)))
+          store1 <- interceptors.get(entity) match {
+            case Some(interceptor) => 
+              val store1 = store.+(ix)
+              interceptor.+(ix)
+              replyTo ! Success(ix)
+              Some(store1)
+            case None => 
+              log.warn(s"Interceptor not found: entity='${entity}'")
+              replyTo ! Failure(new Exception(s"Interceptor not found: entity='${entity}'"))
+              None
+          }
+                  
+        } yield store1
+          
+        Behaviors.same
+                
+        // val script = 
+        //   // special case to reference script body
+        //   if(c.script.trim.startsWith("ref://")) {
+        //     val scriptId = c.script.trim.stripPrefix("ref://")
+        //     storeScript.?(scriptId) match {
+        //       case Success(s) => s
+        //       case Failure(e) => 
+        //         log.error(s"script not found: ${scriptId}")
+        //         replyTo ! Failure(e)
+        //         return Behaviors.same
+        //     }
+        //   } else {
+        //     val scriptId = Util.sha256(c.script)
+        //     val script = Script(scriptId,"js",c.script,c.name)
+        //     storeScript.+(script)
+        //     script
+        //   }
         
-        val scriptId = Util.sha256(c.script)
-        val script = Script(scriptId,"js",src,c.name)
-        storeScript.+(script)
+        // //val scriptId = Util.sha256(c.script)
+        // //val script = Script(scriptId,"js",src,c.name)
+        // //storeScript.+(script)
 
-        val entity = c.entity.getOrElse("tx")
+        // val entity = c.entity.getOrElse("tx")
 
-        val abiId = 
-          if(entity == "event" && c.abi.isDefined && c.contract.isDefined) {
-            val abiId = c.contract.get
-            abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
-            Some(abiId)
-          } else
-            None
+        // val abiId = entity match {          
+        //   case "event" | "function" => 
+        //     if(c.abi.isDefined && c.contract.isDefined) {
+        //       val abiId = c.contract.get
+        //       abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
+        //       Some(abiId)
+        //     } else {
+        //       log.error(s"ABI or Contract not found: ${entity}")
+        //       replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))
+        //       return Behaviors.same
+        //     }
+        //   case _ => 
+        //     None
+        // }
 
-        val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, abiId)
+        // val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, abiId)
         
-        val store1 = interceptors.get(entity) match {
-          case Some(interceptor) => 
-            val store1 = store.+(ix)
-            interceptor.+(ix)
-            replyTo ! Some(ix)
-            store1
-          case None => 
-            log.warn(s"Interceptor not found: entity='${entity}'")
-            replyTo ! None
-            Success(store)
-        }
+        // val store1 = interceptors.get(entity) match {
+        //   case Some(interceptor) => 
+        //     val store1 = store.+(ix)
+        //     interceptor.+(ix)
+        //     replyTo ! Success(ix)
+        //     store1
+        //   case None => 
+        //     log.warn(s"Interceptor not found: entity='${entity}'")
+        //     replyTo ! Failure(new Exception(s"Interceptor not found: entity='${entity}'"))
+        //     Success(store)
+        // }
 
-        //replyTo ! ix
-        registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
+        // //replyTo ! Success(ix)
+        // registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
 
       case CommandInterception(c, replyTo) =>
         val ix:Option[Interception] = c.id.flatMap(id => store.?(id).toOption)

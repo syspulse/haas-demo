@@ -1,7 +1,7 @@
 #!/bin/bash
 
 NAME=${1:-name-1}
-SCRIPT=${2:-id://script-1.js}
+SCRIPT=${2:-ref://script-1.js}
 ALARM=${3:-stdout://}
 ENTITY=${4:-tx}
 USER_ID=${5:-00000000-0000-0000-1000-000000000001}

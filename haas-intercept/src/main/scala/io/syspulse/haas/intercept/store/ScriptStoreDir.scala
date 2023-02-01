@@ -20,9 +20,10 @@ import io.syspulse.haas.intercept.script.ScriptJson
 class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
   import ScriptJson._
 
-  loadEngines(dir)
-
-  def loadEngines(dir:String) = {
+  @volatile
+  var loading = false
+  
+  def load(dir:String) = {
     val storeDir = os.Path(dir,os.pwd)
     log.info(s"Loading dir store: ${storeDir}")
 
@@ -66,8 +67,11 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     log.info(s"Loaded store: ${size}")
   }
 
-  override def +(sc:Script):Try[ScriptStore] = { 
+  override def +(sc:Script):Try[ScriptStore] = {     
     super.+(sc)
+    
+    if(loading) return Success(this)
+
     os.write.over(os.Path(dir,os.pwd) / s"${sc.id}.json",sc.toJson.prettyPrint)
     Success(this)
   }
@@ -78,4 +82,7 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     Success(this)
   }
 
+  loading = true
+  load(dir)
+  loading = false
 }

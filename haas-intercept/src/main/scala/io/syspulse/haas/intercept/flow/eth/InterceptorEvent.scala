@@ -43,13 +43,15 @@ class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
 
     abiStore.decodeInput(addr,topics :+ data,AbiStore.EVENT) match {
       case Success(r) => 
-        val m = r.params.map{ case(name,typ,v) => s"event_param_${name}" -> v}.toMap +
+        val m = 
+          r.params.map{ case(name,typ,v) => s"event_param_${name}" -> v}.toMap ++
+          r.params.zipWithIndex.map{ case((name,typ,v),i) => s"event_param_${i}" -> v}.toMap +
           ("event_sig" -> r.sig)
 
         Some(m)
       case Failure(e) => 
         //log.warn(s"${addr}: failed to decode ABI: ${topics}: ${e.getMessage()}")
-        Some(Map("event_name" -> "", "event_sig" -> ""))
+        Some(Map("event_sig" -> ""))
     }    
   }
 
