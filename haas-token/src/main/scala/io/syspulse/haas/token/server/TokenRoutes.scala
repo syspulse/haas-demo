@@ -78,6 +78,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
   def getTokensPage(from:Int,size:Int): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
   def getToken(id: Token.ID): Future[Try[Token]] = registry.ask(GetToken(id, _))
+  def getTokenByAddr(addr:String): Future[Try[Token]] = registry.ask(GetTokenByAddr(addr, _))
   def getTokenBySearch(txt: String): Future[Tokens] = registry.ask(SearchToken(txt, _))
   def getTokenByTyping(txt: String): Future[Tokens] = registry.ask(TypingToken(txt, _))
 
@@ -94,6 +95,20 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   def getTokenRoute(id: String) = get {
     rejectEmptyResponse {
       onSuccess(getToken(id)) { r =>
+        metricGetCount.inc()
+        complete(r)
+      }
+    }
+  }
+
+  @GET @Path("/address/{addr}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("token"),summary = "Return Token by Address",
+    parameters = Array(new Parameter(name = "addr", in = ParameterIn.PATH, description = "Token address")),
+    responses = Array(new ApiResponse(responseCode="200",description = "Token returned",content=Array(new Content(schema=new Schema(implementation = classOf[Token])))))
+  )
+  def getTokenByAddrRoute(addr: String) = get {
+    rejectEmptyResponse {
+      onSuccess(getTokenByAddr(addr)) { r =>
         metricGetCount.inc()
         complete(r)
       }
@@ -218,6 +233,13 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
           authenticate()(authn =>
             pathPrefix(Segment) { txt => 
               getTokenTyping(txt)
+            }
+          )
+        },
+        pathPrefix("address") {
+          authenticate()(authn =>
+            pathPrefix(Segment) { addr => 
+              getTokenByAddrRoute(addr)
             }
           )
         },
