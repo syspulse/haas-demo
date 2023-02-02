@@ -50,7 +50,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      # JAVA_OPTS: -Dgod
       DATASTORE: postgres
 
   skel-notify:
@@ -63,7 +63,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      # JAVA_OPTS: -Dgod
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
@@ -86,7 +86,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      # JAVA_OPTS: -Dgod
       USER_URI: http://skel-user:8080/api/v1/user
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
       NOTIFY_EMAIL: ${NOTIFY_EMAIL}
@@ -119,7 +119,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      # JAVA_OPTS: -Dgod
       USER_URI: http://skel-user:8080/api/v1/user
       GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
       GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
