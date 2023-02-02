@@ -78,6 +78,8 @@ services:
     image: syspulse/skel-enroll:latest
     container_name: skel-enroll
     restart: always
+    volumes:
+      - "${PWD}/auth:/auth"
     ports:
       - 8083:8080
     networks:
@@ -89,6 +91,7 @@ services:
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
       NOTIFY_EMAIL: ${NOTIFY_EMAIL}
       CONFIRM_URI: http://demo.hacken.cloud
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   # skel-tag:
   #   image: syspulse/skel-tag:latest
@@ -149,6 +152,8 @@ services:
     restart: always
     ports:
       - 8092:8080
+    volumes:
+      - "${PWD}/auth:/auth"
     networks:
       - demo
     command: server
@@ -161,6 +166,7 @@ services:
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       AWS_REGION: ${AWS_REGION}
       AWS_ACCOUNT: ${AWS_ACCOUNT}
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   haas-intercept:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-intercept:latest
@@ -169,6 +175,7 @@ services:
     volumes:
       # - "${PWD}/scripts:/scripts"
       - "${PWD}/store:/store"
+      - "${PWD}/auth:/auth"
     ports:
       - 8093:8080
     networks:
@@ -191,6 +198,7 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
       SMTP_FROM: ${SMTP_FROM}
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   nginx:
     image: nginx
