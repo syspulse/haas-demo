@@ -40,9 +40,10 @@ class PipelinePriceMirror(feed:String,output:String)(implicit config:Config) ext
 
   val sourceID = 0 // internal
   val decoder = new PriceDecoder()
+  def apiSuffix():String = ""
 
   def parse(data:String):Seq[Price] = {
-    decoder.parse(data)    
+    decoder.parse(data)
   }
 
   def transform(p: Price): Seq[Price] = Seq(p)

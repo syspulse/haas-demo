@@ -43,7 +43,7 @@ abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Confi
 
   val tokensFilter:Seq[String] = config.tokens
 
-  def apiSuffix():String = ""
+  def apiSuffix():String
 
   def process:Flow[T,T,_] = Flow[T].map(v => v)
 

@@ -67,5 +67,5 @@ curl -X GET 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsy
 __WARNING__: Delimiter must be empty !
 
 ```
-./run-price.sh -f cryptocomp:// -o stdout:// --delimiter=
+./run-ingest-price.sh -f cryptocomp:// -o stdout:// --delimiter=
  ```

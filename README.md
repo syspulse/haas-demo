@@ -11,7 +11,7 @@ HaaS Platform Demo
 - [haas-lake](haas-lake)                - DataLake
 - [haas-circ](haas-circ)                - Circulation Supply Product
 - [haas-analytics](haas-analytics)      - Analytics Code snippets for Notebooks
-
+- [haas-lake](haas-lake)                - DataLake
 
 ----
 ## Architecture

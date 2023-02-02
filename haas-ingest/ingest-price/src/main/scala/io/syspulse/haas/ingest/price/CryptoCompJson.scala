@@ -13,6 +13,6 @@ object CryptoCompJson extends JsonCommon {
 
   implicit val jf_1 = jsonFormat3(CryptoCompData)
   implicit val jf_2 = jsonFormat1(CryptoCompUSD)
-  implicit val jf_3 = jsonFormat1(CryptoComp)
-
+  implicit val jf_3 = jsonFormat1(CryptoCompFull)
+  implicit val jf_4 = jsonFormat2(CryptoCompTerse)
 }

@@ -38,63 +38,14 @@ import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
 
-class PipelineCryptoComp(feed:String,output:String)(implicit config:Config) extends PipelinePrice[CryptoComp](feed,output) {
-
-  import CryptoCompJson._
-
+abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config) extends PipelinePrice[T](feed:String,output:String){
+  
   val sourceID = DataSource.id("cryptocomp")
-
   val TOKENS_SLOT = "COINS"
 
-  override def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
+  def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
 
-  def parseCryptoComp(data:String):Seq[CryptoComp] = {
-    if(data.isEmpty()) return Seq()
-    try {
-      if(data.stripLeading().startsWith("{")) {
-        val price = data.parseJson.convertTo[CryptoComp]
-        //log.info(s"price=${price}")
-        Seq(price)
-      } else {
-        // assume csv
-        val price = data.split(",").toList match {
-          case id :: ts :: v :: Nil => 
-            Some(CryptoComp(`RAW` = Map(id -> Map("USD" -> CryptoCompData(id,v.toDouble,ts.toLong)))))
-          case _ => {
-            log.error(s"failed to parse: '${data}'")
-            None
-          }
-        }
-        //log.info(s"price=${price}")
-        price.toSeq
-      }
-    } catch {
-      case e:Exception => 
-        log.error(s"failed to parse: '${data}'",e)
-        Seq()
-    }
-  }
-
-  def parse(data:String):Seq[CryptoComp] = {
-    log.debug(s"data=${data}")
-    if(data.isEmpty()) return Seq()
-
-    parseCryptoComp(data)
-  }
-
-  def transform(p: CryptoComp): Seq[Price] = {
-    p.`RAW`.map{ case(token,pair) =>
-      pair.map{ case(p,info) => 
-        config.priceFormat match {
-          case "price" => Price(token, info.`LASTUPDATE` * 1000L, info.`PRICE`,pair = Some(p), src = sourceID)
-          case "telemetry" => Price(s"${token}-${p}", info.`LASTUPDATE` * 1000L, info.`PRICE`,None, src = sourceID)
-        }
-        
-      }      
-    }.flatten.toSeq
-  }
-
-  override def source() = {
+  override def source():Source[ByteString,_] = {
     PriceURI(feed,apiSuffix()).parse() match {
       case Some(uri) => source(uri)
       case None => super.source()

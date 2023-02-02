@@ -109,7 +109,8 @@ object App {
     config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
-          case "cryptocomp" => new PipelineCryptoComp(config.feed,config.output)(config)
+          case "cryptocomp" => new PipelineCryptoCompTerse(config.feed,config.output)(config)
+          case "cryptocomp-full" => new PipelineCryptoCompFull(config.feed,config.output)(config)
           case "price" => new PipelinePriceMirror(config.feed,config.output)(config)
         }
                   

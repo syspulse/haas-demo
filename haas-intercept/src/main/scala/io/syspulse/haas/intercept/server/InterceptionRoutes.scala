@@ -281,7 +281,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
         pathPrefix("user") {
           authenticate()(authn => {
             pathPrefix(Segment) { uid => 
-              authorize(Permissions.isUser(UUID(uid),authn)) {
+              authorize(Permissions.isAdmin(authn) || Permissions.isUser(UUID(uid),authn)) {
                 getInterceptionsFindByUserRoute(uid)
                 
               }
