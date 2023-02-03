@@ -69,3 +69,14 @@ __WARNING__: Delimiter must be empty !
 ```
 ./run-ingest-price.sh -f cryptocomp:// -o stdout:// --delimiter=
  ```
+
+Ingest specific Token set from file:
+
+`token-set-1.conf`:
+```
+AAVE,LINK,NODE,ETH,ENS,FOAM,GMX,HNT,LPT,MATIC,NEAR,NOIA,OP,PCN,SOL,UNI,RBN
+```
+
+```
+./run-ingest-price.sh -e cryptocomp -f cryptocomp:// -o stdout://  --tokens=file://token-set-1.conf --delimiter=
+ ```

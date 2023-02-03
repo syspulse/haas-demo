@@ -142,7 +142,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
   def getCirculationSupplyLastRoute() = get {    
     parameters("tokens".as[String].optional,"from".as[Int].optional,"size".as[Int].optional) { (tokens,from,size) =>
       onSuccess(getCirculationSupplyLast(
-          if(tokens.isDefined) tokens.get.split(",").toIndexedSeq else Defaults.TOKEN_SET,
+          if(tokens.isDefined) tokens.get.split(",").toIndexedSeq else Defaults.TOKEN_SET.keys.toSeq,
           from.getOrElse(0),
           size.getOrElse(Defaults.TOKEN_SET.size),
         )) { r => config.httpZip match {
