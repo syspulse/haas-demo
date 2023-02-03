@@ -256,9 +256,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
         pathEndOrSingleSlash {
           concat(
             authenticate()(authn =>
-              authorize(Permissions.isAdmin(authn)) {
-                createInterceptionRoute  
-              } ~
+              createInterceptionRoute ~
               getInterceptionsRoute()
             ),          
           )
