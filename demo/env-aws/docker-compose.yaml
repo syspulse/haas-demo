@@ -141,7 +141,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      #JAVA_OPTS: -Dgod
       #DATASTORE: dir:///data
       DATASTORE: resources://
 
@@ -158,7 +158,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      #JAVA_OPTS: -Dgod
       S3_BUCKET: ${S3_BUCKET}
       DATASTORE: dir:///mnt/s3/data/dev/ethereum/token/
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -182,7 +182,7 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod      
+      #JAVA_OPTS: -Dgod      
       FEED_TX: kafka://broker-1.hacken.dev:9092/transactions/intercept/latest
       FEED_BLOCK: kafka://broker-1.hacken.dev:9092/blocks/intercept/latest
       FEED_TOKEN: kafka://broker-1.hacken.dev:9092/token_transfers/intercept/latest
