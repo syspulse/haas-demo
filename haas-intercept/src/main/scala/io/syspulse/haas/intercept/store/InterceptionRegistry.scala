@@ -105,7 +105,7 @@ object InterceptionRegistry {
       
      
       case CreateInterception(c, replyTo) =>
-        
+        log.info(s"${c}")
         for {
           script <- {
             // special case to reference script body
@@ -125,8 +125,10 @@ object InterceptionRegistry {
               Some(script)
             }
           }
-          entity <- Some(c.entity.getOrElse("tx"))
-          abiId <- entity match {          
+          entity <- {
+            Some(c.entity.getOrElse("tx"))
+          }
+          abiId <- { entity match {
             case "event" | "function" => 
               if(c.abi.isDefined && c.contract.isDefined) {
                 val abiId = c.contract.get
@@ -138,9 +140,13 @@ object InterceptionRegistry {
                 None
               }
             case _ => 
-              None
+              Some("")
+          }}
+          ix <- {
+            val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, if(abiId.isBlank) None else Some(abiId))
+            log.info(s"${ix}")
+            Some(ix)
           }
-          ix <- Some(Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, Some(abiId)))
           store1 <- interceptors.get(entity) match {
             case Some(interceptor) => 
               val store1 = store.+(ix)

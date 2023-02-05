@@ -59,10 +59,11 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
 
   def +(ix:Interception) = {
     interceptions = interceptions + (ix.id -> ix)
-    log.info(s"interceptions = ${interceptions}")
+    log.debug(s"interceptions = ${interceptions}")
   }
   def -(id:Interception.ID) = {
     interceptions = interceptions - (id)
+    log.debug(s"interceptions = ${interceptions}")
   }
 
   def stop(id:Interception.ID) = {
