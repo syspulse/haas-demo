@@ -22,7 +22,7 @@ case class Config(
   size:Long = Long.MaxValue,
   limit:Long = Long.MaxValue,
   freq: Long = 0L,
-  delimiter:String = "",//"\r\n",
+  delimiter:String = "\n",//"\r\n",
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
   throttleSource:Long = 1000L,
@@ -111,7 +111,8 @@ object App {
         val pp = config.entity match {
           case "cryptocomp" => new PipelineCryptoCompTerse(config.feed,config.output)(config)
           case "cryptocomp-full" => new PipelineCryptoCompFull(config.feed,config.output)(config)
-          case "price" => new PipelinePriceMirror(config.feed,config.output)(config)
+          // internal format
+          case "price" => new PipelinePricePrice(config.feed,config.output)(config)
         }
                   
         val r = pp.run()
