@@ -33,7 +33,9 @@ case class Config(
   datastore:String = "stdout",
   tokens:Seq[String] = Seq("UNI","RBN"),
   tokensPair:Seq[String] = Seq("USD"),
-  ingestCron:String = "360",
+  ingestCron:String = "360", // 10 minutes
+
+  idResolver:String = "",
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
@@ -72,6 +74,8 @@ object App {
         
         ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
         ArgString('_', "ingest.cron",s"Ingest load cron (currently only seconds interval Tick supported) (def: ${d.ingestCron})"),
+
+        ArgString('_', "id.resolver",s"Source ID resovler (def: ${d.idResolver})"),
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
@@ -99,6 +103,8 @@ object App {
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
       ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
+
+      idResolver = c.getString("id.resolver").getOrElse(d.idResolver),
       
       cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),
@@ -111,6 +117,9 @@ object App {
         val pp = config.entity match {
           case "cryptocomp" => new PipelineCryptoCompTerse(config.feed,config.output)(config)
           case "cryptocomp-full" => new PipelineCryptoCompFull(config.feed,config.output)(config)
+
+          case "coingecko" => new PipelineCoinGecko(config.feed,config.output)(config)
+          
           // internal format
           case "price" => new PipelinePricePrice(config.feed,config.output)(config)
         }

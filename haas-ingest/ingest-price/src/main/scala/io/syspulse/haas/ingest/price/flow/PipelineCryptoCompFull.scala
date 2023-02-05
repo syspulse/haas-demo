@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
-import io.syspulse.haas.ingest.price.CryptoCompJson
+import io.syspulse.haas.ingest.price.CryptoCompPriceJson
 import io.syspulse.haas.ingest.price._
 
 import io.syspulse.haas.serde.PriceJson._
@@ -39,18 +39,18 @@ import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
 
 class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config) 
-  extends PipelineCryptoComp[CryptoCompFull](feed,output) {
+  extends PipelineCryptoComp[CryptoCompPriceFull](feed,output) {
 
-  import CryptoCompJson._
+  import CryptoCompPriceJson._
 
   override def apiSuffix():String = "pricemultifull" + super.apiSuffix()
 
-  def parseCryptoCompFull(data:String):Seq[CryptoCompFull] = {
+  def parseCryptoCompFull(data:String):Seq[CryptoCompPriceFull] = {
     if(data.isEmpty()) return Seq()
     try {
       if(data.stripLeading().startsWith("{")) {
         try {
-          val price = data.parseJson.convertTo[CryptoCompFull]
+          val price = data.parseJson.convertTo[CryptoCompPriceFull]
           //log.info(s"price=${price}")
           Seq(price)
         } catch {
@@ -62,7 +62,7 @@ class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config)
         // assume csv
         val price = data.split(",").toList match {
           case id :: ts :: v :: Nil => 
-            Some(CryptoCompFull(`RAW` = Map(id -> Map("USD" -> CryptoCompData(id,v.toDouble,ts.toLong)))))
+            Some(CryptoCompPriceFull(`RAW` = Map(id -> Map("USD" -> CryptoCompPriceData(id,v.toDouble,ts.toLong)))))
           case _ => {
             log.error(s"failed to parse: '${data}'")
             None
@@ -78,14 +78,14 @@ class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config)
     }
   }
 
-  def parse(data:String):Seq[CryptoCompFull] = {
+  def parse(data:String):Seq[CryptoCompPriceFull] = {
     log.debug(s"data=${data}")
     if(data.isEmpty()) return Seq()
 
     parseCryptoCompFull(data)
   }
 
-  def transform(p: CryptoCompFull): Seq[Price] = {
+  def transform(p: CryptoCompPriceFull): Seq[Price] = {
     p.`RAW`.map{ case(token,pair) =>
       pair.map{ case(p,info) => 
         config.priceFormat match {

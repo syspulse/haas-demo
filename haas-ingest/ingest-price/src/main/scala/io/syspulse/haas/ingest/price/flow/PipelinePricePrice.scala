@@ -29,8 +29,6 @@ import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
-import io.syspulse.haas.core.DataSource
-import io.syspulse.haas.ingest.price.CryptoCompPriceJson
 import io.syspulse.haas.ingest.price._
 
 import io.syspulse.haas.serde.PriceJson._
@@ -38,18 +36,17 @@ import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
 
-abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config) extends PipelinePrice[T](feed:String,output:String){
-  
-  val sourceID = DataSource.id("cryptocomp")
-  val TOKENS_SLOT = "COINS"
+class PipelinePricePrice(feed:String,output:String)(implicit config:Config) extends PipelinePrice[Price](feed,output) {
 
-  def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
+  val sourceID = 0 // internal
+  val decoder = new PriceDecoder()
+  def apiSuffix():String = ""
+  val TOKENS_SLOT = ""
 
-  override def source():Source[ByteString,_] = {
-    PriceURI(feed,apiSuffix()).parse() match {
-      case Some(uri) => source(uri)
-      case None => super.source()
-    }
+  def parse(data:String):Seq[Price] = {
+    decoder.parse(data)
   }
+
+  def transform(p: Price): Seq[Price] = Seq(p)
 
 }

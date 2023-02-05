@@ -17,6 +17,9 @@ case class PriceURI(priceUri:String,apiSuffix:String="") {
       case "http" :: host :: Nil => Some(build("http://",host,"/data/",apiSuffix))
       case "cryptocomp" :: host :: Nil => Some(build("http://",host,"/api/",""))
       case "cryptocomp" :: Nil => Some(build("https://","min-api.cryptocompare.com","/data/",apiSuffix))
+      
+      case "coingecko" :: Nil => Some(build("https://","api.coingecko.com/api/v3","/simple/price/",apiSuffix))
+            
       case _ => None
     }
   }
