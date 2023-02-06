@@ -86,8 +86,9 @@ class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config)
   }
 
   def transform(p: CryptoCompPriceFull): Seq[Price] = {
-    p.`RAW`.map{ case(token,pair) =>
+    p.`RAW`.map{ case(t,pair) =>
       pair.map{ case(p,info) => 
+        val token = idResolver.resolve(t).getOrElse(t)
         config.priceFormat match {
           case "price" => Price(token, info.`LASTUPDATE` * 1000L, info.`PRICE`,pair = Some(p), src = sourceID)
           case "telemetry" => Price(s"${token}-${p}", info.`LASTUPDATE` * 1000L, info.`PRICE`,None, src = sourceID)

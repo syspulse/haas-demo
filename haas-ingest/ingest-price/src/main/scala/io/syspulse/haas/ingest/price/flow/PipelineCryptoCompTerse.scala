@@ -89,8 +89,9 @@ class PipelineCryptoCompTerse(feed:String,output:String)(implicit config:Config)
   }
 
   def transform(cct: CryptoCompPriceTerse): Seq[Price] = {
-    cct.pairs.map{ case(token,pair) =>
-      pair.map{ case(p,price) => 
+    cct.pairs.map{ case(t,pair) =>
+      pair.map{ case(p,price) =>        
+        val token = idResolver.resolve(t).getOrElse(t)
         config.priceFormat match {
           case "price" => Price(token, cct.ts.getOrElse(0L), price, pair = Some(p), src = sourceID)
           case "telemetry" => Price(s"${token}-${p}", cct.ts.getOrElse(0L), price, None, src = sourceID)

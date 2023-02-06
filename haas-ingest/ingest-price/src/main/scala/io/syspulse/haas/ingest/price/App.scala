@@ -31,7 +31,7 @@ case class Config(
   priceFormat:String = "price",
 
   datastore:String = "stdout",
-  tokens:Seq[String] = Seq("UNI","RBN"),
+  tokens:Seq[String] = Seq("uniswap","ribbon-finance"),
   tokensPair:Seq[String] = Seq("USD"),
   ingestCron:String = "360", // 10 minutes
 

@@ -391,14 +391,17 @@ lazy val haas_circ = (project in file("haas-circ"))
 lazy val ingest_price = (project in file("haas-ingest/ingest-price"))
   .dependsOn(haas_core)
   .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
   .settings (
+    
     sharedConfig,
     sharedConfigAssembly,
-    //sharedConfigDocker,
-    //dockerBuildxSettings,
+    sharedConfigDocker,
+    dockerBuildxSettings,
 
-    appAssemblyConfig("ingest-price","io.syspulse.haas.ingest.price.App"),
-    //appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.price.App"),
+    //appAssemblyConfig("ingest-price","io.syspulse.haas.ingest.price.App"),
+    appDockerConfig("ingest-price","io.syspulse.haas.ingest.price.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,

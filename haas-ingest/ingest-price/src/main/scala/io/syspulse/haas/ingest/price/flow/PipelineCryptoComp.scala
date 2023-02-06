@@ -37,14 +37,19 @@ import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
+import io.syspulse.haas.core.resolver.TokenResolverMem
 
 abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config) extends PipelinePrice[T](feed:String,output:String){
   
   val sourceID = DataSource.id("cryptocomp")
   val TOKENS_SLOT = "COINS"
 
-  def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
+  val idResolver = new TokenResolverMem(if(config.idResolver.isEmpty) None else Some(config.idResolver))
+  def resolve(tokens:Seq[String]) = tokens.flatMap(idResolver.resolve _).mkString(",")
 
+  // def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
+  def apiSuffix():String = s"?fsyms=${resolve(config.tokens)}&tsyms=${config.tokensPair.mkString(",")}"
+  
   override def source():Source[ByteString,_] = {
     PriceURI(feed,apiSuffix()).parse() match {
       case Some(uri) => source(uri)
