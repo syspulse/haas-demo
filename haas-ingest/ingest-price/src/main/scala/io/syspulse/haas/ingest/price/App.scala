@@ -119,6 +119,8 @@ object App {
           case "cryptocomp-full" => new PipelineCryptoCompFull(config.feed,config.output)(config)
 
           case "coingecko" => new PipelineCoinGecko(config.feed,config.output)(config)
+
+          case "chainlink" => new PipelineChainlink(config.feed,config.output)(config)
           
           // internal format
           case "price" => new PipelinePricePrice(config.feed,config.output)(config)

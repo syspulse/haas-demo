@@ -38,7 +38,6 @@ import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
 import io.syspulse.haas.core.resolver.TokenResolverMem
 
 class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) extends PipelinePrice[CoinGeckoPrice](feed:String,output:String){

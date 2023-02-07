@@ -11,6 +11,8 @@ import io.syspulse.skel.config._
 import java.util.concurrent.TimeUnit
 
 class TokenResolverMem(datastore:Option[String] = None) extends Resolver[String,String] {
+  val log = Logger(s"${this}")
+
   val default = Map(
     "uniswap" -> "UNI",
     "ribbon-finance" -> "RBN",
@@ -34,13 +36,17 @@ class TokenResolverMem(datastore:Option[String] = None) extends Resolver[String,
     "usd" -> "USD",
   )
 
-  val store = default ++ default.map{case(k,v) => v -> k} ++ (if(!datastore.isDefined) Map() else {
-      val r = datastore.get.split("\n").flatMap(_.split(",").toList match {
+  val store = default ++ default.map{case(k,v) => v -> k} ++ {
+    if(!datastore.isDefined) Map[String,String]() else {
+      val r = datastore.get.split("\n").filter(!_.isEmpty()).flatMap(_.split(",").toList match {
         case id :: ticker :: Nil => Some(id.trim -> ticker.trim)
         case _ => None
-      })
-      r.toMap
-    })
+      }).toMap
+      r ++ r.map{case(k,v) => v -> k}
+    }
+  }
+
+  log.info(s"resolver: ${store}")
 
   def resolve(xid:String):Option[String] = store.get(xid)
   def resolveReverse(id:String):Option[String] = store.get(id.toLowerCase())
