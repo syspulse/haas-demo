@@ -35,28 +35,28 @@ class InterceptorBlock(interceptionStore:InterceptionStore,scriptStore:ScriptSto
   def entity():String = "block"
   override def decode(b:Block):Map[String,Any] = {
     Map( 
-      ("block_number" -> b.number), //("number" -> b.number),
+      ("block_number" -> b.i), //("number" -> b.number),
       ("hash" -> b.hash),
-      ("parent_hash" -> b.parent_hash),
-      ("nonce" -> b.nonce),
-      ("sha3_uncles" -> b.sha3_uncles),
-      ("logs_bloom" -> b.logs_bloom),
-      ("transactions_root" -> b.transactions_root),
-      ("state_root" -> b.state_root),
-      ("receipts_root" -> b.receipts_root),
+      ("parent_hash" -> b.phash),
+      ("nonce" -> b.non),
+      ("sha3_uncles" -> b.uncl),
+      ("logs_bloom" -> b.bloom),
+      ("transactions_root" -> b.txrt),
+      ("state_root" -> b.strt),
+      ("receipts_root" -> b.rert),
 
       ("miner" -> b.miner),
-      ("difficulty" -> b.difficulty),
-      ("total_difficulty" -> b.total_difficulty),
+      ("difficulty" -> b.dif),
+      ("total_difficulty" -> b.dif0),
 
-      ("size" -> b.size),
-      ("extra_data" -> b.extra_data),
-      ("gas_limit" -> b.gas_limit),
-      ("gas_used" -> b.gas_used),
+      ("size" -> b.sz),
+      ("extra_data" -> b.data),
+      ("gas_limit" -> b.limit),
+      ("gas_used" -> b.used),
 
-      ("timestamp" -> b.timestamp),
-      ("transaction_count" -> b.transaction_count),
-      ("base_fee_per_gas" -> b.base_fee_per_gas),      
+      ("timestamp" -> b.ts),
+      ("transaction_count" -> b.cnt),
+      ("base_fee_per_gas" -> b.fee),      
     )
   }
  

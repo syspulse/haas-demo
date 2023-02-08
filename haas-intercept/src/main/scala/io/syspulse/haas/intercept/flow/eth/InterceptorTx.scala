@@ -12,7 +12,6 @@ import scala.util.Random
 
 import com.typesafe.scalalogging.Logger
 
-// ATTENTION
 import io.syspulse.skel.service.JsonCommon
 import spray.json._
 import spray.json.{DefaultJsonProtocol,NullOptions}
@@ -55,7 +54,7 @@ class InterceptorTx(interceptionStore:InterceptionStore,scriptStore:ScriptStore,
       ("contract" -> tx.cntr.getOrElse("null")),
       ("receipt_root" -> tx.root.getOrElse("null")),
       ("status" -> tx.sts),
-      ("price_effective" -> tx.p2),
+      ("price_effective" -> tx.p0),
 
     )
   }

@@ -23,7 +23,7 @@ case class Tx(
   cntr: Option[String],  // contract
   root: Option[String],   // receipt root
   sts: Int,               // status
-  p2: BigInt              // price Effective
+  p0: BigInt              // price Effective
 
   //timestamp:Option[Long]
 ) extends Ingestable {

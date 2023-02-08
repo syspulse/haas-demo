@@ -3,29 +3,30 @@ package io.syspulse.haas.core
 import io.syspulse.skel.Ingestable
 
 case class Block(
-  number:Long,
+  i:Long,       // block number
   hash:String,  
-  parent_hash:String,
-  nonce:String,
-  sha3_uncles:String,
-  logs_bloom:String,
-  transactions_root:String,
-  state_root:String,
-  receipts_root:String,
+  phash:String, // parent hash
+  non:String,   // noce
+  uncl:String,  // uncles
+  bloom:String, // bloom filter
+
+  txrt:String, // tx root
+  strt:String, // state root
+  rert:String, // receipt root
 
   miner:String,
-  difficulty:BigInt,
-  total_difficulty:BigInt,
+  dif:BigInt,
+  dif0:BigInt, // total difficulty
   
-  size:Long,
-  extra_data:String,
-  gas_limit:Long,
-  gas_used:Long,
+  sz:Long,     // size
+  data:String, // extra data
+  used:Long,   // gas used
+  limit:Long,  // gas limit
 
-  timestamp:Long,
-  transaction_count:Long,
-  base_fee_per_gas:Long,
+  ts:Long, 
+  cnt:Long, // transaction count
+  fee:Long, // base fee
 
 ) extends Ingestable {
-  override def getKey:Option[Any] = Some(number)
+  override def getKey:Option[Any] = Some(i)
 }

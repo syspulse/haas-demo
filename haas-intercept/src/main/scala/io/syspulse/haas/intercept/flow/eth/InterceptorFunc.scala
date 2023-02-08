@@ -77,7 +77,7 @@ class InterceptorFunc(abiStore:AbiStore,interceptionStore:InterceptionStore,scri
       ("contract" -> tx.to.getOrElse("null")),
       ("receipt_root" -> tx.root.getOrElse("null")),
       ("status" -> tx.sts),
-      ("price_effective" -> tx.p2),
+      ("price_effective" -> tx.p0),
 
     ) ++       
       decodeData(tx.to.get,tx.inp).getOrElse(Map())      
