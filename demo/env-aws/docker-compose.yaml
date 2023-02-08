@@ -226,10 +226,10 @@ services:
     container_name: sparkmagic
     restart: always
     volumes:
-      - "${PWD}/notebooks:/home/jovyan/work"      
+      - "${PWD}/notebooks:/home/jovyan/work"
     ports:
       - 8888:8888
     networks:
       - demo
-    environment:
-      EVN: ${ENV}
+    # environment:
+    #   EVN: ${ENV}
