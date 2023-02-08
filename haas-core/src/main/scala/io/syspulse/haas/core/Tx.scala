@@ -4,15 +4,26 @@ import io.syspulse.skel.Ingestable
 
 case class Tx(
   ts:Long,
-  txIndex:Int,
+  i:Int,
   hash:String,
-  blockNumber:Long,
-  fromAddress:String,
-  toAddress:Option[String],
+  blk:Long,
+  from:String,
+  to:Option[String],
   gas:Long,
-  gasPrice:BigInt,
-  input:String,
-  value:BigInt,
+  p:BigInt,
+  inp:String,
+  v:BigInt,
+
+  non:Long,
+  fee:Option[BigInt],
+  tip:Option[BigInt], 
+  typ:Int,      
+  used2: Long,            // cumulative used
+  used: Long,             // gas used
+  cntr: Option[String],  // contract
+  root: Option[String],   // receipt root
+  sts: Int,               // status
+  p2: BigInt              // price Effective
 
   //timestamp:Option[Long]
 ) extends Ingestable {

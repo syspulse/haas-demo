@@ -54,19 +54,32 @@ class InterceptorFunc(abiStore:AbiStore,interceptionStore:InterceptionStore,scri
   
   override def decode(tx:Tx):Map[String,Any] = {
     // cannot process, because this is not a contract call
-    if(tx.input == "" || tx.input == "0x" || ! tx.toAddress.isDefined)
+    if(tx.inp == "" || tx.inp == "0x" || ! tx.to.isDefined)
       return Map()
 
     Map( 
-      ("from_address" -> tx.fromAddress),
-      ("contract" -> tx.toAddress.get),
-      ("value" -> tx.value),
-      ("gas" -> tx.value),
-      ("input" -> tx.input),
-      ("block_number" -> tx.blockNumber),
+      ("from_address" -> tx.from),
+      ("to_address" -> tx.to.getOrElse("null")),
+      ("value" -> tx.v),
+      ("gas" -> tx.gas),
+      ("price" -> tx.p),
+      ("input" -> tx.inp),
+      ("block_number" -> tx.blk),
       ("hash" -> tx.hash), //("transaction_hash" -> tx.hash),      
       ("ts" -> tx.ts),
+
+      ("nonce" -> tx.non),
+      ("max_fee" -> tx.fee.getOrElse("null")),
+      ("max_tip" -> tx.tip.getOrElse("null")),
+      ("type" -> tx.typ),
+      ("gas_used_cumulative" -> tx.used2),
+      ("gas_used" -> tx.used),
+      ("contract" -> tx.to.getOrElse("null")),
+      ("receipt_root" -> tx.root.getOrElse("null")),
+      ("status" -> tx.sts),
+      ("price_effective" -> tx.p2),
+
     ) ++       
-      decodeData(tx.toAddress.get,tx.input).getOrElse(Map())      
+      decodeData(tx.to.get,tx.inp).getOrElse(Map())      
   }
 }

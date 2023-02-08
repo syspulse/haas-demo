@@ -118,7 +118,7 @@ trait EthDecoder[T] {
       if(data.stripLeading().startsWith("{")) {
         val tx = data.parseJson.convertTo[EthTx]
         
-        val ts = tx.ts
+        val ts = tx.block_timestamp
         latestTs.set(ts * 1000L)
 
         // Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
@@ -133,7 +133,9 @@ trait EthDecoder[T] {
           val tx = data.split(",").toList match {
             case hash :: nonce :: block_hash :: block_number :: transaction_index :: from_address :: to_address :: 
                  value :: gas :: gas_price :: input :: block_timestamp :: max_fee_per_gas :: max_priority_fee_per_gas :: 
-                 transaction_type :: Nil =>
+                 transaction_type :: 
+                 receipt_cumulative_gas_used :: receipt_gas_used :: receipt_contract_address :: 
+                 receipt_root :: receipt_status :: receipt_effective_gas_price :: Nil =>
                 
                  val ts = block_timestamp.toLong
                  latestTs.set(ts * 1000L)
@@ -148,12 +150,25 @@ trait EthDecoder[T] {
                     gas.toLong,
                     BigInt(gas_price),
                     input,
-                    BigInt(value)
+                    BigInt(value),
+
+                    nonce.toLong,
+                    Option(max_fee_per_gas).map(BigInt(_)),
+                    Option(max_priority_fee_per_gas).map(BigInt(_)), 
+                    transaction_type.toInt, 
+                    receipt_cumulative_gas_used.toLong, 
+                    receipt_gas_used.toLong, 
+                    Option(receipt_contract_address), 
+                    Option(receipt_root), 
+                    receipt_status.toInt, 
+                    BigInt(receipt_effective_gas_price)
                   ))
             // this is format of Tx. WHY !?
             case ts :: transaction_index :: hash :: block_number :: from_address :: to_address :: 
                  gas :: gas_price :: input :: value :: Nil =>
                 
+                 log.warn(s"Deprecated EthTx format: ${data}")
+
                  latestTs.set(ts.toLong)
 
                  Seq(
@@ -167,7 +182,9 @@ trait EthDecoder[T] {
                     gas.toLong,
                     BigInt(gas_price),
                     input,
-                    BigInt(value)
+                    BigInt(value),
+
+                    0L,None,None, 0, 0L, 0L, None, None, 0, BigInt(0) 
                   ))
                   
             case _ => 

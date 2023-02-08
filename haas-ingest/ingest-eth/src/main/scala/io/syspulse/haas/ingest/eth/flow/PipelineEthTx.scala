@@ -39,11 +39,30 @@ abstract class PipelineEthTx[E <: skel.Ingestable](feed:String,output:String,thr
 
   override def parse(data:String):Seq[EthTx] = parseTx(data)
 
-  def convert(tx:EthTx):Tx = Tx(tx.ts * 1000L,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value)
+  def convert(tx:EthTx):Tx = Tx(
+    tx.block_timestamp * 1000L,
+    tx.transaction_index,
+    tx.hash,
+    tx.block_number,
+    tx.from_address,
+    tx.to_address,
+    tx.gas,
+    tx.gas_price,
+    tx.input,
+    tx.value,
 
-  // def transform(tx: Tx): Seq[Tx] = {
-  //   Seq(tx)
-  // }
+    tx.nonce,
+    tx.max_fee_per_gas,
+    tx.max_priority_fee_per_gas, 
+    tx.transaction_type, 
+    tx.receipt_cumulative_gas_used, 
+    tx.receipt_gas_used, 
+    tx.receipt_contract_address, 
+    tx.receipt_root, 
+    tx.receipt_status, 
+    tx.receipt_effective_gas_price
+  )
+
 }
 
 class PipelineTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 

@@ -38,16 +38,28 @@ case class EthBlock(
 )  extends Ingestable
 
 case class EthTx(
-  ts:Long,
-  txIndex:Int,
+  block_timestamp:Long,
+  transaction_index:Int,
   hash:String,
-  blockNumber:Long,
-  fromAddress:String,
-  toAddress:Option[String],
+  block_number:Long,
+  from_address:String,
+  to_address:Option[String],
   gas:Long,
-  gasPrice:BigInt,
+  gas_price:BigInt,
   input:String,
   value:BigInt,
+
+  nonce:Long,
+  max_fee_per_gas:Option[BigInt] = None,
+  max_priority_fee_per_gas:Option[BigInt] = None, 
+  transaction_type:Int, 
+  receipt_cumulative_gas_used: Long, 
+  receipt_gas_used: Long, 
+  receipt_contract_address: Option[String], 
+  receipt_root: Option[String], 
+  receipt_status: Int, 
+  receipt_effective_gas_price: BigInt
+
 )  extends Ingestable
 
 
@@ -77,7 +89,7 @@ case class EthLog(
 
 object EthEtlJson extends JsonCommon with NullOptions {
   import DefaultJsonProtocol._
-  implicit val jf_etl_tx = jsonFormat(EthTx,"block_timestamp","transaction_index","hash","block_number","from_address","to_address","gas","gas_price","input","value")
+  implicit val jf_etl_tx = jsonFormat20(EthTx) //jsonFormat(EthTx,"block_timestamp","transaction_index","hash","block_number","from_address","to_address","gas","gas_price","input","value")
   implicit val jf_etl_bl = jsonFormat(EthBlock,
   "number","hash","parent_hash","nonce",
   "sha3_uncles","logs_bloom","transactions_root", "state_root", "receipts_root", "miner", "difficulty", "total_difficulty", "size", "extra_data", "gas_limit", "gas_used", "timestamp",

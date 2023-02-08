@@ -36,14 +36,27 @@ class InterceptorTx(interceptionStore:InterceptionStore,scriptStore:ScriptStore,
   
   override def decode(tx:Tx):Map[String,Any] = {
     Map( 
-      ("from_address" -> tx.fromAddress),
-      ("to_address" -> tx.toAddress.getOrElse("null")),
-      ("value" -> tx.value),
-      ("gas" -> tx.value),
-      ("input" -> tx.input),
-      ("block_number" -> tx.blockNumber),
+      ("from_address" -> tx.from),
+      ("to_address" -> tx.to.getOrElse("null")),
+      ("value" -> tx.v),
+      ("gas" -> tx.gas),
+      ("price" -> tx.p),
+      ("input" -> tx.inp),
+      ("block_number" -> tx.blk),
       ("hash" -> tx.hash), //("transaction_hash" -> tx.hash),      
       ("ts" -> tx.ts),
+
+      ("nonce" -> tx.non),
+      ("max_fee" -> tx.fee.getOrElse("null")),
+      ("max_tip" -> tx.tip.getOrElse("null")),
+      ("type" -> tx.typ),
+      ("gas_used_cumulative" -> tx.used2),
+      ("gas_used" -> tx.used),
+      ("contract" -> tx.cntr.getOrElse("null")),
+      ("receipt_root" -> tx.root.getOrElse("null")),
+      ("status" -> tx.sts),
+      ("price_effective" -> tx.p2),
+
     )
   }
  

@@ -57,7 +57,7 @@ object App {
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) (def=${d.output})"),
 
-        ArgString('e', "entity",s"Ingest entity: (cryptocomp,price) (def=${d.entity})"),
+        ArgString('e', "entity",s"Ingest entity: (cryptocomp,coingecko,chainlink,price) (def=${d.entity})"),
         ArgString('t', "tokens",s"Tokens filter (ex: 'UNI,ETH', def=${d.tokens})"),
         ArgString('_', "tokens.pair",s"Tokens pair (ex: 'ETH', def=${d.tokensPair})"),
         

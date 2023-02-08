@@ -11,5 +11,5 @@ import io.syspulse.haas.core.Tx
 
 object TxJson extends DefaultJsonProtocol {
   
-  implicit val jf_tx = jsonFormat10(Tx.apply _)
+  implicit val jf_tx = jsonFormat20(Tx.apply _)
 }

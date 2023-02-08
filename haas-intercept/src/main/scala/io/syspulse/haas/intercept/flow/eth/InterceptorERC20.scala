@@ -57,21 +57,21 @@ class InterceptorERC20(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
   override def decode(tx:Tx):Map[String,Any] = {
     // find token name from Labels
     val token = tokenLabels
-      .find{ case(a,t) => tx.toAddress.map(_.toLowerCase == t.toLowerCase()).getOrElse(false)}
+      .find{ case(a,t) => tx.to.map(_.toLowerCase == t.toLowerCase()).getOrElse(false)}
       .map(_._2)
 
     val (fromAddress,toAddress,value,name) = 
     {    
       
-      val di = erc20.decodeInput(tx.toAddress.get,Seq(tx.input),"transfer")
+      val di = erc20.decodeInput(tx.to.get,Seq(tx.inp),"transfer")
 
-      log.debug(s"${token}: ${tx.input}: ${di}")
+      log.debug(s"${token}: ${tx.inp}: ${di}")
 
       if(di.isSuccess) {
         val params = di.get.params.map(ntv => ntv._3)
                 
         val (_from,_to,_value) = params.size match {
-          case 2 => (tx.fromAddress,params(0),params(1))
+          case 2 => (tx.from,params(0),params(1))
           case 3 => (params(0),params(1),params(2))
           case _ => ("","","")
         }
@@ -83,7 +83,7 @@ class InterceptorERC20(abiStore:AbiStore,interceptionStore:InterceptionStore,scr
         
         (_from,_to,_value,token.get)
 
-      } else (tx.fromAddress,"","","")
+      } else (tx.from,"","","")
     } 
     
     super.decode(tx) ++ Map( 
