@@ -21,7 +21,7 @@ class AlarmSocketServer()(implicit ex:ExecutionContext,mat:ActorMaterializer) ex
     val txt = m.asTextMessage.getStrictText
     
     // debug
-    log.info(s"${a} -> ${txt}")
+    log.debug(s"${a} -> ${txt}")
     m
   }
 }
