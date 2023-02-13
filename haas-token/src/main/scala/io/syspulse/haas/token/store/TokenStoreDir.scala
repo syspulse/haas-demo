@@ -16,10 +16,13 @@ import DefaultJsonProtocol._
 import io.syspulse.haas.ingest.gecko.CoinInfo
 import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
+import io.syspulse.haas.core.DataSource
+import io.syspulse.haas.core.TokenBlockchain
 
-// Preload from file during start
 class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
   import CoingeckoJson._
+
+  @volatile var loading = false
 
   load(dir)
 
@@ -27,6 +30,7 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
     val storeDir = os.Path(dir,os.pwd)
     log.info(s"Loading dir store: ${storeDir}")
 
+    loading = true
     val vv = os.walk(storeDir)
       .filter(_.toIO.isFile())
       .map(f => {
@@ -35,9 +39,18 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
       })
       .map(fileData => fileData.split("\n").map { data =>
         try {
-          val coin = data.parseJson.convertTo[CoinInfo]
-          log.debug(s"coin=${coin}")
-          Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address,category = coin.categories,icon = Option(coin.image.large)))
+          val cg = data.parseJson.convertTo[CoinInfo]
+          log.debug(s"coin=${cg}")
+          // Seq(Token(
+          //   cg.id,cg.symbol,cg.name,
+          //   cg.contract_address,
+          //   cg.categories,
+          //   icon = Option(cg.image.large),
+          //   src = Some(DataSource.id("coingecko")),
+          //   dcml = cg.detail_platforms.get(cg.asset_platform_id.getOrElse("ethereum")).map(_.decimal_place),
+          //   chain = cg.detail_platforms.map{ case(nid,dp) => TokenBlockchain(nid,dp.contract_address)}.toSeq
+          // ))
+          Seq(cg.toToken)
         } catch {
           case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
         }
@@ -46,6 +59,8 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
       .flatten // files
 
     vv.foreach(v => this.+(v))
+
+    loading = false
 
     log.info(s"Loaded store: ${size}")
   }

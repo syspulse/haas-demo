@@ -53,7 +53,7 @@ class TokenStoreMem extends TokenStore {
         v.id.toLowerCase.matches(txt.toLowerCase) || 
         v.symbol.toLowerCase.matches(txt.toLowerCase) ||
         v.name.toLowerCase.matches(txt.toLowerCase) || 
-        (v.contractAddress.isDefined && v.contractAddress.get.toLowerCase.matches(txt.toLowerCase))
+        (v.addr.isDefined && v.addr.get.toLowerCase.matches(txt.toLowerCase))
       }
     ).toList
   }

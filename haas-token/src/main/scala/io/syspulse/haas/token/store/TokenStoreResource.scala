@@ -16,8 +16,10 @@ import DefaultJsonProtocol._
 import io.syspulse.haas.ingest.gecko.CoinInfo
 import io.syspulse.haas.ingest.gecko.CoingeckoJson
 import io.syspulse.haas.ingest.gecko._
+import io.syspulse.haas.core.DataSource
+import io.syspulse.haas.core.TokenBlockchain
 
-// Preload from file during start
+// always read-only
 class TokenStoreResource(dir:String = "store/tokens.json") extends TokenStoreMem {
   import CoingeckoJson._
 
@@ -30,9 +32,18 @@ class TokenStoreResource(dir:String = "store/tokens.json") extends TokenStoreMem
     val vv = lines.map( data => 
       try {
         // try to load as many single line jsons
-        val coin = data.parseJson.convertTo[CoinInfo]
-        log.debug(s"coin=${coin}")
-        Seq(Token(coin.id,coin.symbol,coin.name,coin.contract_address,category = coin.categories,icon = Option(coin.image.large)))
+        val cg = data.parseJson.convertTo[CoinInfo]
+        log.debug(s"coin=${cg}")
+        // Seq(Token(
+        //     cg.id,cg.symbol,cg.name,
+        //     cg.contract_address,
+        //     cg.categories,
+        //     icon = Option(cg.image.large),
+        //     src = Some(DataSource.id("coingecko")),
+        //     dcml = cg.detail_platforms.get(cg.asset_platform_id.getOrElse("ethereum")).map(_.decimal_place),
+        //     chain = cg.detail_platforms.map{ case(nid,dp) => TokenBlockchain(nid,dp.contract_address)}.toSeq
+        //   ))
+        Seq(cg.toToken)
       } catch {
         case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
       }

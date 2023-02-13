@@ -36,9 +36,8 @@ class ScriptStoreMem extends ScriptStore {
 
   def ??(txt:String):List[Script] = {    
     scripts.values.filter(v => {
-        v.name.toLowerCase.matches(txt.toLowerCase) 
-        //|| 
-        //(v.contractAddress.isDefined && v.contractAddress.get.toLowerCase.matches(txt.toLowerCase))
+        v.name.toLowerCase.matches(txt.toLowerCase + ".*") ||
+        v.desc.map(_.toLowerCase.matches(txt.toLowerCase + ".*")).getOrElse(false)        
       }
     ).toList
   }

@@ -10,7 +10,7 @@ import io.syspulse.skel.service.JsonCommon
 final case class Scripts(scripts: immutable.Seq[Script])
 
 object ScriptJson extends JsonCommon with NullOptions {
-  implicit val jf_sc1 = jsonFormat4(Script.apply _)
+  implicit val jf_sc1 = jsonFormat5(Script.apply _)
   implicit val jf_sc2 = jsonFormat1(Scripts.apply _)
 }
 

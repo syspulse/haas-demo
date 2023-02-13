@@ -7,11 +7,13 @@ import scala.util.Random
 import spray.json._
 import DefaultJsonProtocol._
 
+import io.syspulse.haas.serde.TokenJson
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 
 object TokenElasticJson extends  DefaultJsonProtocol {
-  implicit val fmt = jsonFormat7(Token.apply _)
+  import TokenJson._
+  implicit val fmt = TokenJson.jf_token //jsonFormat9(Token.apply _)
 }
 
 object TokenElastic {

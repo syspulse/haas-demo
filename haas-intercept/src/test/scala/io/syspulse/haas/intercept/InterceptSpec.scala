@@ -17,7 +17,13 @@ import spray.json._
 import DefaultJsonProtocol._
 import io.syspulse.haas.ingest.eth.EthLog
 import io.syspulse.skel.crypto.eth.abi.AbiStoreDir
-import io.syspulse.skel.crypto.eth.abi.AbiStoreStoreSignaturesMem
+import io.syspulse.skel.crypto.eth.abi.AbiStoreSigFuncResolver
+import io.syspulse.skel.crypto.eth.abi.AbiStoreSignaturesMem
+import io.syspulse.skel.crypto.eth.abi.AbiStoreSignatures
+import io.syspulse.skel.crypto.eth.abi.SignatureStoreMem
+import io.syspulse.skel.crypto.eth.abi.FuncSignature
+import io.syspulse.skel.crypto.eth.abi.EventSignature
+
 
 class Decoder[T](implicit val fmt:JsonFormat[T]) extends EthDecoder[T] {
 
@@ -26,7 +32,10 @@ class Decoder[T](implicit val fmt:JsonFormat[T]) extends EthDecoder[T] {
 class InterceptSpec extends AnyWordSpec with Matchers {
   val testDir = this.getClass.getClassLoader.getResource(".").getPath + "../../../"
 
-  val abi = new AbiStoreDir(s"${testDir}/store/abi") with AbiStoreStoreSignaturesMem
+  val abi = new AbiStoreDir(s"${testDir}/store/abi",
+      new SignatureStoreMem[FuncSignature](),
+      new SignatureStoreMem[EventSignature]()) with AbiStoreSignaturesMem
+  
   abi.load()
 
   "InterceptSpec" should {

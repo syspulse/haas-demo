@@ -35,6 +35,8 @@ import io.syspulse.haas.ingest.gecko._
 import io.syspulse.haas.serde.TokenJson._
 import io.syspulse.haas.ingest.gecko.CoingeckoURI
 import akka.stream.scaladsl.Framing
+import io.syspulse.haas.core.DataSource
+import io.syspulse.haas.core.TokenBlockchain
 
 class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extends PipelineGecko[CoinInfo](feed,output) {
 
@@ -52,6 +54,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
         Seq(coin)
       } else {
         // assume csv
+        // FIX ME !
         val coin = data.split(",").toList match {
           case id :: symbol :: name :: contract_address :: category :: icon :: Nil => 
             Some(CoinInfo(id,symbol,name,Some(contract_address),categories = Util.csvToList(category),image = Image("","",icon)))
@@ -72,7 +75,16 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   }
 
   def transform(cg: CoinInfo): Seq[Token] = {    
-    Seq(Token(cg.id,cg.symbol,cg.name,cg.contract_address,category = cg.categories,icon = Some(cg.image.large)))
+    // Seq(Token(
+    //   cg.id,cg.symbol,cg.name,
+    //   cg.contract_address,
+    //   cg.categories,
+    //   icon = Some(cg.image.large),
+    //   src = Some(DataSource.id("coingecko")),
+    //   dcml = cg.detail_platforms.get(cg.asset_platform_id.getOrElse("ethereum")).map(_.decimal_place),
+    //   chain = cg.detail_platforms.map{ case(nid,dp) => TokenBlockchain(nid,dp.contract_address)}.toSeq
+    // ))
+    Seq(cg.toToken)
   }
 
   override def source() = {

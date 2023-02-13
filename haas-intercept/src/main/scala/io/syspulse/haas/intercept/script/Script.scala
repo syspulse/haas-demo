@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 
 import scala.util.{Success,Failure,Try}
 
-case class Script(id:Script.ID,typ:String,src:String,name:String) 
+case class Script(id:Script.ID,typ:String,src:String,name:String,desc:Option[String] = None) 
 
 object Script {
   type ID = String //UUID
