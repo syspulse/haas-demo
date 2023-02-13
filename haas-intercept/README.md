@@ -66,3 +66,7 @@ Run Server with Event Logs from EthereumETL ignoring all other feeds
 ```
 OPT=-Dgod ETH_RPC=http://geth2.hacken.cloud:8545 ./eth-stream-intercept-event.sh server --feed.event=stdin:// --feed.block=null:// --feed.tx=null:// --feed.token=null://
 ```
+
+## Test transaction
+
+https://etherscan.io/tx/0x6a3d8584a6272a1d73ff297592b401fe10d3a90fd385efff55f68f32f29ecf61
