@@ -134,7 +134,7 @@ services:
     container_name: haas-token
     restart: always
     volumes:
-      - "${PWD}/tokens/data100:/data"
+      - "${PWD}/store/token:/data"
     ports:
       - 8091:8080
     networks:
@@ -142,8 +142,8 @@ services:
     command: server
     environment:
       #JAVA_OPTS: -Dgod
-      #DATASTORE: dir:///data
-      DATASTORE: resources://
+      DATASTORE: dir:///data
+      #DATASTORE: resources://
 
   haas-circ:
     privileged: true
