@@ -19,11 +19,12 @@ trait TokenStore extends Store[Token,ID] {
   def +(yell:Token):Try[TokenStore]
   
   def del(id:ID):Try[TokenStore]
-  def ?(id:ID):Try[Token]
+  
+  def ?(ids:Seq[ID]):Seq[Token]
   def all:Seq[Token]
   def size:Long
 
-  def ??(txt:String,from:Option[Int],size:Option[Int]):Tokens
+  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens
 
   def ???(from:Option[Int],size:Option[Int]):Tokens
 

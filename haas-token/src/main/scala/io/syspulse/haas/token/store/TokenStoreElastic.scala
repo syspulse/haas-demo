@@ -25,6 +25,8 @@ import io.syspulse.haas.token.elastic.TokenScan
 import io.syspulse.haas.token.elastic.TokenSearch
 import io.syspulse.skel.uri.ElasticURI
 import io.syspulse.haas.token.server.Tokens
+import com.sksamuel.elastic4s.handlers.searches.queries.text.MatchQueryBuilderFn
+import com.sksamuel.elastic4s.requests.common.Operator
 
 class TokenStoreElastic(uri:String) extends TokenStore {
   private val log = Logger(s"${this}")
@@ -103,8 +105,30 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     }
   }
 
-  def ??(txt:String,from:Option[Int],size:Option[Int]):Tokens = {
-    search(txt,from,size)
+   def ?(ids:Seq[ID]):Seq[Token] = {
+      val q = ids.foldLeft(ElasticDsl.search(elasticUri.index))( (e,id) => e.termQuery(("id",id)))
+      val r = { client.execute { 
+        q        
+      }}.await
+
+      r.result.to[Token].toSeq 
+   }
+
+  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {
+    val r = client.execute {
+      ElasticDsl
+        .search(elasticUri.index)
+        .from(from.getOrElse(0))
+        .size(size.getOrElse(10))
+        .query {
+           //matchQuery("_all", txt.mkString(" ")).operator(Operator.OR)
+           combinedFieldsQuery(txt.mkString(" "), Seq("symbol", "name","addr","cat"))
+            .operator(Operator.OR)
+        }        
+    }.await
+
+    log.info(s"r=${r}")
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))  
   }
 
   def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = {
@@ -129,7 +153,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
 
   def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = {   
     val r = client.execute {
-      com.sksamuel.elastic4s.ElasticDsl
+      ElasticDsl
         .search(elasticUri.index)
         .from(from.getOrElse(0))
         .size(size.getOrElse(10))
@@ -137,13 +161,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     }.await
 
     log.info(s"r=${r}")
-    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
-    
-    // r match {
-    //   case failure: RequestFailure => List.empty
-    //   case results: RequestSuccess[SearchResponse] => r.as[Token] //results.result.hits.hits.toList
-    //   case results: RequestSuccess[_] => results.result
-    // }
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))    
   }
 
   def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = {

@@ -77,8 +77,8 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
   def getTokensPage(from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
-  def getToken(id: Token.ID): Future[Try[Token]] = registry.ask(GetToken(id, _))
-  def getTokenByAddr(addr:String): Future[Try[Token]] = registry.ask(GetTokenByAddr(addr, _))
+  def getToken(ids: Seq[Token.ID]): Future[Tokens] = registry.ask(GetToken(ids, _))
+  def getTokenByAddr(addrs:Seq[String]): Future[Tokens] = registry.ask(GetTokenByAddr(addrs, _))
   def getTokenBySearch(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(SearchToken(txt, from,size,_))
   def getTokenByTyping(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(TypingToken(txt, from,size,_))
 
@@ -89,26 +89,26 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
 
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Return Token by id",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Token id (gecko)")),
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Token ids (gecko)")),
     responses = Array(new ApiResponse(responseCode="200",description = "Token returned",content=Array(new Content(schema=new Schema(implementation = classOf[Token])))))
   )
-  def getTokenRoute(id: String) = get {
+  def getTokenRoute(ids: String) = get {
     rejectEmptyResponse {
-      onSuccess(getToken(id)) { r =>
+      onSuccess(getToken(ids.split(",").toSeq)) { r =>
         metricGetCount.inc()
         complete(r)
       }
     }
   }
 
-  @GET @Path("/address/{addr}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @GET @Path("/address/{addrs}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Return Token by Address",
-    parameters = Array(new Parameter(name = "addr", in = ParameterIn.PATH, description = "Token address")),
+    parameters = Array(new Parameter(name = "addr", in = ParameterIn.PATH, description = "Token addresses")),
     responses = Array(new ApiResponse(responseCode="200",description = "Token returned",content=Array(new Content(schema=new Schema(implementation = classOf[Token])))))
   )
-  def getTokenByAddrRoute(addr: String) = get {
+  def getTokenByAddrRoute(addrs: String) = get {
     rejectEmptyResponse {
-      onSuccess(getTokenByAddr(addr)) { r =>
+      onSuccess(getTokenByAddr(addrs.split(",").toSeq)) { r =>
         metricGetCount.inc()
         complete(r)
       }
@@ -171,7 +171,8 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
           }
       else {
         metricGetCount.inc()
-        complete(getTokens())
+        //complete(getTokens())
+        complete(getTokensPage(Some(0),Some(10)))
       }
     }
   }

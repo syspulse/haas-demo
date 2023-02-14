@@ -40,30 +40,42 @@ class TokenStoreMem extends TokenStore {
     if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
-  // def -(token:Token):Try[TokenStore] = {     
-  //   del(token.id)
-  // }
-
-  def ?(id:ID):Try[Token] = tokens.get(id) match {
+    def ?(id:ID):Try[Token] = tokens.get(id) match {
     case Some(t) => Success(t)
     case None => Failure(new Exception(s"not found: ${id}"))
   }
 
-  def ??(txt:String,from:Option[Int],size:Option[Int]):Tokens = {    
-    val tt = tokens.values.filter(v => {
-        //log.info(s"'${txt}' :: ${v.symbol},${v.name}")
-        v.id.toLowerCase.matches(txt.toLowerCase) || 
-        v.symbol.toLowerCase.matches(txt.toLowerCase) ||
-        v.name.toLowerCase.matches(txt.toLowerCase) || 
-        (v.addr.isDefined && v.addr.get.toLowerCase.matches(txt.toLowerCase))
-      }
-    ).drop(from.getOrElse(0)).take(size.getOrElse(10)).toList
-
-    Tokens(tt,Some(this.size))
+  def ?(ids:Seq[ID]):Seq[Token] = {
+    log.info(s"ids = ${ids}")
+    ids.flatMap(id => tokens.get(id.trim))
   }
 
-  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
-  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
-  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
-  def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt + ".*",from,size)
+  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {    
+    val tt = tokens.values.filter(v => {
+        txt.filter( txt => 
+          //txt.trim.size >= 3 && 
+          (
+            v.id.toLowerCase.matches(txt.toLowerCase) || 
+            v.symbol.toLowerCase.matches(txt.toLowerCase) ||
+            v.name.toLowerCase.matches(txt.toLowerCase) || 
+            (v.addr.isDefined && v.addr.get.toLowerCase.matches(txt.toLowerCase))
+          )
+        ).size > 0        
+      }
+    )
+    val tt2 = tt.drop(from.getOrElse(0)).take(size.getOrElse(10)).toList
+
+    Tokens(tt2,Some(tt.size))
+  }
+
+  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt.split(",").toSeq,from,size)
+  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = 
+    ??(txt.split(",").toSeq.flatMap(txt => if(txt.trim.size >=3) Some(s".*${txt}.*") else None),from,size)
+
+  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt.split(",").toSeq,from,size)
+  def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = 
+    if(txt.size <3 )
+      Tokens(Seq(),Some(0))
+    else
+      ??(Seq(txt + ".*"),from,size)
 }

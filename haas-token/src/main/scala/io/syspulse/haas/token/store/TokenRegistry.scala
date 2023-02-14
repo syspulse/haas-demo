@@ -21,8 +21,8 @@ object TokenRegistry {
   
   final case class GetTokens(replyTo: ActorRef[Tokens]) extends Command
   final case class GetTokensPage(from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
-  final case class GetToken(id:ID,replyTo: ActorRef[Try[Token]]) extends Command
-  final case class GetTokenByAddr(addr:String,replyTo: ActorRef[Try[Token]]) extends Command
+  final case class GetToken(ids:Seq[ID],replyTo: ActorRef[Tokens]) extends Command
+  final case class GetTokenByAddr(addrs:Seq[String],replyTo: ActorRef[Tokens]) extends Command
   final case class SearchToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   final case class TypingToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   
@@ -53,16 +53,18 @@ object TokenRegistry {
         replyTo ! tt
         Behaviors.same
 
-      case GetToken(id, replyTo) =>
-        replyTo ! store.?(id)
+      case GetToken(ids, replyTo) =>
+        val tt = store.?(ids)
+        replyTo ! Tokens(tt,Some(tt.size))
         Behaviors.same
 
-      case GetTokenByAddr(addr, replyTo) =>
-        val t = store.??(addr,Some(0),Some(1))
-        replyTo ! (t.tokens match {
-          case Seq(t) => Success(t)
-          case _ => Failure(new Exception(s"not found: ${addr}"))
-        })
+      case GetTokenByAddr(addrs, replyTo) =>
+        val t = store.??(addrs,Some(0),Some(addrs.size))
+        // replyTo ! (t.tokens match {
+        //   case Seq(t) => Success(t)
+        //   case _ => Failure(new Exception(s"not found: ${addr}"))
+        // })
+        replyTo ! t
         Behaviors.same
 
       case SearchToken(txt, from,size, replyTo) =>
