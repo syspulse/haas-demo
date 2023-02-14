@@ -13,6 +13,7 @@ import io.jvm.uuid._
 
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
+import io.syspulse.haas.token.server.Tokens
 
 class TokenStoreMem extends TokenStore {
   val log = Logger(s"${this}")
@@ -21,7 +22,8 @@ class TokenStoreMem extends TokenStore {
 
   def all:Seq[Token] = tokens.values.toSeq
 
-  def ???(from:Int,size:Int=10) = all.drop(from).take(size)
+  def ???(from:Option[Int],size:Option[Int]):Tokens = 
+    Tokens(all.drop(from.getOrElse(0)).take(size.getOrElse(10)),total=Some(this.size))
 
   def size:Long = tokens.size
 
@@ -47,19 +49,21 @@ class TokenStoreMem extends TokenStore {
     case None => Failure(new Exception(s"not found: ${id}"))
   }
 
-  def ??(txt:String):List[Token] = {    
-    tokens.values.filter(v => {
+  def ??(txt:String,from:Option[Int],size:Option[Int]):Tokens = {    
+    val tt = tokens.values.filter(v => {
         //log.info(s"'${txt}' :: ${v.symbol},${v.name}")
         v.id.toLowerCase.matches(txt.toLowerCase) || 
         v.symbol.toLowerCase.matches(txt.toLowerCase) ||
         v.name.toLowerCase.matches(txt.toLowerCase) || 
         (v.addr.isDefined && v.addr.get.toLowerCase.matches(txt.toLowerCase))
       }
-    ).toList
+    ).drop(from.getOrElse(0)).take(size.getOrElse(10)).toList
+
+    Tokens(tt,Some(this.size))
   }
 
-  def scan(txt:String):List[Token] = ??(txt)
-  def search(txt:String):List[Token] = ??(txt)
-  def grep(txt:String):List[Token] = ??(txt)
-  def typing(txt:String):List[Token] = ??(txt + ".*")
+  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
+  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
+  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt,from,size)
+  def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt + ".*",from,size)
 }

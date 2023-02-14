@@ -75,15 +75,6 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
   }
 
   def transform(cg: CoinInfo): Seq[Token] = {    
-    // Seq(Token(
-    //   cg.id,cg.symbol,cg.name,
-    //   cg.contract_address,
-    //   cg.categories,
-    //   icon = Some(cg.image.large),
-    //   src = Some(DataSource.id("coingecko")),
-    //   dcml = cg.detail_platforms.get(cg.asset_platform_id.getOrElse("ethereum")).map(_.decimal_place),
-    //   chain = cg.detail_platforms.map{ case(nid,dp) => TokenBlockchain(nid,dp.contract_address)}.toSeq
-    // ))
     Seq(cg.toToken)
   }
 

@@ -20,11 +20,11 @@ object TokenRegistry {
   val log = Logger(s"${this}")
   
   final case class GetTokens(replyTo: ActorRef[Tokens]) extends Command
-  final case class GetTokensPage(from:Int,size:Int,replyTo: ActorRef[Tokens]) extends Command
+  final case class GetTokensPage(from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   final case class GetToken(id:ID,replyTo: ActorRef[Try[Token]]) extends Command
   final case class GetTokenByAddr(addr:String,replyTo: ActorRef[Try[Token]]) extends Command
-  final case class SearchToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
-  final case class TypingToken(txt:String,replyTo: ActorRef[Tokens]) extends Command
+  final case class SearchToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
+  final case class TypingToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   
   final case class CreateToken(tokenCreate: TokenCreateReq, replyTo: ActorRef[Token]) extends Command
   final case class RandomToken(replyTo: ActorRef[Token]) extends Command
@@ -50,7 +50,7 @@ object TokenRegistry {
 
       case GetTokensPage(from,size,replyTo) =>
         val tt = store.???(from,size)
-        replyTo ! Tokens(tt,Some(tt.size))
+        replyTo ! tt
         Behaviors.same
 
       case GetToken(id, replyTo) =>
@@ -58,21 +58,21 @@ object TokenRegistry {
         Behaviors.same
 
       case GetTokenByAddr(addr, replyTo) =>
-        val t = store.??(addr).headOption
-        replyTo ! (t match {
-          case Some(t) => Success(t)
-          case None => Failure(new Exception(s"not found: ${addr}"))
+        val t = store.??(addr,Some(0),Some(1))
+        replyTo ! (t.tokens match {
+          case Seq(t) => Success(t)
+          case _ => Failure(new Exception(s"not found: ${addr}"))
         })
         Behaviors.same
 
-      case SearchToken(txt, replyTo) =>
-        val tt = store.search(txt)
-        replyTo ! Tokens(tt,Some(tt.size))
+      case SearchToken(txt, from,size, replyTo) =>
+        val tt = store.search(txt,from,size)
+        replyTo ! tt
         Behaviors.same
       
-      case TypingToken(txt, replyTo) =>
-        val tt = store.typing(txt)
-        replyTo ! Tokens(tt,Some(tt.size))
+      case TypingToken(txt, from,size,replyTo) =>
+        val tt = store.typing(txt,from,size)
+        replyTo ! tt
         Behaviors.same
 
       case CreateToken(tokenCreate, replyTo) =>

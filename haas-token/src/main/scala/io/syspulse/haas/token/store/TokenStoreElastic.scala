@@ -24,6 +24,7 @@ import io.syspulse.haas.core.Token.ID
 import io.syspulse.haas.token.elastic.TokenScan
 import io.syspulse.haas.token.elastic.TokenSearch
 import io.syspulse.skel.uri.ElasticURI
+import io.syspulse.haas.token.server.Tokens
 
 class TokenStoreElastic(uri:String) extends TokenStore {
   private val log = Logger(s"${this}")
@@ -38,8 +39,8 @@ class TokenStoreElastic(uri:String) extends TokenStore {
         source("id").toString, 
         source("symbol").toString,
         source("name").toString,
-        source.get("contractAddress").map(_.toString),
-        source.get("category").map(_.asInstanceOf[List[String]]).getOrElse(List()),
+        source.get("addr").map(_.toString),
+        source.get("cat").map(_.asInstanceOf[List[String]]).getOrElse(List()),
         source.get("icon").map(_.toString),
         source.get("src").map(_.asInstanceOf[Long])
       ))
@@ -68,17 +69,17 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     r.result.count
   }
   
-  def ???(from:Int,size:Int=10) = {
+  def ???(from:Option[Int],size:Option[Int]):Tokens = {
     val r = client.execute {
       ElasticDsl
       .search(elasticUri.index)
       .matchAllQuery()
-      .from(from)
-      .size(size)
+      .from(from.getOrElse(0))
+      .size(size.getOrElse(10))
     }.await
 
     log.info(s"r=${r}")
-    r.result.to[Token].toList
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 
   def +(t:Token):Try[TokenStore] = { 
@@ -90,43 +91,53 @@ class TokenStoreElastic(uri:String) extends TokenStore {
   }
 
   def ?(id:ID):Try[Token] = {
-    search(id.toString).headOption match {      
-      case Some(t) => Success(t)
-      case None => Failure(new Exception(s"not found: ${id}"))
+    val r = { client.execute { 
+      ElasticDsl
+        .search(elasticUri.index)
+        .termQuery(("id",id))
+    }}.await
+
+    r.result.to[Token].toList match {
+      case r :: _ => Success(r)
+      case _ => Failure(new Exception(s"not found: ${id}"))
     }
   }
 
-  def ??(txt:String):List[Token] = {
-    search(txt)
+  def ??(txt:String,from:Option[Int],size:Option[Int]):Tokens = {
+    search(txt,from,size)
   }
 
-  def scan(txt:String):List[Token] = {
+  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = {
     val r = client.execute {
       ElasticDsl
         .search(elasticUri.index)
+        .from(from.getOrElse(0))
+        .size(size.getOrElse(10))
         .rawQuery(s"""
     { 
       "query_string": {
         "query": "${txt}",
-        "fields": ["symbol", "name", "contractAddress","category","icon"]
+        "fields": ["symbol", "name", "addr","cat", "icon"]
       }
     }
     """)
     }.await
 
     log.info(s"r=${r}")
-    r.result.to[Token].toList
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 
-  def search(txt:String):List[Token] = {   
+  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = {   
     val r = client.execute {
       com.sksamuel.elastic4s.ElasticDsl
         .search(elasticUri.index)
+        .from(from.getOrElse(0))
+        .size(size.getOrElse(10))
         .query(txt)
     }.await
 
     log.info(s"r=${r}")
-    r.result.to[Token].toList
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
     
     // r match {
     //   case failure: RequestFailure => List.empty
@@ -135,29 +146,33 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     // }
   }
 
-  def grep(txt:String):List[Token] = {
+  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = {
     val r = client.execute {
       ElasticDsl
         .search(elasticUri.index)
+        .from(from.getOrElse(0))
+        .size(size.getOrElse(10))
         .query {
           ElasticDsl.wildcardQuery("symbol",txt)
         }
     }.await
 
     log.info(s"r=${r}")
-    r.result.to[Token].toList
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 
-  def typing(txt:String):List[Token] = {  
+  def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = {  
     val r = client.execute {
       ElasticDsl
         .search(elasticUri.index)
+        .from(from.getOrElse(0))
+        .size(size.getOrElse(10))
         .rawQuery(s"""
-    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram", "name", "contractAddress", "contractAddress._3gram"] }}
+    { "multi_match": { "query": "${txt}", "type": "bool_prefix", "fields": [ "symbol", "symbol._3gram", "name", "addr", "addr._3gram"] }}
     """)        
     }.await
     
     log.info(s"r=${r}")
-    r.result.to[Token].toList
+    Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 }

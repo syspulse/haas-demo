@@ -76,11 +76,11 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   val metricCreateCount: Counter = Counter.build().name("skel_token_create_total").help("Token creates").register(cr)
   
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
-  def getTokensPage(from:Int,size:Int): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
+  def getTokensPage(from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
   def getToken(id: Token.ID): Future[Try[Token]] = registry.ask(GetToken(id, _))
   def getTokenByAddr(addr:String): Future[Try[Token]] = registry.ask(GetTokenByAddr(addr, _))
-  def getTokenBySearch(txt: String): Future[Tokens] = registry.ask(SearchToken(txt, _))
-  def getTokenByTyping(txt: String): Future[Tokens] = registry.ask(TypingToken(txt, _))
+  def getTokenBySearch(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(SearchToken(txt, from,size,_))
+  def getTokenByTyping(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(TypingToken(txt, from,size,_))
 
   def createToken(tokenCreate: TokenCreateReq): Future[Token] = registry.ask(CreateToken(tokenCreate, _))
   def deleteToken(id: Token.ID): Future[TokenActionRes] = registry.ask(DeleteToken(id, _))
@@ -117,26 +117,38 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
 
   @GET @Path("/search/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Search Token by term",
-    parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search term")),
+    parameters = Array(
+      new Parameter(name = "txt", in = ParameterIn.PATH, description = "search term"),
+      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from (inclusive)"),
+      new Parameter(name = "size", in = ParameterIn.PATH, description = "Page size"),
+    ),
     responses = Array(new ApiResponse(responseCode="200",description = "Found Tokens",content=Array(new Content(schema=new Schema(implementation = classOf[Tokens])))))
   )
   def getTokenSearch(txt: String) = get {
-    rejectEmptyResponse {
-      onSuccess(getTokenBySearch(txt)) { r =>
-        complete(r)
+    parameters("from".as[Int].optional,"size".as[Int].optional) { (from,size) =>
+      rejectEmptyResponse {
+        onSuccess(getTokenBySearch(txt,from,size)) { r =>
+          complete(r)
+        }
       }
     }
   }
 
   @GET @Path("/typing/{txt}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Search Token by Type-Ahead (first letters)",
-    parameters = Array(new Parameter(name = "txt", in = ParameterIn.PATH, description = "search letters")),
+    parameters = Array(
+      new Parameter(name = "txt", in = ParameterIn.PATH, description = "terms"),
+      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from (inclusive)"),
+      new Parameter(name = "size", in = ParameterIn.PATH, description = "Page size"),
+    ),
     responses = Array(new ApiResponse(responseCode="200",description = "Found Tokens",content=Array(new Content(schema=new Schema(implementation = classOf[Tokens])))))
   )
   def getTokenTyping(txt: String) = get {
-    rejectEmptyResponse {
-      onSuccess(getTokenByTyping(txt)) { r =>
-        complete(r)
+    parameters("from".as[Int].optional,"size".as[Int].optional) { (from,size) =>
+      rejectEmptyResponse {
+        onSuccess(getTokenByTyping(txt,from,size)) { r =>
+          complete(r)
+        }
       }
     }
   }
@@ -144,7 +156,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"), summary = "Return Tokens",
     parameters = Array(      
-      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from"),
+      new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from (inclusive)"),
       new Parameter(name = "size", in = ParameterIn.PATH, description = "Page size"),
     ),
     responses = Array(
@@ -152,11 +164,8 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   )
   def getTokensRoute() = get {
     parameters("from".as[Int].optional,"size".as[Int].optional) { (from,size) =>
-      if(size.isDefined)
-        onSuccess(getTokensPage(
-            from.getOrElse(0),
-            size.getOrElse(Defaults.TOKEN_SET.size),
-          )) { r =>
+      if(from.isDefined || size.isDefined)
+        onSuccess(getTokensPage(from,size)) { r =>
             metricGetCount.inc()
             complete(r)
           }
