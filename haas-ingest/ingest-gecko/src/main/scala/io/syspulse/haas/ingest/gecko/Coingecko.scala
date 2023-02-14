@@ -19,7 +19,7 @@ case class MarketData(market_cap:MarketCap)
 case class Links(homepage:List[Option[String]])
 case class Image(thumb:String,small:String,large:String)
 
-case class DetailPlatform(decimal_place:Option[Int],contract_address:String)
+case class DetailPlatform(decimal_place:Option[Int],contract_address:Option[String])
 
 case class CoinInfo(id:String,symbol:String, name:String,  
   contract_address:Option[String], platforms:Map[String,Option[String]] = Map(),
@@ -42,7 +42,12 @@ case class CoinInfo(id:String,symbol:String, name:String,
       icon = Option(image.large),
       src = Some(DataSource.id("coingecko")),
       dcml = detail_platforms.get(asset_platform_id.getOrElse("ethereum")).flatMap(_.decimal_place),
-      chain = detail_platforms.map{ case(nid,dp) => TokenBlockchain(nid,dp.contract_address)}.toSeq
+      chain = detail_platforms.flatMap{ case(nid,dp) => 
+        nid match {
+          case "" => None
+          case _ => Some(TokenBlockchain(nid,dp.contract_address.getOrElse("")))
+        }
+      }.toSeq
     )
   }
 }

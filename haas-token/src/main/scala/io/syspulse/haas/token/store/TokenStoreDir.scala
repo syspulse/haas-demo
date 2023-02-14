@@ -52,7 +52,9 @@ class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
           // ))
           Seq(cg.toToken)
         } catch {
-          case e:Exception => log.error(s"could not parse data: ${data}",e); Seq()
+          case e:Exception => 
+            log.error(s"could not parse data: ${data}",e); 
+            Seq()
         }
       })
       .flatten // file
