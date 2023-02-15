@@ -17,6 +17,11 @@ read
 
 if [ "$?" == "0" ]; then
    docker-compose up -d $DOCKER
+
+   sleep 1
+   docker-compose restart nginx
+
    docker-compose logs -f  $DOCKER
 fi
+
 
