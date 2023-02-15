@@ -205,7 +205,7 @@ services:
     container_name: haas-abi
     restart: always
     volumes:
-      - "${PWD}/store/abi:/data"
+      - "${PWD}/store:/store"
     ports:
       - 8094:8080
     networks:
@@ -213,7 +213,7 @@ services:
     command: server
     environment:
       #JAVA_OPTS: -Dgod
-      DATASTORE: dir:///data      
+      DATASTORE: dir:///store/abi
 
   nginx:
     image: nginx
