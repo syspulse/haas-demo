@@ -230,7 +230,8 @@ lazy val root = (project in file("."))
       circ_core,
       circ_harvest,
       haas_circ,
-      haas_intercept
+      haas_intercept,
+      haas_abi
   )
   .dependsOn(
     haas_core, 
@@ -241,7 +242,8 @@ lazy val root = (project in file("."))
       circ_core,
       circ_harvest,
       haas_circ,
-      haas_intercept
+      haas_intercept,
+      haas_abi
   )
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
@@ -429,6 +431,7 @@ lazy val haas_intercept = (project in file("haas-intercept"))
 
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
+      libSkelAuthCore,
       libSkelIngest,
       libSkelIngestFlow,
       libSkelDSL,
@@ -440,3 +443,30 @@ lazy val haas_intercept = (project in file("haas-intercept"))
       libScalaTest % "test"
     ),
   )
+
+lazy val haas_abi = (project in file("haas-abi"))
+  .dependsOn(haas_core)
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .settings (
+
+    sharedConfig,
+    sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
+
+    appDockerConfig("haas-abi","io.syspulse.haas.abi.App"),
+
+    libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
+      libSkelCore,
+      libSkelAuthCore,
+      libSkelIngest,
+      libSkelIngestFlow,
+      
+      libSkelCrypto,
+      libEthAbi,
+      libScalaTest % "test"
+    ),
+  )
+

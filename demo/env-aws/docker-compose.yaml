@@ -190,15 +190,30 @@ services:
       #DATASTORE: mem://
       DATASTORE: dir:///store/intercept
       STORE_SCRIPT: dir:///store/script
-      STORE_ABI: dir:///store/abi
-      STORE_EVENT: dir:///store/event
-      STORE_FUNC: dir:///store/func
+      STORE_ABI: dir:///store/abi/contract
+      STORE_EVENT: dir:///store/abi/event
+      STORE_FUNC: dir:///store/abi/func
       # this is temporary, must be replace with NotificationService URI
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
       SMTP_FROM: ${SMTP_FROM}
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
+
+  haas-abi:
+    image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-abi:latest
+    container_name: haas-abi
+    restart: always
+    volumes:
+      - "${PWD}/store/abi:/data"
+    ports:
+      - 8094:8080
+    networks:
+      - demo
+    command: server
+    environment:
+      #JAVA_OPTS: -Dgod
+      DATASTORE: dir:///data      
 
   nginx:
     image: nginx
@@ -212,6 +227,7 @@ services:
       - haas-token
       - haas-circ
       - haas-intercept
+      - haas-abi
       - sparkmagic
     restart: always
     volumes:
