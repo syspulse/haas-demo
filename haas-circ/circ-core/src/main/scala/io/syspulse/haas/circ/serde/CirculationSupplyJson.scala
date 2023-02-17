@@ -20,6 +20,6 @@ object CirculationSupplyJson extends JsonCommon {
   implicit val jf_sc = jsonFormat2(SupplyCategory.apply _)
   implicit val jf_hl = jsonFormat4(SupplyHolder.apply _)
   implicit val jf_sb = jsonFormat4(SupplyBucket.apply _)
-  implicit val jf_c = jsonFormat12(Circulation.apply _)
+  implicit val jf_c = jsonFormat13(Circulation.apply _)
   implicit val jf_cs = jsonFormat4(CirculationSupply.apply _)
 }

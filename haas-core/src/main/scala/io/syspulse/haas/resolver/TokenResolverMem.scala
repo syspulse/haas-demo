@@ -9,32 +9,12 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
 import java.util.concurrent.TimeUnit
+import io.syspulse.haas.core.Defaults
 
 class TokenResolverMem(datastore:Option[String] = None) extends Resolver[String,String] {
   val log = Logger(s"${this}")
 
-  val default = Map(
-    "uniswap" -> "UNI",
-    "ribbon-finance" -> "RBN",
-    
-    "aave" -> "AAVE",
-    "chainlink" -> "LINK",
-    "dappnode"-> "NODE",
-    "ethereum"-> "ETH",
-    "ethereum-name-service"-> "ENS",
-    "foam-protocol"-> "FOAM",
-    "gmx"-> "GMX",
-    "helium"-> "HNT",
-    "livepeer"-> "LPT",
-    "matic-network"-> "MATIC",
-    "near"-> "NEAR",
-    "noia-network"-> "NOIA",
-    "optimism"-> "OP",
-    "pollen-coin"-> "PCN",
-    "solana" -> "SOL",
-
-    "usd" -> "USD",
-  )
+  val default = Defaults.TOKEN_SET
 
   val store = default ++ default.map{case(k,v) => v -> k} ++ {
     if(!datastore.isDefined) Map[String,String]() else {

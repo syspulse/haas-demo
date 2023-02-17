@@ -50,7 +50,8 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         parseCirculation(data).map{ case(tid,c) => TokenCirculating(tid,c)}
       }}
       
-    log.info(s"Circulations: ${circs}")
+    log.debug(s"${circs}")
+    log.info(s"Circulations: ${circs.size}")
 
     circs.groupBy(_.tid).map{ case(tid,circ) => {
       CirculationSupply(
@@ -73,10 +74,15 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         totalSupply = csFile.totalSupply,
         supply = csFile.circulatingSupply,
         inflation = csFile.inflation,
+        price = csFile.price.getOrElse(0.0),
         
         buckets = csFile.locks.map(lock => SupplyBucket(label = lock.addr,value = lock.value, ratio = lock.r.getOrElse(0.0))),
         
         holdersTotal = csFile.totalHolders,
+        holdersDelta = csFile.totalHoldersChange,
+        holdersUp = csFile.uniqueHoldersUp,
+        holdersDown = csFile.uniqueHoldersDown,
+
         holders = csFile.topHolders.map(h => SupplyHolder(
           addr = h.addr,
           v = h.value,

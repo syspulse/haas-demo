@@ -37,6 +37,7 @@ case class Circulation (
   holdersTotal:Long = 0L,
   holdersUp:Long = 0L,
   holdersDown:Long = 0L,
+  holdersDelta:Long = 0L,
 
   category:List[SupplyCategory] = List(),
 

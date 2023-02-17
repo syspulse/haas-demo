@@ -1,4 +1,3 @@
-curl -X 'GET' \
-  "https://api.coingecko.com/api/v3/coins/list" \
-  -H 'accept: application/json'
+curl -S -s -D /dev/stderr -X 'GET' -H 'accept: application/json' \
+  "https://api.coingecko.com/api/v3/coins/list" 
 
