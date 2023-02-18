@@ -43,8 +43,8 @@ case class Config(
   datastore:String = "dir://store/intercept",
   scriptStore:String = "dir://store/script",
   abiStore: String = "dir://store/abi",
-  eventStore:String = "dir://store/event",
-  funcStore:String = "dir://store/func",
+  // eventStore:String = "dir://store/event",
+  // funcStore:String = "dir://store/func",
 
   source:String="",
   
@@ -106,8 +106,8 @@ object App extends skel.Server {
         ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
         ArgString('s', "store.script",s"datastore for Scripts to execute on TX (def=${d.scriptStore})"),
         ArgString('_', "store.abi",s"ABI definitions store (def: ${d.abiStore})"),
-        ArgString('_', "store.event",s"Event Signatures store (def: ${d.eventStore})"),
-        ArgString('_', "store.func",s"Function signatures store (def: ${d.funcStore})"),
+        // ArgString('_', "store.event",s"Event Signatures store (def: ${d.eventStore})"),
+        // ArgString('_', "store.func",s"Function signatures store (def: ${d.funcStore})"),
 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
@@ -150,8 +150,8 @@ object App extends skel.Server {
       datastore = c.getString("datastore").getOrElse(d.datastore),
       scriptStore = c.getString("store.script").getOrElse(d.scriptStore),
       abiStore = c.getString("store.abi").getOrElse(d.abiStore),
-      eventStore = c.getString("store.event").getOrElse(d.eventStore),
-      funcStore = c.getString("store.func").getOrElse(d.funcStore),
+      // eventStore = c.getString("store.event").getOrElse(d.eventStore),
+      // funcStore = c.getString("store.func").getOrElse(d.funcStore),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
@@ -184,24 +184,40 @@ object App extends skel.Server {
       }
     }
 
-    val eventStore = config.eventStore.split("://").toList match {
-      case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
-      case dir :: Nil => new EventSignatureStoreDir(dir)
-      case "mem" :: _ => new SignatureStoreMem[EventSignature]()
-      case _ => new SignatureStoreMem[EventSignature]()
-    }
+    // val eventStore = config.eventStore.split("://").toList match {
+    //   case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
+    //   case dir :: Nil => new EventSignatureStoreDir(dir)
+    //   case "mem" :: _ => new SignatureStoreMem[EventSignature]()
+    //   case _ => new SignatureStoreMem[EventSignature]()
+    // }
 
-    val funcStore = config.funcStore.split("://").toList match {
-      case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
-      case dir :: Nil => new FuncSignatureStoreDir(dir)
-      case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
-      case _ => new SignatureStoreMem[FuncSignature]()
-    }
+    // val funcStore = config.funcStore.split("://").toList match {
+    //   case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
+    //   case dir :: Nil => new FuncSignatureStoreDir(dir)
+    //   case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
+    //   case _ => new SignatureStoreMem[FuncSignature]()
+    // }
 
-    val abiStore = config.abiStore.split("://").toList match {
-      case "dir" :: dir :: _ => new AbiStoreDir(dir,funcStore,eventStore) 
-      case dir :: Nil => new AbiStoreDir(dir,funcStore,eventStore) 
-      case _ => new AbiStoreDir(config.abiStore,funcStore,eventStore) 
+    // val abiStore = config.abiStore.split("://").toList match {
+    //   case "dir" :: dir :: _ => new AbiStoreDir(dir,funcStore,eventStore) 
+    //   case dir :: Nil => new AbiStoreDir(dir,funcStore,eventStore) 
+    //   case _ => new AbiStoreDir(config.abiStore,funcStore,eventStore) 
+    // }
+    val abiStore:AbiStore = config.abiStore.split("://").toList match {
+      case "dir" :: dir :: Nil => 
+        new AbiStoreDir(dir + "/contract", 
+          new FuncSignatureStoreDir(dir+ "/func"),
+          new EventSignatureStoreDir(dir+"/event"),
+        )
+      case "dir" :: Nil => 
+        new AbiStoreDir("store/abi/contact", 
+          new FuncSignatureStoreDir("store/abi/func"),
+          new EventSignatureStoreDir("store/abi/event"),
+        )
+      case _ => {
+        Console.err.println(s"Uknown datastore: '${config.datastore}")
+        sys.exit(1)
+      }
     }
 
     abiStore.load()

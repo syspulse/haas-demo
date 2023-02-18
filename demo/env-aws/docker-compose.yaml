@@ -190,9 +190,9 @@ services:
       #DATASTORE: mem://
       DATASTORE: dir:///store/intercept
       STORE_SCRIPT: dir:///store/script
-      STORE_ABI: dir:///store/abi/contract
-      STORE_EVENT: dir:///store/abi/event
-      STORE_FUNC: dir:///store/abi/func
+      STORE_ABI: dir:///store/abi
+      # STORE_EVENT: dir:///store/abi/event
+      # STORE_FUNC: dir:///store/abi/func
       # this is temporary, must be replace with NotificationService URI
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}

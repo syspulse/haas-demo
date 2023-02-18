@@ -3,10 +3,13 @@
 CWD=`echo $(dirname $(readlink -f $0))`
 
 INPUT=${1:-/mnt/s4/data/dev/abi/4byte/event/raw/2023/02/06}
+#INPUT=${1:-/mnt/s4/data/dev/abi/4byte/func/raw/2023/02/15}
 OUTPUT=${2:-/mnt/s4/data/dev/abi/4byte/event/json/2023/02/06}
+#OUTPUT=${2:-/mnt/s4/data/dev/abi/4byte/func/raw/2023/02/15}
 FAT=${FAT:-}
 
 if [ "$FAT" != "" ]; then
+  mkdir -p $OUTPUT
   OUTPUT=${OUTPUT}/${FAT}
 else
   mkdir -p $OUTPUT
