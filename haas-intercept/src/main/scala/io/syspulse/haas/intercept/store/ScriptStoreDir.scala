@@ -16,6 +16,8 @@ import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.intercept.script.Script.ID
 
 import io.syspulse.haas.intercept.script.ScriptJson
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 // Preload from file during start
 class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
   import ScriptJson._
@@ -44,7 +46,12 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
           val src = data
           val s = ext.toLowerCase match {
             case "js" => {
-              Seq(Script(id, "js", src, name = f.toString))
+              Seq(Script(
+                id, "js", 
+                src, 
+                name = f.toString,
+                ts0 = Files.readAttributes(f.toNIO,classOf[BasicFileAttributes]).creationTime().toMillis()
+              ))
             }
             case "json" => {
               Seq(data.parseJson.convertTo[Script])

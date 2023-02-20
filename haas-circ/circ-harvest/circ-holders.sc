@@ -5,15 +5,15 @@ import java.util.UUID
 //import $file.Tokens,Tokens.Tokens
 //import $file.ERC20,ERC20.ERC20
 
-import $ivy.`io.syspulse::circ-core:0.0.1`
-import $ivy.`io.syspulse::circ-harvest:0.0.1`
+import $ivy.`io.syspulse::circ-core:0.0.2`
+import $ivy.`io.syspulse::circ-harvest:0.0.2`
 
 import io.syspulse.haas.circ._
 import io.syspulse.haas.circ.Holder
 import io.syspulse.haas.circ.Circulation
 
-implicit val rw1: RW[Holder] = macroRW
-implicit val rw2: RW[Circulation] = macroRW
+// implicit val rw1: RW[Holder] = macroRW
+// implicit val rw2: RW[Circulation] = macroRW
 
 @main
 def main(input:String="./UNI-1000.csv", token:String = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", output:String = "Holders.csv", codec:String = "csv", decimals:Double = 10e18, batch:Int = 100, parallelism:Int = 4) {
@@ -54,7 +54,7 @@ def main(input:String="./UNI-1000.csv", token:String = "0x1f9840a85d5af5bf1d1762
   val elapsed = Duration.between(ts0, ts1)
   println(s"Elapsed time: ${elapsed.toMinutes} min (${elapsed.toSeconds} sec)")
 
-  val circ = Circulation(id=UUID.randomUUID(), tid = "UNI", holders = holders)
-  println(circ)
-  println(write(circ))
+  // val circ = Circulation(id=UUID.randomUUID(), tid = "UNI", holders = holders)
+  // println(circ)
+  // println(write(circ))
 }

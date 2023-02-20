@@ -120,7 +120,7 @@ object InterceptionRegistry {
               }
             } else {
               val scriptId = Util.sha256(c.script)
-              val script = Script(scriptId,"js",c.script,c.name)
+              val script = Script(scriptId,"js",c.script,c.name,System.currentTimeMillis,uid = c.uid)
               storeScript.+(script)
               Some(script)
             }
@@ -129,11 +129,22 @@ object InterceptionRegistry {
             Some(c.entity.getOrElse("tx"))
           }
           abiId <- { entity match {
-            case "event" | "function" => 
+            case "event" | "function" | "func" => 
               if(c.abi.isDefined && c.contract.isDefined) {
                 val abiId = c.contract.get
-                abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
-                Some(abiId)
+                val ac = AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis))
+                
+                log.info(s"${ac}")
+                val r = abiStore.+(ac)
+                
+                if(r.isFailure) {
+                  log.error(s"ABI not decoded: ${abiId}: ${r}")
+                  replyTo ! Failure(new Exception(s"ABI not decoded: ${abiId}: ${r}"))
+                  None
+                } else {
+                  log.info(s"abiStore: ${abiStore.size}")
+                  Some(abiId)
+                }
               } else {
                 log.error(s"ABI or Contract not found: ${entity}")
                 replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))

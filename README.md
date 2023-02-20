@@ -11,10 +11,10 @@ HaaS Platform Demo
 - [haas-lake](haas-lake)                - DataLake
 - [haas-circ](haas-circ)                - Circulation Supply Product
 - [haas-analytics](haas-analytics)      - Analytics Code snippets for Notebooks
-- [haas-lake](haas-lake)                - DataLake
+- [haas-abi](haas-abi)                  - ABI store
 
 ----
 ## Architecture
 
-<img src="doc/HaaS-Architecture-Proto.png" width="1000">
+<img src="doc/HaaS-Proto-Proto.drawio.png" width="1000">
 
