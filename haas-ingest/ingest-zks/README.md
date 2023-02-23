@@ -1,6 +1,8 @@
 ## ZkSync v2
 
-Testnet: https://zksync2-testnet.zksync.dev
+__Testnet__: https://zksync2-testnet.zksync.dev
+
+__Mainnet__: https://zksync2-mainnet.zksync.io
 
 Latest block:
 ```
