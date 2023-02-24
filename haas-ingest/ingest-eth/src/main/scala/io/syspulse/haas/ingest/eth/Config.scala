@@ -9,6 +9,11 @@ case class Config(
   
   feed:String = "",
   output:String = "",
+
+  feedBlock:String = "",
+  feedTx:String = "",
+  feedToken:String = "",
+  feedLog:String = "",
   
   abi:String = "abi/",
   source:String="",
@@ -21,7 +26,7 @@ case class Config(
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
   
-  entity:String = "tx",
+  entity:Seq[String] = Seq("tx"),
   
   expr:String = "",
   

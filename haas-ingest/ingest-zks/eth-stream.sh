@@ -2,14 +2,15 @@
 #
 # OUTPUT: kafka/localhost:9092
 
-ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
+#ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
 #ETH_RPC=${ETH_RPC:-http://geth.hacken.dev:8545}
 #ETH_RPC=${ETH_RPC:-https://zksync2-testnet.zksync.dev}
+ETH_RPC=${ETH_RPC:-https://zksync2-mainnet.zksync.io}
 
 START_BLOCK=${1:-latest}
-OUTPUT=${2}
+OUTPUT=${2:-kafka/localhost:9092/zksync.mainnet.}
 #ENTITY=${ENTITY:-token_transfer}
-ENTITY=${ENTITY:-transaction}
+ENTITY=${ENTITY:-transaction,block,token_transfer,log}
 
 #DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
 DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
@@ -38,11 +39,12 @@ esac
 
 case "$OUTPUT" in 
    "") 
+      OUTPUT="--log-file $OUTPUT"
       ;;
    "stdout") 
       ;;
    *)
-      OUTPUT="--log-file $OUTPUT"
+      OUTPUT="-o ${OUTPUT}"      
       ;;      
 esac
 
@@ -56,6 +58,7 @@ export PYTHONUNBUFFERED="1"
 #ethereumetl stream -e transaction $START_BLOCK_ARG --provider-uri $ETH_RPC
 
 >&2 echo "START_BLOCK: $START_BLOCK"
+>&2 echo "OUTPUT=${OUTPUT}"
 
 if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ] ; then
    >&2 echo "DOCKER: ${DOCKER}"

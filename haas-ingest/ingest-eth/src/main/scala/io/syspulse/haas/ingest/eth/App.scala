@@ -34,6 +34,12 @@ object App extends skel.Server {
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
+
+        ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
+        ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
+        ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
+        ArgString('_', "feed.log",s"EventLog Feed (def: ${d.feedLog})"),
+
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log|event) def=${d.entity}"),
 
@@ -65,7 +71,12 @@ object App extends skel.Server {
       
       feed = c.getString("feed").getOrElse(d.feed),
       output = c.getString("output").getOrElse(d.output),
-      entity = c.getString("entity").getOrElse(d.entity),
+      entity = c.getListString("entity",d.entity),
+      
+      feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
+      feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
+      feedToken = c.getString("feed.token").getOrElse(d.feedToken),
+      feedLog = c.getString("feed.log").getOrElse(d.feedLog),
 
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
@@ -88,33 +99,45 @@ object App extends skel.Server {
 
     Console.err.println(s"Config: ${config}")
 
+    def orf(feed1:String,feed2:String) = if(feed1!="") feed1 else feed2
     
     val (r,pp) = config.cmd match {
       case "ingest" => {
-        val pp = config.entity match {
+        val pp:Seq[PipelineEth[_,_,_]] = config.entity.flatMap( e => e match {
           case "tx" =>
-            //new PipelineEthTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-            new PipelineTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-                    
+            Some(new PipelineTx(orf(config.feedTx,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           case "block" =>
-            //new PipelineEthBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-            new PipelineBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-          
-          // case "block-tx" =>
-          //   new PipelineEthBlockTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-            
+            Some(new PipelineBlock(orf(config.feedBlock,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           case "token" =>
-            //new PipelineEthTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-            new PipelineTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
+            Some(new PipelineTokenTransfer(orf(config.feedToken,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          case "log" | "event" => 
+            Some(new PipelineLog(orf(config.feedLog,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
-          case "log" | "event" =>
-            //new PipelineEthLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-            new PipelineLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
+          case _ => 
+            Console.err.println(s"Uknown entity: '${e}'");
+            None
+        })
 
-          case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
-        } 
+        // start all pipelines
+        val ppr = pp.map( _.run())
 
-        (pp.run(),Some(pp))
+        (ppr.head,Some(pp.head))
+        
+
+        // val pp = config.entity match {
+        //   case "tx" =>
+        //     new PipelineTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)                    
+        //   case "block" =>
+        //     new PipelineBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)          
+        //   // case "block-tx" =>
+        //   //   new PipelineEthBlockTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)            
+        //   case "token" =>
+        //     new PipelineTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
+        //   case "log" | "event" =>
+        //     new PipelineLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
+        //   case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
+        // } 
+        // (pp.run(),Some(pp))
       }       
     }
     
