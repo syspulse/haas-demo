@@ -98,7 +98,7 @@ services:
     container_name: skel-tag
     restart: always
     volumes:
-      - "${PWD}/store/label:/data"
+      - "${PWD}/store:/store"
     ports:
       - 8084:8080
     networks:
@@ -106,7 +106,8 @@ services:
     command: server
     environment:
       JAVA_OPTS: -Dgod
-      DATASTORE: dir:///data
+      DATASTORE: dir:///store/label
+      # DATASTORE: dir:///data
       #DATASTORE: resources://
 
   skel-auth:
