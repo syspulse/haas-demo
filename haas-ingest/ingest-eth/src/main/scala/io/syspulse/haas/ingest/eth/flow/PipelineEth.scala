@@ -16,6 +16,9 @@ import akka.http.scaladsl
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Flow
 
+import io.prometheus.client.CollectorRegistry
+import io.prometheus.client.Counter
+
 import io.syspulse.skel
 import io.syspulse.skel.config._
 import io.syspulse.skel.util.Util

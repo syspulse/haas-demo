@@ -34,13 +34,17 @@ object App extends skel.Server {
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
-
         ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
         ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
         ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
         ArgString('_', "feed.log",s"EventLog Feed (def: ${d.feedLog})"),
 
-        ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
+        ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),        
+        ArgString('_', "output.tx",s"Tx Feed (def: ${d.outputTx})"),
+        ArgString('_', "output.block",s"Block Feed (def: ${d.outputBlock})"),
+        ArgString('_', "output.token",s"Token Feed (def: ${d.outputToken})"),
+        ArgString('_', "output.log",s"EventLog Feed (def: ${d.outputLog})"),
+
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log|event) def=${d.entity}"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
@@ -78,6 +82,11 @@ object App extends skel.Server {
       feedToken = c.getString("feed.token").getOrElse(d.feedToken),
       feedLog = c.getString("feed.log").getOrElse(d.feedLog),
 
+      outputBlock = c.getString("output.block").getOrElse(d.outputBlock),
+      outputTx = c.getString("output.tx").getOrElse(d.outputTx),
+      outputToken = c.getString("output.token").getOrElse(d.outputToken),
+      outputLog = c.getString("output.log").getOrElse(d.outputLog),
+
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
 
@@ -99,19 +108,26 @@ object App extends skel.Server {
 
     Console.err.println(s"Config: ${config}")
 
-    def orf(feed1:String,feed2:String) = if(feed1!="") feed1 else feed2
+    def orf(feed1:String,feed2:String) = if(feed1!="") feed1 else feed2    
     
     val (r,pp) = config.cmd match {
       case "ingest" => {
         val pp:Seq[PipelineEth[_,_,_]] = config.entity.flatMap( e => e match {
-          case "tx" =>
-            Some(new PipelineTx(orf(config.feedTx,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           case "block" =>
-            Some(new PipelineBlock(orf(config.feedBlock,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new PipelineBlock(orf(config.feedBlock,config.feed),orf(config.outputBlock,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+
+          case "tx" =>
+            Some(new PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          
           case "token" =>
-            Some(new PipelineTokenTransfer(orf(config.feedToken,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new PipelineTokenTransfer(orf(config.feedToken,config.feed),orf(config.outputToken,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+
           case "log" | "event" => 
-            Some(new PipelineLog(orf(config.feedLog,config.feed),config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new PipelineLog(orf(config.feedLog,config.feed),orf(config.outputLog,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");
@@ -123,7 +139,6 @@ object App extends skel.Server {
 
         (ppr.head,Some(pp.head))
         
-
         // val pp = config.entity match {
         //   case "tx" =>
         //     new PipelineTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)                    

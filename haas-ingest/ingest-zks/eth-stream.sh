@@ -8,13 +8,20 @@
 ETH_RPC=${ETH_RPC:-https://zksync2-mainnet.zksync.io}
 
 START_BLOCK=${1:-latest}
-OUTPUT=${2:-kafka/localhost:9092/zksync.mainnet.}
+
+# connect from within Docker
+OUTPUT=${2:-kafka/172.17.0.1:9093/zksync.mainnet.}
+# connect from shell
+#OUTPUT=${2:-kafka/localhost:9092/zksync.mainnet.}
+
 #ENTITY=${ENTITY:-token_transfer}
 ENTITY=${ENTITY:-transaction,block,token_transfer,log}
 
 #DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
 DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
 DOCKER_STATE=${DOCKER_STATE:-state/}
+
+POLL=${POLL:-12}
 
 LAST_BLOCK=${LAST_BLOCK:-last_synced_block.txt}
 
@@ -64,8 +71,8 @@ if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ] ; then
    >&2 echo "DOCKER: ${DOCKER}"
    docker run --rm --name eth-stream \
       -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
-      $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK
+      $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK --period-seconds ${POLL}
 else
-   ethereumetl stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l $LAST_BLOCK
+   ethereumetl stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l $LAST_BLOCK --period-seconds ${POLL}
 fi
  
