@@ -18,6 +18,7 @@ import io.syspulse.skel.Ingestable
 
 import io.syspulse.haas.intercept.script._
 import io.syspulse.skel.crypto.eth.abi.AbiStore
+import io.syspulse.haas.core.Blockchain
 
 case class Interception(
   id:Interception.ID, name:String, 
@@ -27,6 +28,7 @@ case class Interception(
   entity:String = "tx",
   aid:Option[AbiStore.ID] = None,
   ts0:Long = System.currentTimeMillis(),
+  bid:Option[Blockchain.ID] = None,
   
   var status:Interception.Status = Interception.STARTED,
   var count:Long = 0L,

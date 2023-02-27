@@ -14,6 +14,7 @@ import io.syspulse.skel.notify.Config
 
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
+import io.syspulse.skel.notify.NotifySeverity
 
 class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Interception]) {
   protected val log = Logger(s"${this.getClass()}")
@@ -54,7 +55,7 @@ class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Intercept
           val msg = txt
           val title = s"${ix.map(ix => ix.name).getOrElse("")}: ${ix.map(_.history.size)} (${iid})"
 
-          Notification.broadcast(allNotify.receviers,title,msg)      
+          Notification.broadcast(allNotify.receviers, title, msg, Some(NotifySeverity.INFO), Some("user.intercept"))
         }}
         // clear the queue
         queue = Queue()
