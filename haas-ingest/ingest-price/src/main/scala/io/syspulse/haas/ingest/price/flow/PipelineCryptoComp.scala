@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
-import io.syspulse.haas.ingest.price.CryptoCompPriceJson
+import io.syspulse.haas.ingest.price.feed.CryptoCompPriceJson
 import io.syspulse.haas.ingest.price._
 
 import io.syspulse.haas.serde.PriceJson._
@@ -45,16 +45,12 @@ abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:
   val TOKENS_SLOT = "COINS"
 
   val idResolver = new TokenResolverMem(if(config.idResolver.isEmpty) None else Some(config.idResolver))
-  def resolve(tokens:Seq[String]) = tokens.flatMap(idResolver.resolve _).mkString(",")
+
+  override def resolve(tokens:Seq[String]) = 
+    //tokens.flatMap(idResolver.resolve _).mkString(",")
+    super.resolve(tokens.flatMap(idResolver.resolve _))
 
   // def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
-  def apiSuffix():String = s"?fsyms=${resolve(config.tokens)}&tsyms=${config.tokensPair.mkString(",")}"
+  def apiSuffix():String = s"?fsyms=${resolve(tokensFilter)}&tsyms=${config.tokensPair.mkString(",")}"
   
-  override def source():Source[ByteString,_] = {
-    PriceURI(feed,apiSuffix()).parse() match {
-      case Some(uri) => source(uri)
-      case None => super.source()
-    }
-  }
-
 }

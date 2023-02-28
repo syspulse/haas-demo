@@ -224,8 +224,9 @@ lazy val root = (project in file("."))
   .aggregate(
       haas_core, 
       haas_token, 
-      ingest_gecko, 
+      ingest_coingecko, 
       ingest_eth,
+      ingest_token,
       ingest_price,
       circ_core,
       circ_harvest,
@@ -236,8 +237,9 @@ lazy val root = (project in file("."))
   .dependsOn(
     haas_core, 
       haas_token, 
-      ingest_gecko, 
+      ingest_coingecko, 
       ingest_eth,
+      ingest_token,
       ingest_price,
       circ_core,
       circ_harvest,
@@ -266,9 +268,23 @@ lazy val haas_core = (project in file("haas-core"))
         ),
     )
 
+lazy val ingest_coingecko = (project in file("haas-ingest/ingest-coingecko"))
+  .dependsOn(haas_core)
+  .disablePlugins(sbtassembly.AssemblyPlugin)
+  .settings (
+    sharedConfig,
+    
+    name := "ingest-coingecko",
+    
+    libraryDependencies ++= Seq(
+      libSkelCore,
+      libUpickleLib
+    ),
+     
+  )
 
 lazy val haas_token = (project in file("haas-token"))
-  .dependsOn(haas_core,ingest_gecko)
+  .dependsOn(haas_core,ingest_coingecko)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)
@@ -290,9 +306,8 @@ lazy val haas_token = (project in file("haas-token"))
     ),    
   )
 
-
-lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
-  .dependsOn(haas_core)
+lazy val ingest_token = (project in file("haas-ingest/ingest-token"))
+  .dependsOn(haas_core,ingest_coingecko)
   .enablePlugins(JavaAppPackaging)
   .settings (
     sharedConfig,
@@ -301,7 +316,7 @@ lazy val ingest_gecko = (project in file("haas-ingest/ingest-gecko"))
     dockerBuildxSettings,
 
     //appAssemblyConfig("ingest-gecko","io.syspulse.haas.ingest.cg.App"),
-    appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.gecko.App"),
+    appDockerConfig("ingest-gecko","io.syspulse.haas.ingest.token.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,
@@ -391,7 +406,7 @@ lazy val haas_circ = (project in file("haas-circ"))
   )
 
 lazy val ingest_price = (project in file("haas-ingest/ingest-price"))
-  .dependsOn(haas_core)
+  .dependsOn(haas_core,ingest_coingecko)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)

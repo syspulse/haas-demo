@@ -32,7 +32,7 @@ import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
 
 import io.syspulse.haas.ingest.price._
-import io.syspulse.haas.ingest.price.ChainlinkPriceJson
+import io.syspulse.haas.ingest.price.feed.ChainlinkPriceJson
 
 import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
@@ -41,6 +41,7 @@ import io.syspulse.haas.serde.PriceDecoder
 import io.syspulse.haas.core.resolver.TokenResolverMem
 import akka.http.javadsl.model.ContentType
 
+import io.syspulse.haas.ingest.price.feed.ChainlinkPrice
 class PipelineChainlink(feed:String,output:String)(implicit config:Config) extends PipelinePrice[ChainlinkPrice](feed:String,output:String){
   
   import ChainlinkPriceJson._
@@ -100,13 +101,6 @@ class PipelineChainlink(feed:String,output:String)(implicit config:Config) exten
       }
             
       case _ => super.source(feed)
-    }
-  }
-
-  override def source():Source[ByteString,_] = {
-    PriceURI(feed,apiSuffix()).parse() match {
-      case Some(uri) => source(uri)
-      case None => super.source()
     }
   }
 

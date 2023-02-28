@@ -31,13 +31,14 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
-import io.syspulse.haas.ingest.price.CryptoCompPriceJson
+import io.syspulse.haas.ingest.price.feed.CryptoCompPriceJson
 import io.syspulse.haas.ingest.price._
 
 import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import io.syspulse.haas.serde.PriceDecoder
 
+import io.syspulse.haas.ingest.price.feed.CryptoCompPriceTerse
 class PipelineCryptoCompTerse(feed:String,output:String)(implicit config:Config) 
   extends PipelineCryptoComp[CryptoCompPriceTerse](feed,output) {
 

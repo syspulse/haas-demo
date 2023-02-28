@@ -32,32 +32,46 @@ import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
 
 import io.syspulse.haas.ingest.price._
-import io.syspulse.haas.ingest.price.CoinGeckoPriceJson
+import io.syspulse.haas.ingest.coingecko
+import io.syspulse.haas.ingest.coingecko.CoinGeckoPriceJson
+import io.syspulse.haas.ingest.coingecko.CoinGeckoTokenJson
+import io.syspulse.haas.ingest.coingecko.CoinGeckoPrice
+import io.syspulse.haas.ingest.coingecko.Coin
 
 import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
 import io.syspulse.haas.core.resolver.TokenResolverMem
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 
 class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) extends PipelinePrice[CoinGeckoPrice](feed:String,output:String){
   
   import CoinGeckoPriceJson._
-
+  
   val sourceID = DataSource.id("coingecko")
   val TOKENS_SLOT = "COINS"
 
-  def resolve(tokens:Seq[String]) = tokens.mkString(",")
-
-  def apiSuffix():String = s"?ids=${resolve(config.tokens)}&vs_currencies=${config.tokensPair.mkString(",")}"
-    //s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
-
-  override def source():Source[ByteString,_] = {
-    PriceURI(feed,apiSuffix()).parse() match {
-      case Some(uri) => source(uri)
-      case None => super.source()
+  override def fromUri(uri:String):Seq[String] = {
+    uri.split("://").toList match {
+      case "file" :: file :: Nil =>
+        if(file.trim.toLowerCase().endsWith(".json")) {
+          import CoinGeckoTokenJson._
+          val json = os.read(os.Path(file,os.pwd))
+          json.parseJson.convertTo[List[coingecko.Coin]].map(_.id.trim).toSeq
+        } else
+          super.fromUri(uri)
+      case _ =>
+        super.fromUri(uri)
     }
   }
+
+  //def resolve(tokens:Seq[String]) = URLEncoder.encode(tokens.mkString(","), StandardCharsets.UTF_8.toString())
+
+  def apiSuffix():String = s"?ids=${resolve(tokensFilter)}&vs_currencies=${config.tokensPair.mkString(",")}"
+    //s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
 
   def parse(data:String):Seq[CoinGeckoPrice] = {
     if(data.isEmpty()) return Seq()

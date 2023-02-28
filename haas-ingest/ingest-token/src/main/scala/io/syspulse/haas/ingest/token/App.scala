@@ -1,18 +1,17 @@
-package io.syspulse.haas.ingest.price
+package io.syspulse.haas.ingest.token
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
+import java.util.concurrent.TimeUnit
+import scala.concurrent.Awaitable
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 import io.syspulse.skel
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-
-import io.syspulse.haas.ingest.price.flow._
-import java.util.concurrent.TimeUnit
-import scala.concurrent.Awaitable
+import io.syspulse.haas.ingest.token.flow.{ PipelineCoins,PipelineCoinInfo }
 
 case class Config(  
   
@@ -22,23 +21,16 @@ case class Config(
   size:Long = Long.MaxValue,
   limit:Long = Long.MaxValue,
   freq: Long = 0L,
-  delimiter:String = "\n",//"\r\n",
+  delimiter:String = "\n",
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
   throttleSource:Long = 1000L,
   
-  entity:String = "cryptocomp",
-  priceFormat:String = "price",
-
+  entity:String = "coingecko-coin",  
   datastore:String = "stdout",
   
-  // tokens:Seq[String] = Seq("uniswap","ribbon-finance"),
-  tokens:String = "id://uniswap,ribbon-finance",
-
-  tokensPair:Seq[String] = Seq("USD"),
-  ingestCron:String = "360", // 10 minutes
-
-  idResolver:String = "",
+  //tokens:Seq[String] = Seq(""),
+  tokens:String = "", //"id://uniswap,ribbon-finance",
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
@@ -55,15 +47,12 @@ object App {
       new ConfigurationAkka,
       new ConfigurationProp,
       new ConfigurationEnv, 
-      new ConfigurationArgs(args,"ingest-price","",
+      new ConfigurationArgs(args,"ingest-token","",
                 
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) (def=${d.output})"),
+        ArgString('e', "entity",s"Ingest entity: (coingekco-coin,coingecko-coins) (def=${d.entity})"),
 
-        ArgString('e', "entity",s"Ingest entity: (cryptocomp,coingecko,chainlink,price) (def=${d.entity})"),
-        ArgString('t', "tokens",s"Token IDs uri (ex: 'id://uniswap,ribbon-finance', file://tokens.json, file://id.txt, def=${d.tokens})"),
-        ArgString('_', "tokens.pair",s"Tokens pair (ex: 'ETH', def=${d.tokensPair})"),
-        
         ArgLong('_', "limit",s"Limit (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
         ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
@@ -72,13 +61,10 @@ object App {
         ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
         ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
         ArgLong('_', "throttle.source",s"Throttle source (e.g. http, (def: ${d.throttleSource}))"),
-        
-        ArgString('_', "price.format",s"Output formats (price,telemetry), def=${d.priceFormat})"),
+
+        ArgString('t', "tokens",s"Token IDs uri (ex: 'id://uniswap,ribbon-finance', file://tokens.json, file://id.txt, def=${d.tokens})"),
         
         ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
-        ArgString('_', "ingest.cron",s"Ingest load cron (currently only seconds interval Tick supported) (def: ${d.ingestCron})"),
-
-        ArgString('_', "id.resolver",s"Source ID resovler (def: ${d.idResolver})"),
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
@@ -100,14 +86,8 @@ object App {
 
       entity = c.getString("entity").getOrElse(d.entity),
       tokens = c.getString("tokens").getOrElse(d.tokens),
-      tokensPair = c.getListString("tokens.pair",d.tokensPair),
-      priceFormat = c.getString("price.format").getOrElse(d.priceFormat),
 
       datastore = c.getString("datastore").getOrElse(d.datastore),
-
-      ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
-
-      idResolver = c.getString("id.resolver").getOrElse(d.idResolver),
       
       cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),
@@ -118,30 +98,25 @@ object App {
     config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
-          case "cryptocomp" => new PipelineCryptoCompTerse(config.feed,config.output)(config)
-          case "cryptocomp-full" => new PipelineCryptoCompFull(config.feed,config.output)(config)
+          case "coingecko-coins" =>
+            new PipelineCoins(config.feed,config.output)(config)
+          case "coingecko-coin" =>
+            new PipelineCoinInfo(config.feed,config.output)(config)
+          case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
+        } 
 
-          case "coingecko" => new PipelineCoinGecko(config.feed,config.output)(config)
-
-          case "chainlink" => new PipelineChainlink(config.feed,config.output)(config)
-          
-          // internal format
-          case "price" => new PipelinePricePrice(config.feed,config.output)(config)
-        }
-                  
         val r = pp.run()
         println(s"r=${r}")
         r match {
           case a:Awaitable[_] => {
-            val rr = Await.result(a,Duration.Inf)
+            val rr = Await.result(a,FiniteDuration(30,TimeUnit.MINUTES))
             Console.err.println(s"result: ${rr}")
           }
           case akka.NotUsed => 
-            
         }
 
-        Console.err.println(s"Tokens: ${pp.countInput},${pp.countObj},${pp.countOutput}")
-        sys.exit(0)        
+        Console.err.println(s"Tokens: ${pp.countInput.get()},${pp.countObj.get},${pp.countOutput.get}")
+        sys.exit(0)
       }
 
     }

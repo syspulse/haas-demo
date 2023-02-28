@@ -30,13 +30,17 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
 import io.syspulse.haas.core.DataSource
-import io.syspulse.haas.ingest.price.CryptoCompPriceJson
+import io.syspulse.haas.ingest.price.feed.CryptoCompPriceJson
 import io.syspulse.haas.ingest.price._
 
 import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
+
+import io.syspulse.haas.ingest.price.feed.{CryptoCompPriceData, CryptoCompPriceFull}
+import io.syspulse.haas.ingest.price.feed.CryptoCompPriceJson
+import io.syspulse.haas.ingest.price.feed.{CryptoCompPriceData, CryptoCompPriceFull}
 
 class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config) 
   extends PipelineCryptoComp[CryptoCompPriceFull](feed,output) {

@@ -36,6 +36,8 @@ import io.syspulse.haas.serde.PriceJson
 import io.syspulse.haas.serde.PriceJson._
 
 import io.syspulse.haas.ingest.price.PriceURI
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Config)
   extends Pipeline[T,T,Price](feed,output,config.throttle,config.delimiter,config.buffer,throttleSource = config.throttleSource) {
@@ -44,13 +46,37 @@ abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Confi
 
   import PriceJson._
 
-  val tokensFilter:Seq[String] = config.tokens
+  val tokensFilter:Seq[String] = fromUri(config.tokens)
+
+  def fromUri(uri:String):Seq[String] = {
+    uri.split("://").toIndexedSeq.toList match {
+      case "id" :: ids :: Nil => 
+        ids.split(",").toIndexedSeq.filter(! _.trim.isEmpty)
+      case "file" :: file :: Nil =>
+        os.read(os.Path(file,os.pwd))
+          .split("\n")
+          .filter(!_.trim.isEmpty())
+          .flatMap(_.split(",").toIndexedSeq.filter(!_.trim.isEmpty())).toSeq
+      case ids  =>
+        ids.mkString(",").split(",").toIndexedSeq.filter(! _.trim.isEmpty)      
+    }
+  }
 
   def TOKENS_SLOT:String
   def apiSuffix():String
 
+  // URI encode
+  def resolve(tokens:Seq[String]) = URLEncoder.encode(tokens.mkString(","), StandardCharsets.UTF_8.toString())
+
   def process:Flow[T,T,_] = Flow[T].map(v => v)
 
+  override def source():Source[ByteString,_] = {
+    PriceURI(feed,apiSuffix()).parse() match {
+      case Some(uri) => source(uri)
+      case None => super.source()
+    }
+  }
+  
   override def source(feed:String) = {
     feed.split("://").toList match {
       case "http" :: _ | "https" :: _ => {
