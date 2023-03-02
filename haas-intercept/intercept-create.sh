@@ -1,10 +1,12 @@
 #!/bin/bash
 
-NAME=${1:-name-1}
-SCRIPT=${2:-ref://script-1.js}
+SCRIPT=${1:-ref://script-1.js}
+ENTITY=${2:-tx}
 ALARM=${3:-stdout://}
-ENTITY=${4:-tx}
-USER_ID=${5:-00000000-0000-0000-1000-000000000001}
+
+NAME=${NAME:-name-1}
+BID=${BID:-ethereum}
+USER_ID=${USER_ID:-00000000-0000-0000-1000-000000000001}
 ABI=${ABI:-}
 CONTRACT=${CONTRACT:-}
 
@@ -21,9 +23,9 @@ fi
 >&2 echo $ABI_JSON
 
 if [ "$ABI_JSON" != "" ]; then
-   DATA_JSON="{\"name\":\"$NAME\",\"script\":\"$SCRIPT\",\"entity\":\"$ENTITY\",\"uid\":\"$USER_ID\",\"alarm\":[\"$ALARM\"], \"abi\": ${ABI_JSON}, \"contract\":\"${CONTRACT}\"}"
+   DATA_JSON="{\"name\":\"$NAME\",\"script\":\"$SCRIPT\",\"bid\":\"$BID\",\"entity\":\"$ENTITY\",\"uid\":\"$USER_ID\",\"alarm\":[\"$ALARM\"], \"abi\": ${ABI_JSON}, \"contract\":\"${CONTRACT}\"}"
 else
-   DATA_JSON="{\"name\":\"$NAME\",\"script\":\"$SCRIPT\",\"entity\":\"$ENTITY\",\"uid\":\"$USER_ID\",\"alarm\":[\"$ALARM\"] }"
+   DATA_JSON="{\"name\":\"$NAME\",\"script\":\"$SCRIPT\",\"bid\":\"$BID\",\"entity\":\"$ENTITY\",\"uid\":\"$USER_ID\",\"alarm\":[\"$ALARM\"] }"
 fi
 
 >&2 echo $DATA_JSON
