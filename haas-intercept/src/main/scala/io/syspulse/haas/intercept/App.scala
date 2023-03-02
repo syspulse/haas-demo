@@ -70,6 +70,7 @@ case class Config(
   throttle:Long = 0L,
   
   entity:String = "tx",
+  history:Int = 10,
   
   expr:String = "",
   
@@ -132,6 +133,8 @@ object App extends skel.Server {
 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
+
+        ArgInt('_', "history",s"History limit for alarms (def=${d.history})"),
         
         ArgCmd("server",s"Server"),
         ArgCmd("intercept",s"Intercept pipeline"),
@@ -182,8 +185,9 @@ object App extends skel.Server {
       scriptStore = c.getString("store.script").getOrElse(d.scriptStore),
       abiStore = c.getString("store.abi").getOrElse(d.abiStore),
       
-      cmd = c.getCmd().getOrElse(d.cmd),
-      
+      history = c.getInt("history").getOrElse(d.history),     
+
+      cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),
     )
 

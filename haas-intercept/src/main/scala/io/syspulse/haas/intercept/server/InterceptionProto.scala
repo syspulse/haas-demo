@@ -24,7 +24,9 @@ final case class InterceptionCreateReq(
   bid:Option[Blockchain.ID] = None,
   entity:Option[String] = Some("tx"), 
   abi:Option[String] = None,
-  contract:Option[String] = None)
+  contract:Option[String] = None,
+  limit:Option[Int] = None // history limit
+)
 
 final case class InterceptionActionRes(status: String,id:Option[String])
 final case class InterceptionRes(interception: Option[Interception])
@@ -35,7 +37,7 @@ object InterceptionProto extends JsonCommon {
 
   implicit val jf_ix = jsonFormat1(Interceptions)
   implicit val jf_ixs = jsonFormat1(InterceptionRes)
-  implicit val jf_CreateReq = jsonFormat9(InterceptionCreateReq)
+  implicit val jf_CreateReq = jsonFormat10(InterceptionCreateReq)
   implicit val jf_ActionRes = jsonFormat2(InterceptionActionRes)
   implicit val jf_5 = jsonFormat2(InterceptionCommandReq)
 }

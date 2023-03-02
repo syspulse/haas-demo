@@ -33,13 +33,16 @@ case class Interception(
   
   var status:Interception.Status = Interception.STARTED,
   var count:Long = 0L,
-  var history:List[InterceptionAlarm] =  List()) extends Ingestable {
+  var history:List[InterceptionAlarm] =  List(),
+  limit:Option[Int] = Some(Interception.HISTORY_LIMIT),
+  
+  ) extends Ingestable {
   
   def ++(value:Long = 1) = count = count + value
 
   def remember(alarm:InterceptionAlarm) = {
-    if(history.size > Interception.HISTORY_LIMIT)
-      history = history.take(Interception.HISTORY_LIMIT - 1)
+    if(history.size > limit.getOrElse(Interception.HISTORY_LIMIT))
+      history = history.take(limit.getOrElse(Interception.HISTORY_LIMIT) - 1)
     
     // add to the head to have it sorted
     history = history.+:(alarm)    

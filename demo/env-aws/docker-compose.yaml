@@ -107,7 +107,7 @@ services:
     environment:
       JAVA_OPTS: -Dgod
       DATASTORE: dir:///store/label
-      # DATASTORE: dir:///data
+      #DATASTORE: dir:///data
       #DATASTORE: resources://
 
   skel-auth:
@@ -184,22 +184,29 @@ services:
     command: server
     environment:
       #JAVA_OPTS: -Dgod      
-      FEED_TX: kafka://broker-1.hacken.dev:9092/transactions/intercept/latest
-      FEED_BLOCK: kafka://broker-1.hacken.dev:9092/blocks/intercept/latest
-      FEED_TOKEN: kafka://broker-1.hacken.dev:9092/token_transfers/intercept/latest
-      FEED_EVENT: kafka://broker-1.hacken.dev:9092/logs/intercept/latest
-      #DATASTORE: mem://
+
+      BID: ethereum,zksync
+
+      FEED_ETHEREUM_TX: kafka://broker-1.hacken.dev:9092/transactions/intercept/latest
+      FEED_ETHEREUM_BLOCK: kafka://broker-1.hacken.dev:9092/blocks/intercept/latest
+      FEED_ETHEREUM_TOKEN: kafka://broker-1.hacken.dev:9092/token_transfers/intercept/latest
+      FEED_ETHEREUM_EVENT: kafka://broker-1.hacken.dev:9092/logs/intercept/latest
+
+      FEED_ZKSYNC_TX: kafka://broker-1.hacken.dev:9092/zksync.mainnet.transactions/intercept/latest
+      FEED_ZKSYNC_BLOCK: kafka://broker-1.hacken.dev:9092/zksync.mainnet.blocks/intercept/latest
+      FEED_ZKSYNC_TOKEN: kafka://broker-1.hacken.dev:9092/zksync.mainnet.token_transfers/intercept/latest
+      FEED_ZKSYNC_EVENT: kafka://broker-1.hacken.dev:9092/zksync.mainnet.logs/intercept/latest
+      
       DATASTORE: dir:///store/intercept
       STORE_SCRIPT: dir:///store/script
       STORE_ABI: dir:///store/abi
-      # STORE_EVENT: dir:///store/abi/event
-      # STORE_FUNC: dir:///store/abi/func
       # this is temporary, must be replace with NotificationService URI
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
       SMTP_FROM: ${SMTP_FROM}
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
+      HISTORY: 100
 
   haas-abi:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-abi:latest

@@ -47,12 +47,12 @@ object InterceptionRegistry {
   // this var reference is unfortunately needed for Metrics access
   var store: InterceptionStore = null //new InterceptionStoreDB //new InterceptionStoreCache
 
-  def apply(store: InterceptionStore,storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: InterceptionStore,storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(implicit config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
-    registry(store,storeScript,abiStore,interceptors)
+    registry(store,storeScript,abiStore,interceptors)(config)
   }
 
-  private def registry(store: InterceptionStore, storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]]): Behavior[io.syspulse.skel.Command] = {
+  private def registry(store: InterceptionStore, storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
     Behaviors.receiveMessage {
@@ -165,7 +165,8 @@ object InterceptionRegistry {
               c.uid, 
               entity, 
               if(abiId.isBlank) None else Some(abiId),
-              bid = Some(bid)
+              bid = Some(bid),
+              limit = c.limit.orElse(Some(config.history))
             )
             
             log.info(s"${ix}")
