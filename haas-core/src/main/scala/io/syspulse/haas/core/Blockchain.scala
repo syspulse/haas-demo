@@ -10,4 +10,7 @@ case class Blockchain(
 
 object Blockchain {
   type ID = String
+
+  val ETHEREUM_MAINNET:ID = "ethereum"
+  val ZKSYNC_MAINNET:ID = "zksync"
 }

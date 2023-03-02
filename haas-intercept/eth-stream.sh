@@ -11,8 +11,8 @@ OUTPUT=${2}
 #ENTITY=${ENTITY:-token_transfer}
 ENTITY=${ENTITY:-transaction}
 
-#DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
-DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+#DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+DOCKER=${DOCKER:-none}
 DOCKER_STATE=${DOCKER_STATE:-state/}
 
 LAST_BLOCK=${LAST_BLOCK:-last_synced_block.txt}

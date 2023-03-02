@@ -29,9 +29,10 @@ import io.syspulse.haas.intercept.Interception
 
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
+import io.syspulse.haas.core.Blockchain
 
-class InterceptorTokenTransfer(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends Interceptor[TokenTransfer](interceptionStore,scriptStore,alarmThrottle,interceptions) {
+class InterceptorTokenTransfer(bid:Blockchain.ID,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends Interceptor[TokenTransfer](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
   
   def entity():String = "token"
   override def decode(t:TokenTransfer):Map[String,Any] = {

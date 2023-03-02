@@ -34,9 +34,10 @@ import io.syspulse.haas.intercept.alarm.Alarms
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.store.ScriptStore
 import scala.util.Failure
+import io.syspulse.haas.core.Blockchain
 
-abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions0:Seq[Interception]) {
-  protected val log = Logger(s"${this.getClass()}")
+abstract class Interceptor[T](bid:Blockchain.ID,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions0:Seq[Interception]) {
+  protected val log = Logger(s"${this.getClass()}-${bid}")
   
   //scripts:Seq[String],alarmUri:Seq[String]
 
@@ -47,10 +48,12 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
   var interceptions:Map[Interception.ID,Interception] = 
     interceptionStore
       .all
+      .filter(ix => ix.bid == Some(bid) || (ix.bid == None && bid == Blockchain.ETHEREUM_MAINNET ))
       .filter(ix => ix.entity == entity())
       .map(ix => ix.id -> ix)
       .toMap ++
     interceptions0
+      .filter(ix => ix.bid == Some(bid) || (ix.bid == None && bid == Blockchain.ETHEREUM_MAINNET ))
       .filter(ix => ix.entity == entity())
       .map(ix => ix.id -> ix)
       .toMap
@@ -126,6 +129,7 @@ abstract class Interceptor[T](interceptionStore:InterceptionStore,scriptStore:Sc
                   val ia = InterceptionAlarm(
                     System.currentTimeMillis(),
                     ix.id,
+                    bid = ix.bid,
                     onchainData.get("block_number").getOrElse(0L).asInstanceOf[Long].toLong,
                     onchainData.get("hash").getOrElse("").asInstanceOf[String],
                     scriptOutput,

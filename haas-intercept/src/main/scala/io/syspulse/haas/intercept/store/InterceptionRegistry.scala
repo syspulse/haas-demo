@@ -22,6 +22,7 @@ import io.syspulse.skel.crypto.eth.abi.AbiStore
 import org.checkerframework.checker.units.qual.A
 import io.syspulse.skel.crypto.eth.abi.AbiContract
 import scala.util.Failure
+import io.syspulse.haas.core.Blockchain
 
 object InterceptionRegistry {
   val log = Logger(s"${this}")
@@ -103,7 +104,6 @@ object InterceptionRegistry {
         replyTo ! Interceptions(store.search(txt))
         Behaviors.same
       
-     
       case CreateInterception(c, replyTo) =>
         log.info(s"${c}")
         for {
@@ -127,6 +127,9 @@ object InterceptionRegistry {
           }
           entity <- {
             Some(c.entity.getOrElse("tx"))
+          }
+          bid <- {
+            Some(c.bid.getOrElse(Blockchain.ETHEREUM_MAINNET).toLowerCase)
           }
           abiId <- { entity match {
             case "event" | "function" | "func" => 
@@ -154,81 +157,38 @@ object InterceptionRegistry {
               Some("")
           }}
           ix <- {
-            val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, if(abiId.isBlank) None else Some(abiId))
+            val ix = Interception(
+              c.id.getOrElse(UUID.random), 
+              c.name, 
+              script.id, 
+              c.alarm, 
+              c.uid, 
+              entity, 
+              if(abiId.isBlank) None else Some(abiId),
+              bid = Some(bid)
+            )
+            
             log.info(s"${ix}")
             Some(ix)
           }
-          store1 <- interceptors.get(entity) match {
-            case Some(interceptor) => 
-              val store1 = store.+(ix)
-              interceptor.+(ix)
-              replyTo ! Success(ix)
-              Some(store1)
-            case None => 
-              log.warn(s"Interceptor not found: entity='${entity}'")
-              replyTo ! Failure(new Exception(s"Interceptor not found: entity='${entity}'"))
-              None
+          store1 <- {
+            val ixLocator = s"${bid}.${entity}"
+            interceptors.get(ixLocator) match {
+              case Some(interceptor) => 
+                val store1 = store.+(ix)
+                interceptor.+(ix)
+                replyTo ! Success(ix)
+                Some(store1)
+              case None => 
+                log.warn(s"Interceptor not found: '${ixLocator}'")
+                replyTo ! Failure(new Exception(s"Interceptor not found: '${ixLocator}'"))
+                None
+            }
           }
                   
         } yield store1
           
-        Behaviors.same
-                
-        // val script = 
-        //   // special case to reference script body
-        //   if(c.script.trim.startsWith("ref://")) {
-        //     val scriptId = c.script.trim.stripPrefix("ref://")
-        //     storeScript.?(scriptId) match {
-        //       case Success(s) => s
-        //       case Failure(e) => 
-        //         log.error(s"script not found: ${scriptId}")
-        //         replyTo ! Failure(e)
-        //         return Behaviors.same
-        //     }
-        //   } else {
-        //     val scriptId = Util.sha256(c.script)
-        //     val script = Script(scriptId,"js",c.script,c.name)
-        //     storeScript.+(script)
-        //     script
-        //   }
-        
-        // //val scriptId = Util.sha256(c.script)
-        // //val script = Script(scriptId,"js",src,c.name)
-        // //storeScript.+(script)
-
-        // val entity = c.entity.getOrElse("tx")
-
-        // val abiId = entity match {          
-        //   case "event" | "function" => 
-        //     if(c.abi.isDefined && c.contract.isDefined) {
-        //       val abiId = c.contract.get
-        //       abiStore.+(AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis)))
-        //       Some(abiId)
-        //     } else {
-        //       log.error(s"ABI or Contract not found: ${entity}")
-        //       replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))
-        //       return Behaviors.same
-        //     }
-        //   case _ => 
-        //     None
-        // }
-
-        // val ix = Interception(c.id.getOrElse(UUID.random), c.name, script.id, c.alarm, c.uid, entity, abiId)
-        
-        // val store1 = interceptors.get(entity) match {
-        //   case Some(interceptor) => 
-        //     val store1 = store.+(ix)
-        //     interceptor.+(ix)
-        //     replyTo ! Success(ix)
-        //     store1
-        //   case None => 
-        //     log.warn(s"Interceptor not found: entity='${entity}'")
-        //     replyTo ! Failure(new Exception(s"Interceptor not found: entity='${entity}'"))
-        //     Success(store)
-        // }
-
-        // //replyTo ! Success(ix)
-        // registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
+        Behaviors.same                      
 
       case CommandInterception(c, replyTo) =>
         val ix:Option[Interception] = c.id.flatMap(id => store.?(id).toOption)
@@ -263,7 +223,7 @@ object InterceptionRegistry {
 
         replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
         
-        registry(store1.getOrElse(store),storeScript,abiStore,interceptors)
+        Behaviors.same
 
       case GetInterceptionAbi(id,aid, replyTo) => 
         val r = abiStore.?(aid)

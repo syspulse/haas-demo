@@ -38,9 +38,10 @@ import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.skel.crypto.eth.abi.AbiStoreRepo
 import io.syspulse.skel.crypto.eth.abi.AbiStore
+import io.syspulse.haas.core.Blockchain
 
-class InterceptorERC20(abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends InterceptorTx(interceptionStore,scriptStore,alarmThrottle,interceptions) {
+class InterceptorERC20(bid:Blockchain.ID,abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends InterceptorTx(bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
 
   override def entity():String = "erc20"
 

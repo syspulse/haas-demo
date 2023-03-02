@@ -33,9 +33,10 @@ import io.syspulse.skel.crypto.eth.abi.SignatureStore
 import io.syspulse.skel.crypto.eth.abi.EventSignature
 import io.syspulse.skel.crypto.eth.abi.AbiStore
 import io.syspulse.skel.crypto.eth.abi.AbiSignature
+import io.syspulse.haas.core.Blockchain
 
-class InterceptorEvent(abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends Interceptor[Event](interceptionStore,scriptStore,alarmThrottle,interceptions) {
+class InterceptorEvent(bid:Blockchain.ID,abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends Interceptor[Event](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
   
   def entity():String = "event"
 

@@ -15,5 +15,12 @@ import scala.util.Try
 import scala.util.Success
 import io.syspulse.skel.Ingestable
 
-case class InterceptionAlarm(ts:Long,iid:Interception.ID,block:Long,hash:String,output:String,alarm:List[String] = List()) extends Ingestable
+case class InterceptionAlarm(
+    ts:Long,
+    iid:Interception.ID,
+    bid:Option[String],
+    block:Long,
+    hash:String,
+    output:String,
+    alarm:List[String] = List()) extends Ingestable
 

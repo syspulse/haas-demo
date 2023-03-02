@@ -28,9 +28,10 @@ import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
+import io.syspulse.haas.core.Blockchain
 
-class InterceptorBlock(interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends Interceptor[Block](interceptionStore,scriptStore,alarmThrottle,interceptions) {
+class InterceptorBlock(bid:Blockchain.ID,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends Interceptor[Block](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
   
   def entity():String = "block"
   override def decode(b:Block):Map[String,Any] = {

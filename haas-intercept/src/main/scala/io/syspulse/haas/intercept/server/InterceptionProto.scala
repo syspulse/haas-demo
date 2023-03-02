@@ -12,6 +12,7 @@ import io.syspulse.skel.service.JsonCommon
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionJson
 import io.syspulse.haas.intercept.script._
+import io.syspulse.haas.core.Blockchain
 
 final case class Interceptions(interceptions: immutable.Seq[Interception])
 final case class InterceptionCreateReq(
@@ -20,6 +21,7 @@ final case class InterceptionCreateReq(
   script:String, 
   alarm:List[String], 
   uid:Option[UUID] = None, 
+  bid:Option[Blockchain.ID] = None,
   entity:Option[String] = Some("tx"), 
   abi:Option[String] = None,
   contract:Option[String] = None)
@@ -33,7 +35,7 @@ object InterceptionProto extends JsonCommon {
 
   implicit val jf_ix = jsonFormat1(Interceptions)
   implicit val jf_ixs = jsonFormat1(InterceptionRes)
-  implicit val jf_CreateReq = jsonFormat8(InterceptionCreateReq)
+  implicit val jf_CreateReq = jsonFormat9(InterceptionCreateReq)
   implicit val jf_ActionRes = jsonFormat2(InterceptionActionRes)
   implicit val jf_5 = jsonFormat2(InterceptionCommandReq)
 }

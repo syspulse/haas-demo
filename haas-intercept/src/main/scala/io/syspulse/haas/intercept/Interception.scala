@@ -21,14 +21,15 @@ import io.syspulse.skel.crypto.eth.abi.AbiStore
 import io.syspulse.haas.core.Blockchain
 
 case class Interception(
-  id:Interception.ID, name:String, 
+  id:Interception.ID, 
+  name:String, 
   scriptId:Script.ID, 
   alarm:List[String] = List(),
   uid:Option[UUID] = None, 
   entity:String = "tx",
   aid:Option[AbiStore.ID] = None,
   ts0:Long = System.currentTimeMillis(),
-  bid:Option[Blockchain.ID] = None,
+  bid:Option[Blockchain.ID] = Some(Blockchain.ETHEREUM_MAINNET),
   
   var status:Interception.Status = Interception.STARTED,
   var count:Long = 0L,
@@ -43,6 +44,8 @@ case class Interception(
     // add to the head to have it sorted
     history = history.+:(alarm)    
   }
+
+  override def toString = s"Interception(${id},${scriptId},${alarm},${uid},${entity},${aid},${ts0},${bid},${status},${count},${history.size})"
 }
 
 object Interception {

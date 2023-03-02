@@ -21,8 +21,17 @@ import io.syspulse.haas.intercept.flow.eth._
 import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.store._
 import io.syspulse.haas.intercept.server._
+import io.syspulse.haas.core.Blockchain
 
-import io.syspulse.haas.intercept.flow.eth.InterceptorTokenTransfer
+case class ConfigBlockchain(
+  bid:Blockchain.ID,
+  feedTx:String = "stdin://",
+  feedBlock:String = "null://",
+  feedToken:String = "null://",
+  feedEvent:String = "null://",
+  feedFunc:String = "null://",
+)
+
 case class Config(  
   host:String="0.0.0.0",
   port:Int=8080,
@@ -31,11 +40,15 @@ case class Config(
   feed:String = "",
   output:String = "",
   
-  feedTx:String = "null://",
+  // defaults
+  feedTx:String = "stdin://",
   feedBlock:String = "null://",
   feedToken:String = "null://",
   feedEvent:String = "null://",
   feedFunc:String = "null://",
+
+  bid:Seq[String] = Seq("ethereum"),
+  blockchains:Map[Blockchain.ID,ConfigBlockchain] = Map(),
 
   alarms:Seq[String] = Seq("stdout://"),
   alarmsThrottle:Long = 10000L,
@@ -87,11 +100,19 @@ object App extends skel.Server {
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
 
-        ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
-        ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
-        ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
-        ArgString('_', "feed.event",s"EventLog Feed (def: ${d.feedEvent})"),
-        ArgString('_', "feed.func",s"Function Tx Feed (def: ${d.feedFunc})"),
+        // ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
+        // ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
+        // ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
+        // ArgString('_', "feed.event",s"EventLog Feed (def: ${d.feedEvent})"),
+        // ArgString('_', "feed.func",s"Function Tx Feed (def: ${d.feedFunc})"),
+        
+        ArgString('_', "bid",s"Blockchains (def=${d.bid})"),
+
+        ArgString('_', "feed.{bid}.tx",s"Tx Feed"),
+        ArgString('_', "feed.{bid}.block",s"Block Feed"),
+        ArgString('_', "feed.{bid}.token",s"TokenTransfe Feed"),
+        ArgString('_', "feed.{bid}.event",s"EventLog Feed"),
+        ArgString('_', "feed.{bid}.func",s"Function Tx Feed"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -128,12 +149,22 @@ object App extends skel.Server {
       output = c.getString("output").getOrElse(d.output),
       entity = c.getString("entity").getOrElse(d.entity),
 
-      feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
-      feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
-      feedToken = c.getString("feed.token").getOrElse(d.feedToken),
-      feedEvent = c.getString("feed.event").getOrElse(d.feedEvent),
-      feedFunc = c.getString("feed.func").getOrElse(d.feedFunc),
-
+      // feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
+      // feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
+      // feedToken = c.getString("feed.token").getOrElse(d.feedToken),
+      // feedEvent = c.getString("feed.event").getOrElse(d.feedEvent),
+      // feedFunc = c.getString("feed.func").getOrElse(d.feedFunc),
+      bid = c.getListString("bid",d.bid),
+      blockchains = c.getListString("bid",d.bid).map( bid => 
+        bid -> ConfigBlockchain(bid,
+          feedTx = c.getString(s"feed.${bid}.tx").getOrElse(d.feedTx),
+          feedBlock = c.getString(s"feed.${bid}.block").getOrElse(d.feedBlock),
+          feedToken = c.getString(s"feed.${bid}.token").getOrElse(d.feedToken),
+          feedEvent = c.getString(s"feed.${bid}.event").getOrElse(d.feedEvent),
+          feedFunc = c.getString(s"feed.${bid}.func").getOrElse(d.feedFunc),
+        )
+      ).toMap,
+      
       limit = c.getLong("limit").getOrElse(d.limit),
       size = c.getLong("size").getOrElse(d.size),
 
@@ -150,8 +181,6 @@ object App extends skel.Server {
       datastore = c.getString("datastore").getOrElse(d.datastore),
       scriptStore = c.getString("store.script").getOrElse(d.scriptStore),
       abiStore = c.getString("store.abi").getOrElse(d.abiStore),
-      // eventStore = c.getString("store.event").getOrElse(d.eventStore),
-      // funcStore = c.getString("store.func").getOrElse(d.funcStore),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
@@ -184,25 +213,6 @@ object App extends skel.Server {
       }
     }
 
-    // val eventStore = config.eventStore.split("://").toList match {
-    //   case "dir" :: dir :: _ => new EventSignatureStoreDir(dir)
-    //   case dir :: Nil => new EventSignatureStoreDir(dir)
-    //   case "mem" :: _ => new SignatureStoreMem[EventSignature]()
-    //   case _ => new SignatureStoreMem[EventSignature]()
-    // }
-
-    // val funcStore = config.funcStore.split("://").toList match {
-    //   case "dir" :: dir :: _ => new FuncSignatureStoreDir(dir)
-    //   case dir :: Nil => new FuncSignatureStoreDir(dir)
-    //   case "mem" :: _ => new SignatureStoreMem[FuncSignature]()
-    //   case _ => new SignatureStoreMem[FuncSignature]()
-    // }
-
-    // val abiStore = config.abiStore.split("://").toList match {
-    //   case "dir" :: dir :: _ => new AbiStoreDir(dir,funcStore,eventStore) 
-    //   case dir :: Nil => new AbiStoreDir(dir,funcStore,eventStore) 
-    //   case _ => new AbiStoreDir(config.abiStore,funcStore,eventStore) 
-    // }
     val abiStore:AbiStore = config.abiStore.split("://").toList match {
       case "dir" :: dir :: Nil => 
         new AbiStoreDir(dir + "/contract", 
@@ -225,20 +235,52 @@ object App extends skel.Server {
     
     val (r,pp) = config.cmd match {
       case "server" => {
-        val ixTx = new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-        val ppTx = new PipelineEthInterceptTx(if(config.feedTx.nonEmpty) config.feedTx else config.feed, config.output,ixTx)(config)
 
-        val ixBlock = new InterceptorBlock(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-        val ppBlock = new PipelineEthInterceptBlock(if(config.feedBlock.nonEmpty) config.feedBlock else config.feed, config.output,ixBlock)(config)
+        val blockchainIx = config.blockchains.values.flatMap( b => {
+          val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppTx = new PipelineEthInterceptTx(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
+          //val ppTx = new PipelineEthInterceptTx(if(config.feedTx.nonEmpty) config.feedTx else config.feed, config.output,ixTx)(config)
 
-        val ixToken = new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-        val ppToken = new PipelineEthInterceptTokenTransfer(if(config.feedToken.nonEmpty) config.feedToken else config.feed, config.output,ixToken)(config)
+          val ixBlock = new InterceptorBlock(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppBlock = new PipelineEthInterceptBlock(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedBlock else config.feed, config.output,ixBlock)(config)
+          //val ppBlock = new PipelineEthInterceptBlock(if(config.feedBlock.nonEmpty) config.feedBlock else config.feed, config.output,ixBlock)(config)
 
-        val ixEvent = new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-        val ppEvent = new PipelineEthInterceptEvent(if(config.feedEvent.nonEmpty) config.feedEvent else config.feed, config.output,ixEvent)(config)
+          val ixToken = new InterceptorTokenTransfer(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppToken = new PipelineEthInterceptTokenTransfer(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedToken else config.feed, config.output,ixToken)(config)
+          //val ppToken = new PipelineEthInterceptTokenTransfer(if(config.feedToken.nonEmpty) config.feedToken else config.feed, config.output,ixToken)(config)
 
-        val ixFunc = new InterceptorFunc(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-        val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
+          val ixEvent = new InterceptorEvent(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppEvent = new PipelineEthInterceptEvent(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedEvent else config.feed, config.output,ixEvent)(config)
+          //val ppEvent = new PipelineEthInterceptEvent(if(config.feedEvent.nonEmpty) config.feedEvent else config.feed, config.output,ixEvent)(config)
+
+          val ixFunc = new InterceptorFunc(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppFunc = new PipelineEthInterceptFunc(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output,ixFunc)(config)
+          //val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
+
+          // start pipelines
+          val r1 = ppTx.run()
+          val r2 = ppBlock.run()
+          val r3 = ppToken.run()
+          val r4 = ppEvent.run()
+          val r5 = ppFunc.run()
+
+          val blockchainIx = List(
+            s"${b.bid}.${ixTx.entity()}" -> ixTx,
+            s"${b.bid}.${ixBlock.entity()}" -> ixBlock,
+            s"${b.bid}.${ixToken.entity()}" -> ixToken,
+            s"${b.bid}.${ixEvent.entity()}" -> ixEvent,
+            s"${b.bid}.${ixFunc.entity()}" -> ixFunc,
+          )
+
+          blockchainIx
+
+        }).toMap
+        
 
         run( config.host, config.port, config.uri, c,
           Seq(
@@ -246,24 +288,26 @@ object App extends skel.Server {
             (InterceptionRegistry(datastoreInterceptions,
                                   datastoreScripts,
                                   abiStore,
-                                  Map(
-                                    ixTx.entity() -> ixTx,
-                                    ixBlock.entity() -> ixBlock,
-                                    ixToken.entity() -> ixToken,
-                                    ixEvent.entity() -> ixEvent,
-                                    ixFunc.entity() -> ixFunc,
-                                  )),
+                                  // Map(
+                                  //   ixTx.entity() -> ixTx,
+                                  //   ixBlock.entity() -> ixBlock,
+                                  //   ixToken.entity() -> ixToken,
+                                  //   ixEvent.entity() -> ixEvent,
+                                  //   ixFunc.entity() -> ixFunc,
+                                  // )
+                                  blockchainIx
+                                  ),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
         )
-        // start pipeline
-        val r1 = ppTx.run()
-        val r2 = ppBlock.run()
-        val r3 = ppToken.run()
-        val r4 = ppEvent.run()
-        val r5 = ppFunc.run()
-        
-        (r1,Some(ppTx))
+        // // start pipeline
+        // val r1 = ppTx.run()
+        // val r2 = ppBlock.run()
+        // val r3 = ppToken.run()
+        // val r4 = ppEvent.run()
+        // val r5 = ppFunc.run()        
+        //(r1,Some(ppTx))
+        (Future.never,None)
       }
 
       case "intercept" => {        
@@ -287,23 +331,23 @@ object App extends skel.Server {
         val pp = config.entity match {
           case "block" =>
             new PipelineEthInterceptBlock(config.feed,config.output, 
-                new InterceptorBlock(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
+                new InterceptorBlock(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "tx" =>
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorTx(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
+                new InterceptorTx(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "token" =>
             new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
-                new InterceptorTokenTransfer(datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
+                new InterceptorTokenTransfer(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
           case "erc20" =>
             // not useful Interceptor, only for Testing
             new PipelineEthInterceptTx(config.feed,config.output, 
-                new InterceptorERC20(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+                new InterceptorERC20(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "event" | "log" =>
             new PipelineEthInterceptEvent(config.feed,config.output, 
-                new InterceptorEvent(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+                new InterceptorEvent(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "func" =>
             new PipelineEthInterceptFunc(config.feed,config.output, 
-                new InterceptorFunc(abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+                new InterceptorFunc(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
         }
 
         (pp.run(),Some(pp))
@@ -319,7 +363,8 @@ object App extends skel.Server {
       case akka.NotUsed => 
     }
 
-    Console.err.println(s"Result: ${pp.map(_.countObj)}")
+    //Console.err.println(s"Result: ${pp.map(_.countObj.value)}")
+    Console.err.println(s"Result: ${r}")
     sys.exit(0)
   }
 }

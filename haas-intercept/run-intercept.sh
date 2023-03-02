@@ -23,7 +23,7 @@ S3_BUCKET=haas-data-dev
 # >&2 echo "script: $SCRIPT"
 >&2 echo "ETH_RPC: $ETH_RPC"
 
-if [ "$DOCKER" != "" ]; then
+if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ]; then
   >&2 echo "DOCKER: $DOCKER"
   case "$DOCKER" in
      "aws")
