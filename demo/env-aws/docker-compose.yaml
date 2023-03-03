@@ -183,7 +183,8 @@ services:
       - demo
     command: server
     environment:
-      #JAVA_OPTS: -Dgod      
+      #JAVA_OPTS: -Dgod
+      LOGGING: root:INFO,io.syspulse:INFO
 
       BID: ethereum,zksync
 
