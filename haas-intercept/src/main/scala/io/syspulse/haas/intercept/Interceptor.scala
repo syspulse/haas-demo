@@ -62,11 +62,11 @@ abstract class Interceptor[T](bid:Blockchain.ID,interceptionStore:InterceptionSt
 
   def +(ix:Interception) = {
     interceptions = interceptions + (ix.id -> ix)
-    log.debug(s"interceptions = ${interceptions}")
+    log.debug(s"interceptions: ${interceptions}")
   }
   def -(id:Interception.ID) = {
     interceptions = interceptions - (id)
-    log.debug(s"interceptions = ${interceptions}")
+    log.debug(s"interceptions: ${interceptions}")
   }
 
   def stop(id:Interception.ID) = {
@@ -77,14 +77,15 @@ abstract class Interceptor[T](bid:Blockchain.ID,interceptionStore:InterceptionSt
     // mutable, nothing to do
   }
 
-  log.info(s"interceptions: ${interceptions}")
-
+  log.info(s"interceptions: ${bid}: ${interceptions}")
+  
   val alarms = new Alarms(alarmThrottle,interceptions)
   
   def decode(t:T):Map[String,Any]
  
   def scan(t:T):Seq[InterceptionAlarm] = {
-
+    log.debug(s"ixx(${interceptions.size}): ${bid}: ${this.entity()}: ${t}")
+    
     // not interceptions
     if(interceptions.size == 0) {
       return Seq()

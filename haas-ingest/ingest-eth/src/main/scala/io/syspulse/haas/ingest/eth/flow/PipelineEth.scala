@@ -58,7 +58,11 @@ abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](feed:Str
 
   //def transform(o: O) = Seq(o)
 
-  def process:Flow[T,O,_] = Flow[T].map(t => convert(t))
+  def process:Flow[T,O,_] = Flow[T].map(t => {
+    val o = convert(t)
+    //log.debug(s"${o}")
+    o
+  })
 
   override def source() = {
     feed.split("://").toList match {

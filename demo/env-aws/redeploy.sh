@@ -2,6 +2,8 @@
 
 DOCKER=$1
 
+../../infra/aws/aws-ecr-login.sh
+
 if [[ $DOCKER = skel-* ]]; then
    REPO="syspulse"
 else

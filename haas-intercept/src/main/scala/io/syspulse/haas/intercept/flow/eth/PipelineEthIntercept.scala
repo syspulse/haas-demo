@@ -42,7 +42,7 @@ import io.syspulse.haas.intercept.InterceptionJson._
 trait PipelineEthIntercept[O] {
   def interceptor:Interceptor[O] = ???
   
-  def transform(t: O): Seq[InterceptionAlarm] = {
+  def transform(t: O): Seq[InterceptionAlarm] = { 
     interceptor.scan(t)
   }
 }

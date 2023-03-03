@@ -187,10 +187,10 @@ services:
 
       BID: ethereum,zksync
 
-      FEED_ETHEREUM_TX: kafka://broker-1.hacken.dev:9092/transactions/intercept/latest
-      FEED_ETHEREUM_BLOCK: kafka://broker-1.hacken.dev:9092/blocks/intercept/latest
-      FEED_ETHEREUM_TOKEN: kafka://broker-1.hacken.dev:9092/token_transfers/intercept/latest
-      FEED_ETHEREUM_EVENT: kafka://broker-1.hacken.dev:9092/logs/intercept/latest
+      FEED_ETHEREUM_TX: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.transactions/intercept/latest
+      FEED_ETHEREUM_BLOCK: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.blocks/intercept/latest
+      FEED_ETHEREUM_TOKEN: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.token_transfers/intercept/latest
+      FEED_ETHEREUM_EVENT: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.logs/intercept/latest
 
       FEED_ZKSYNC_TX: kafka://broker-1.hacken.dev:9092/zksync.mainnet.transactions/intercept/latest
       FEED_ZKSYNC_BLOCK: kafka://broker-1.hacken.dev:9092/zksync.mainnet.blocks/intercept/latest

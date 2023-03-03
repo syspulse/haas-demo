@@ -74,6 +74,10 @@ OPT=-Dgod ETH_RPC=http://geth2.hacken.cloud:8545 ./eth-stream-intercept-event.sh
 OPT=-Dgod ETH_RPC=http://geth.hacken.cloud:8545 DOCKER=none FEED_ETHEREUM_TX=stdin:// ./eth-stream-intercept-tx.sh server --bid=ethereum,zksync
 ```
 
+```
+OPT=-Dgod ETH_RPC=https://zksync2-testnet.zksync.dev DOCKER=none FEED_ETHEREUM_TX=stdin:// ./eth-stream-intercept-tx.sh server --bid=ethereum,zksync
+```
+
 Configuration file `application.conf`:
 
 ```

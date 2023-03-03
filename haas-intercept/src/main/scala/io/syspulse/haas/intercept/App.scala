@@ -139,9 +139,11 @@ object App extends skel.Server {
         ArgCmd("server",s"Server"),
         ArgCmd("intercept",s"Intercept pipeline"),
         
-        ArgParam("<params>","")
+        ArgParam("<params>",""),
+        ArgLogging()
+        
       ).withExit(1)
-    ))
+    )).withLogging()
 
     implicit val config = Config(
       host = c.getString("http.host").getOrElse(d.host),
@@ -240,7 +242,7 @@ object App extends skel.Server {
     val (r,pp) = config.cmd match {
       case "server" => {
 
-        val blockchainIx = config.blockchains.values.flatMap( b => {
+        val blockchainInterceptors = config.blockchains.values.map( b => {
           val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppTx = new PipelineEthInterceptTx(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
@@ -267,11 +269,11 @@ object App extends skel.Server {
           //val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
 
           // start pipelines
-          val r1 = ppTx.run()
-          val r2 = ppBlock.run()
-          val r3 = ppToken.run()
-          val r4 = ppEvent.run()
-          val r5 = ppFunc.run()
+          // val r1 = ppTx.run()
+          // val r2 = ppBlock.run()
+          // val r3 = ppToken.run()
+          // val r4 = ppEvent.run()
+          // val r5 = ppFunc.run()
 
           val blockchainIx = List(
             s"${b.bid}.${ixTx.entity()}" -> ixTx,
@@ -281,10 +283,11 @@ object App extends skel.Server {
             s"${b.bid}.${ixFunc.entity()}" -> ixFunc,
           )
 
-          blockchainIx
+          (blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc)
 
-        }).toMap
+        })
         
+        log.info(s"blockchains: ${blockchainInterceptors.flatMap(_._1).toMap}")
 
         run( config.host, config.port, config.uri, c,
           Seq(
@@ -299,17 +302,21 @@ object App extends skel.Server {
                                   //   ixEvent.entity() -> ixEvent,
                                   //   ixFunc.entity() -> ixFunc,
                                   // )
-                                  blockchainIx
+                                  blockchainInterceptors.flatMap(_._1).toMap
                                   ),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )
           )
         )
-        // // start pipeline
-        // val r1 = ppTx.run()
-        // val r2 = ppBlock.run()
-        // val r3 = ppToken.run()
-        // val r4 = ppEvent.run()
-        // val r5 = ppFunc.run()        
+
+        blockchainInterceptors.foreach{ case(blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc) => 
+          // start pipelines
+          val r1 = ppTx.run()
+          val r2 = ppBlock.run()
+          val r3 = ppToken.run()
+          val r4 = ppEvent.run()
+          val r5 = ppFunc.run()
+        }
+        
         //(r1,Some(ppTx))
         (Future.never,None)
       }
