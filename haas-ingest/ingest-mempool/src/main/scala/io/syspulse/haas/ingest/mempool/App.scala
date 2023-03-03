@@ -21,7 +21,7 @@ case class Config(
   size:Long = Long.MaxValue,
   limit:Long = Long.MaxValue,
   freq: Long = 0L,
-  delimiter:String = "\n",//"\r\n",
+  delimiter:String = "", //"\n",//"\r\n", // default is '' because mempool is one huge chunk
   buffer:Int = 20 * 1024*1024, // Mempools can be huge !
   throttle:Long = 0L,
   throttleSource:Long = 1000L,

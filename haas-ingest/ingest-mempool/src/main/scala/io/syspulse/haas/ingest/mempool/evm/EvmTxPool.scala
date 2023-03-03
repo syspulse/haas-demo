@@ -7,6 +7,8 @@ import io.syspulse.skel.util.Util
 import io.syspulse.haas.core.DataSource
 import io.syspulse.haas.core.TokenBlockchain
 
+import spray.json._
+
 case class EvmTx(
   ts:Long,
   pool:String, // queued, pending
@@ -29,7 +31,11 @@ case class EvmTx(
   v: Byte,
   r: String,
   s: String
-) extends Ingestable
+) extends Ingestable {
+  import EvmTxPoolJson._
+  // default is json interchange format
+  override def toLog = this.toJson.compactPrint
+}
 
 case class EvmAccessList(address:String,storageKeys:List[String])
 

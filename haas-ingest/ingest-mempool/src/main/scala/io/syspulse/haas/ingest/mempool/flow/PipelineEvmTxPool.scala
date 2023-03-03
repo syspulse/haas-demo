@@ -38,7 +38,7 @@ import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
 import io.syspulse.haas.ingest.mempool.MempoolJson._
 
 class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config) 
-  extends Pipeline[EvmTx,EvmTx,MempoolTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer){
+  extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer){
   
   protected val log = Logger(s"${this}")
 
@@ -50,11 +50,11 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
     feed.split("://").toList match {
       case "http" :: _ | "https" :: _ => {
         val reqs = {
-          val id = 0
+          val id = System.currentTimeMillis() / 1000L
           val json = s"""{
                 "jsonrpc":"2.0","method":"txpool_content",
                 "params":[],
-                "id":"${id}"
+                "id":${id}
               }""".trim.replaceAll("\\s+","")
           
           log.info(s"json='${json}'")
@@ -76,7 +76,9 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
         .via(
           Flows.fromHttpListAsFlow(Seq(reqs), 
             par = 1, 
-            frameDelimiter = config.delimiter,frameSize = config.buffer, throttle = config.throttleSource)
+            frameDelimiter = config.delimiter,
+            frameSize = config.buffer, 
+            throttle = config.throttleSource)
         )
         sourceHttp
       }
@@ -104,9 +106,8 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
             Seq()
         }
       } else {
-        val price = data.split(",").toList match {
+        val m = data.split(",").toList match {
           case rpc :: id :: result :: Nil => 
-            //Some(MempoolEVM(rpc,id,result))
             log.error(s"not implemented: '${data}'")
             None
           case _ => {
@@ -114,8 +115,7 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
             None
           }
         }
-        //log.info(s"price=${price}")
-        price.toSeq
+        m.toSeq
       }
     } catch {
       case e:Exception => 
@@ -126,22 +126,23 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
 
   def process:Flow[EvmTx,EvmTx,_] = Flow[EvmTx].map(v => v)
 
-  def transform(etx: EvmTx): Seq[MempoolTx] = {        
-    Seq(MempoolTx(
-      ts = etx.ts,
-      pool = (if(etx.pool == "pending") 0 else 1),
-      from = etx.from,
-      gas = etx.gas,
-      p = etx.gasPrice,
-      fee = etx.maxFeePerGas,
-      tip = etx.maxPriorityFeePerGas,
-      hash = etx.hash,
-      inp = etx.input,
-      non = etx.nonce,
-      to = etx.to,
-      v = etx.value,
-      typ = etx.`type`,
-      sig = s"${etx.r}:${etx.s}:${etx.v}"
-    ))
+  def transform(etx: EvmTx): Seq[EvmTx] = {        
+    Seq(etx)
+    // Seq(MempoolTx(
+    //   ts = etx.ts,
+    //   pool = (if(etx.pool == "pending") 0 else 1),
+    //   from = etx.from,
+    //   gas = etx.gas,
+    //   p = etx.gasPrice,
+    //   fee = etx.maxFeePerGas,
+    //   tip = etx.maxPriorityFeePerGas,
+    //   hash = etx.hash,
+    //   inp = etx.input,
+    //   non = etx.nonce,
+    //   to = etx.to,
+    //   v = etx.value,
+    //   typ = etx.`type`,
+    //   sig = s"${etx.r}:${etx.s}:${etx.v}"
+    // ))
   }
 }
