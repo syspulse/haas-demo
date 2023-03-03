@@ -140,7 +140,7 @@ object App {
             
         }
 
-        Console.err.println(s"Tokens: ${pp.countInput},${pp.countObj},${pp.countOutput}")
+        Console.err.println(s"Prices: ${pp.countInput.get()},${pp.countObj.get},${pp.countOutput.get}")
         sys.exit(0)        
       }
 

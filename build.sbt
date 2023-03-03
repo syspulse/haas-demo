@@ -485,3 +485,28 @@ lazy val haas_abi = (project in file("haas-abi"))
     ),
   )
 
+lazy val ingest_mempool = (project in file("haas-ingest/ingest-mempool"))
+  .dependsOn(haas_core,ingest_coingecko)
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .settings (
+    
+    sharedConfig,
+    sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
+
+    //appAssemblyConfig("ingest-mempool","io.syspulse.haas.ingest.mempool.App"),
+    appDockerConfig("ingest-mempool","io.syspulse.haas.ingest.mempool.App"),
+    
+    libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
+      libSkelCore,
+      libSkelIngest,
+      libSkelIngestFlow,
+      libSkelIngestElastic,
+      libUpickleLib
+    ),
+     
+  )
+
