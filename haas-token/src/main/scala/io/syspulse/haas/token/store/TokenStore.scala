@@ -20,18 +20,18 @@ trait TokenStore extends Store[Token,ID] {
   
   def del(id:ID):Try[TokenStore]
   
-  def ?(ids:Seq[ID]):Seq[Token]
   def all:Seq[Token]
   def size:Long
 
-  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens
+  def search(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens
+  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens
 
   def ???(from:Option[Int],size:Option[Int]):Tokens
 
   def connect(uri:String,index:String):TokenStore = this
 
   def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens
-  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens
+  
   def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens
   def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens
 }

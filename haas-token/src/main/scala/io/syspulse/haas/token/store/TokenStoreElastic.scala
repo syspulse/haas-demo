@@ -105,7 +105,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     }
   }
 
-   def ?(ids:Seq[ID]):Seq[Token] = {
+   override def ??(ids:Seq[ID]):Seq[Token] = {
       val q = ids.foldLeft(ElasticDsl.search(elasticUri.index))( (e,id) => e.termQuery(("id",id)))
       val r = { client.execute { 
         q        
@@ -114,7 +114,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
       r.result.to[Token].toSeq 
    }
 
-  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {
+  def search(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {
     val r = client.execute {
       ElasticDsl
         .search(elasticUri.index)

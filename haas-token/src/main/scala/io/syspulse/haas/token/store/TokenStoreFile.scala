@@ -13,15 +13,15 @@ import os._
 
 import spray.json._
 import DefaultJsonProtocol._
-import io.syspulse.haas.ingest.gecko.CoinInfo
-import io.syspulse.haas.ingest.gecko.CoingeckoJson
-import io.syspulse.haas.ingest.gecko._
+import io.syspulse.haas.ingest.coingecko.CoinInfo
+import io.syspulse.haas.ingest.coingecko.CoinGeckoTokenJson
+import io.syspulse.haas.ingest.coingecko._
 import io.syspulse.haas.core.DataSource
 import io.syspulse.haas.core.TokenBlockchain
 
 // Preload from file during start
 class TokenStoreFile(file:String = "store/tokens.json") extends TokenStoreMem {
-  import CoingeckoJson._
+  import CoinGeckoTokenJson._
 
   load(file)
 

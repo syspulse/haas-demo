@@ -40,17 +40,17 @@ class TokenStoreMem extends TokenStore {
     if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
   }
 
-    def ?(id:ID):Try[Token] = tokens.get(id) match {
+  def ?(id:ID):Try[Token] = tokens.get(id) match {
     case Some(t) => Success(t)
     case None => Failure(new Exception(s"not found: ${id}"))
   }
 
-  def ?(ids:Seq[ID]):Seq[Token] = {
+  override def ??(ids:Seq[ID]):Seq[Token] = {
     log.info(s"ids = ${ids}")
     ids.flatMap(id => tokens.get(id.trim))
   }
 
-  def ??(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {    
+  def search(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = {    
     val tt = tokens.values.filter(v => {
         txt.filter( txt => 
           //txt.trim.size >= 3 && 
@@ -68,14 +68,14 @@ class TokenStoreMem extends TokenStore {
     Tokens(tt2,Some(tt.size))
   }
 
-  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt.split(",").toSeq,from,size)
+  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = search(txt.split(",").toSeq,from,size)
   def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = 
-    ??(txt.split(",").toSeq.flatMap(txt => if(txt.trim.size >=3) Some(s".*${txt}.*") else None),from,size)
+    search(txt.split(",").toSeq.flatMap(txt => if(txt.trim.size >=3) Some(s".*${txt}.*") else None),from,size)
 
-  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = ??(txt.split(",").toSeq,from,size)
+  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = search(txt.split(",").toSeq,from,size)
   def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = 
     if(txt.size <3 )
       Tokens(Seq(),Some(0))
     else
-      ??(Seq(txt + ".*"),from,size)
+      search(Seq(txt + ".*"),from,size)
 }

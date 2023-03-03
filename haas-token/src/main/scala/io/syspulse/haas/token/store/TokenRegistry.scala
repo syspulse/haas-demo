@@ -54,12 +54,12 @@ object TokenRegistry {
         Behaviors.same
 
       case GetToken(ids, replyTo) =>
-        val tt = store.?(ids)
+        val tt = store.??(ids)
         replyTo ! Tokens(tt,Some(tt.size))
         Behaviors.same
 
       case GetTokenByAddr(addrs, replyTo) =>
-        val t = store.??(addrs,Some(0),Some(addrs.size))
+        val t = store.search(addrs,Some(0),Some(addrs.size))
         // replyTo ! (t.tokens match {
         //   case Seq(t) => Success(t)
         //   case _ => Failure(new Exception(s"not found: ${addr}"))
