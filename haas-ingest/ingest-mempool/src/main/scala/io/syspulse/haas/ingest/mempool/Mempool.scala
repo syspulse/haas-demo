@@ -12,12 +12,12 @@ case class MempoolTx(
   from: String,
   gas: Long,
   p: BigInt,
-  fee: BigInt,
-  tip: BigInt,
+  fee: Option[BigInt], // old pre EIP-1155
+  tip: Option[BigInt], // old transactions without tip
   hash: String,
   inp: String,
   non: Long,
-  to: String,
+  to: Option[String],
   v: BigInt,
   typ: Int,
   sig: String
