@@ -35,7 +35,7 @@ import akka.http.javadsl.model.ContentType
 
 import io.syspulse.haas.ingest.mempool.evm.{EvmTx,EvmTxPool}
 import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
-import io.syspulse.haas.ingest.mempool.MempoolJson._
+import io.syspulse.haas.serde.MempoolJson._
 
 class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config) 
   extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer){

@@ -19,7 +19,7 @@ curl -i -H "Content-Type: application/json" -X POST http://geth2.hacken.cloud:85
 Ingester is optimized for this flow:
 
 ```
-[EVM] -> [ingest-mempool(entity=evm)] --(json)--> [KAFKA] --(json)--> [ingest-mempool(entity=mempool)] --(csv)--> [file.csv]
+[EVM] -> [ingest-mempool(entity=evm)] --(json)--> [kafka://] --(json)--> [ingest-mempool(entity=mempool)] --(csv)--> [fs3://file.csv]
 ```
 
 ### Ingest from EVM node:

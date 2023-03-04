@@ -31,8 +31,10 @@ import java.util.concurrent.TimeUnit
 import akka.stream.scaladsl.Framing
 
 import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
-import io.syspulse.haas.ingest.mempool.MempoolJson._
+import io.syspulse.haas.serde.MempoolJson._
 import io.syspulse.haas.ingest.mempool.evm.EvmTx
+
+import io.syspulse.haas.core.MempoolTx
 
 class PipelineMempool(feed:String,output:String)(implicit config:Config) extends Pipeline[EvmTx,EvmTx,MempoolTx](feed,output) {
   protected val log = Logger(s"${this}")  
