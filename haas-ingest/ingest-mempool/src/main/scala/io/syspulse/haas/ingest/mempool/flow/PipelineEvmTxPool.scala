@@ -36,14 +36,20 @@ import akka.http.javadsl.model.ContentType
 import io.syspulse.haas.ingest.mempool.evm.{EvmTx,EvmTxPool}
 import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._
+import io.syspulse.skel.util.DiffSet
+import io.syspulse.haas.ingest.mempool.evm.EvmTxRaw
 
-class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config) 
+
+class PipelineEvmTxPool(feed:String,output:String,delta:Boolean)(implicit config:Config) 
   extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer,chunk = 0){
   
   protected val log = Logger(s"${this}")
 
   val sourceID = DataSource.id("evm")
   
+  var pendingDiff = new DiffSet[EvmTxRaw](Set())
+  var queuedDiff = new DiffSet[EvmTxRaw](Set())
+
   def apiSuffix():String = ""
 
   override def source(feed:String) = {
@@ -94,11 +100,33 @@ class PipelineEvmTxPool(feed:String,output:String)(implicit config:Config)
         try {
           val ts = System.currentTimeMillis
           val txpool = data.parseJson.convertTo[EvmTxPool]
-          val pending = txpool.result.pending.values.map(_.values).flatten.map(raw => raw.unraw(ts,"pending"))
-          val queued = txpool.result.queued.values.map(_.values).flatten.map(raw => raw.unraw(ts,"queued"))
-          log.info(s"pending=${pending}")
-          log.info(s"queued=${queued}")
-          pending.toSeq ++ queued.toSeq
+          
+          // val pending = txpool.result.pending.values.map(_.values).flatten.map(raw => raw.unraw(ts,"pending"))
+          // val queued = txpool.result.queued.values.map(_.values).flatten.map(raw => raw.unraw(ts,"queued"))
+          val pending = txpool.result.pending.values.map(_.values).flatten
+          val queued = txpool.result.queued.values.map(_.values).flatten
+          log.debug(s"pending=${pending}")
+          log.debug(s"queued=${queued}")
+          
+          val (pendingNew,pendingOld,pendingOut,queuedNew,queuedOld,queuedOut) = 
+          if(delta) {
+            val pendingSet:Set[EvmTxRaw] = pending.toSet
+            val queuedSet:Set[EvmTxRaw] = queued.toSet
+            
+            val (pendingNew,pendingOld,pendingOut) = pendingDiff.diff(pendingSet)
+            val (queuedNew,queuedOld,queuedOut) = queuedDiff.diff(queuedSet)
+            
+            (pendingNew.toSeq,pendingOld.toSeq,pendingOut.toSeq,
+             queuedNew.toSeq,queuedOld.toSeq,queuedOut.toSeq)
+          } else
+            (pending.toSeq,Seq(),Seq(),
+            queued.toSeq,Seq(),Seq())
+
+          log.info(s"pending=[${pendingNew.size},${pendingOld.size},${pendingOut.size}],queued=[${queuedNew.size},${queuedOld.size},${queuedOut.size}]")
+          
+          // convert EthTxRaw -> EthTx
+          // ATTENTION: only New !
+          pendingNew.map(raw => raw.unraw(ts,"queued")) ++ queuedNew.map(raw => raw.unraw(ts,"queued"))
 
         } catch {
           case e:Exception => 

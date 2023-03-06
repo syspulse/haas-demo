@@ -26,7 +26,7 @@ case class Config(
   throttle:Long = 0L,
   throttleSource:Long = 1000L,
   
-  entity:String = "evm",
+  entity:String = "txpool", // from EVM
   format:String = "evm",
 
   datastore:String = "stdout",
@@ -53,7 +53,7 @@ object App {
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) (def=${d.output})"),
 
-        ArgString('e', "entity",s"Ingest entity: (mempool) (def=${d.entity})"),
+        ArgString('e', "entity",s"Ingest entity: (txpool,txpool.delta,mempool.tx,mempool.block) (def=${d.entity})"),
         
         ArgLong('_', "limit",s"Limit (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -104,9 +104,10 @@ object App {
     config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
-          case "evm" => new PipelineEvmTxPool(config.feed,config.output)(config)
+          case "txpool" | "txpool.full" => new PipelineEvmTxPool(config.feed,config.output,false)(config)
+          case "txpool.delta" | "txpool.diff" => new PipelineEvmTxPool(config.feed,config.output,true)(config)
           // internal format
-          case "mempool" => new PipelineMempool(config.feed,config.output)(config)
+          case "mempool.tx" => new PipelineMempool(config.feed,config.output)(config)
         }
                   
         val r = pp.run()
