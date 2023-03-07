@@ -124,7 +124,7 @@ services:
     environment:
       # JAVA_OPTS: -Dgod
       DATASTORE: mem://
-      STORE_CRED: dir://store/auth/cred
+      STORE_CRED: dir:///store/auth/cred
       USER_URI: http://skel-user:8080/api/v1/user
       GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
       GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER=$1
+DOCKER=${1}
 
 ../../infra/aws/aws-ecr-login.sh
 
@@ -8,6 +8,11 @@ if [[ $DOCKER = skel-* ]]; then
    REPO="syspulse"
 else
    REPO="649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse"
+fi
+
+if [ "$DOCKER" == "" ]; then
+   echo "Redeploying all. Confirm or CTRL+C"
+   read
 fi
 
 docker-compose stop $DOCKER
