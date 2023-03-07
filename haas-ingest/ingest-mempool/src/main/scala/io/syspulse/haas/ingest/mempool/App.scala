@@ -121,7 +121,7 @@ object App {
             
         }
 
-        Console.err.println(s"Tx: ${pp.countInput.get()},${pp.countObj.get},${pp.countOutput.get}")
+        Console.err.println(s"MempoolTx: ${pp.countInput.get()},${pp.countObj.get},${pp.countOutput.get}")
         sys.exit(0)        
       }
 
