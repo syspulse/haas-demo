@@ -13,6 +13,7 @@ import akka.http.scaladsl.model.MediaTypes
 import akka.http.scaladsl
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Framing
 
 import io.syspulse.skel
 import io.syspulse.skel.config._
@@ -26,9 +27,9 @@ import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
-import java.util.concurrent.TimeUnit
+import io.syspulse.skel.serde.Parq._
 
-import akka.stream.scaladsl.Framing
+import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._

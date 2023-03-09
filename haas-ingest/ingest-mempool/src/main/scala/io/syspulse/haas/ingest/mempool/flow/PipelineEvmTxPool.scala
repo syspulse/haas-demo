@@ -13,10 +13,13 @@ import akka.http.scaladsl.model.MediaTypes
 import akka.http.scaladsl
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Framing
+import akka.http.javadsl.model.ContentType
 
 import io.syspulse.skel
 import io.syspulse.skel.config._
 import io.syspulse.skel.util.Util
+import io.syspulse.skel.util.DiffSet
 import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest._
@@ -26,19 +29,16 @@ import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.DataSource
 
-import akka.stream.scaladsl.Framing
-import akka.http.javadsl.model.ContentType
-
 import io.syspulse.haas.ingest.mempool.evm.{EvmTx,EvmTxPool}
 import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._
-import io.syspulse.skel.util.DiffSet
 import io.syspulse.haas.ingest.mempool.evm.EvmTxRaw
-
 
 class PipelineEvmTxPool(feed:String,output:String,delta:Boolean)(implicit config:Config) 
   extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer,chunk = 0){

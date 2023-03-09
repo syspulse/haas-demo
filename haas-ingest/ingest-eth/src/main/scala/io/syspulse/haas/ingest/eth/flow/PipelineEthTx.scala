@@ -24,6 +24,9 @@ import io.syspulse.skel.ingest.flow.Pipeline
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Tx
@@ -32,7 +35,7 @@ import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
-abstract class PipelineEthTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E]) extends 
+abstract class PipelineEthTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineEth[EthTx,Tx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
   def apiSuffix():String = s"/"

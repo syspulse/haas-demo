@@ -24,6 +24,9 @@ import io.syspulse.skel.ingest.flow.Pipeline
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Token
@@ -34,7 +37,7 @@ import io.syspulse.haas.ingest.token.TokenURI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-abstract class PipelineToken[T](feed:String,output:String)(implicit config:Config)
+abstract class PipelineToken[T](feed:String,output:String)(implicit config:Config,parqEncoders:ParquetRecordEncoder[T],parsResolver:ParquetSchemaResolver[T])
   extends Pipeline[T,T,Token](feed,output,config.throttle,config.delimiter,config.buffer,throttleSource = config.throttleSource) {
 
   protected val log = com.typesafe.scalalogging.Logger(s"${this}")
@@ -58,7 +61,6 @@ abstract class PipelineToken[T](feed:String,output:String)(implicit config:Confi
     }
   }
 
-
   def apiSuffix():String = ???
 
   override def source():Source[ByteString,_] = {
@@ -68,13 +70,6 @@ abstract class PipelineToken[T](feed:String,output:String)(implicit config:Confi
     }
   }
   
-  // override def source() = {
-  //   feed.split("://").toList match {
-  //     case "coingecko" :: _ => super.source(CoingeckoURI(feed,apiSuffix()).uri)
-  //     case _ => super.source()
-  //   }
-  // }
-
   def process:Flow[T,T,_] = Flow[T].map(v => v)
 
 }

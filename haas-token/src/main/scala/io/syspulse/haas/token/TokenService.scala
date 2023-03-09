@@ -18,6 +18,7 @@ import io.syspulse.haas.core.Token
 
 import io.syspulse.skel.ExternalService
 import io.syspulse.haas.token.client.TokenClientHttp
+import scala.concurrent.duration.FiniteDuration
 
 trait TokenService extends ExternalService[TokenService] {
 
@@ -61,5 +62,5 @@ class TokenServiceSim extends TokenService {
   def all():Future[Tokens] = Future.successful(Tokens(Seq()))
 
   def withAccessToken(token:String):TokenServiceSim = this
-  def withTimeout(timeout:Duration = Duration(1000, TimeUnit.MILLISECONDS)):TokenServiceSim = this
+  def withTimeout(timeout:FiniteDuration = FiniteDuration(1000, TimeUnit.MILLISECONDS)):TokenServiceSim = this
 }

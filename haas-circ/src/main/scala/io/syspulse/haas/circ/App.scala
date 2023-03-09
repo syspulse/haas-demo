@@ -15,6 +15,8 @@ import io.syspulse.haas.circ._
 import io.syspulse.haas.circ.store._
 import io.syspulse.haas.circ.server.CirculationSupplyRoutes
 import io.syspulse.haas.circ.client.CirculationSupplyClientHttp
+import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.TimeUnit
 
 case class Config(  
   host:String="0.0.0.0",
@@ -95,7 +97,7 @@ object App extends skel.Server {
       case "client" => {        
         val host = if(config.host == "0.0.0.0") "localhost" else config.host
         val uri = s"http://${host}:${config.port}${config.uri}"
-        val timeout = Duration("3 seconds")
+        val timeout = FiniteDuration(3,TimeUnit.SECONDS)
 
         val r = 
           config.params match {

@@ -26,6 +26,9 @@ import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.Price
@@ -39,7 +42,8 @@ import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
 import io.syspulse.haas.core.resolver.TokenResolverMem
 
-abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config) extends PipelinePrice[T](feed:String,output:String){
+abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config,parqEncoders:ParquetRecordEncoder[T],parsResolver:ParquetSchemaResolver[T]) 
+  extends PipelinePrice[T](feed:String,output:String){
   
   val sourceID = DataSource.id("cryptocomp")
   val TOKENS_SLOT = "COINS"

@@ -19,6 +19,7 @@ import io.syspulse.haas.circ.CirculationSupply
 
 import io.syspulse.skel.ExternalService
 import io.syspulse.haas.circ.client.CirculationSupplyClientHttp
+import scala.concurrent.duration.FiniteDuration
 
 trait CirculationSupplyService extends ExternalService[CirculationSupplyService] {  
   def get(id:CirculationSupply.ID):Future[Option[CirculationSupply]]
@@ -45,5 +46,5 @@ class CirculationSupplyServiceSim extends CirculationSupplyService {
   def all():Future[CirculationSupplys] = Future.successful(CirculationSupplys(Seq()))
 
   def withAccessToken(token:String):CirculationSupplyServiceSim = this
-  def withTimeout(timeout:Duration = Duration(1000, TimeUnit.MILLISECONDS)):CirculationSupplyServiceSim = this
+  def withTimeout(timeout:FiniteDuration = FiniteDuration(1000, TimeUnit.MILLISECONDS)):CirculationSupplyServiceSim = this
 }

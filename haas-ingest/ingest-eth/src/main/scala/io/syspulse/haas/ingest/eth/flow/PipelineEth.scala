@@ -30,6 +30,9 @@ import io.syspulse.skel.ingest.flow.Pipeline
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
@@ -38,7 +41,7 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[E])
+abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
   extends Pipeline[T,O,E](feed,output,throttle,delimiter,buffer) with EthDecoder[E] {
 
   import EthEtlJson._

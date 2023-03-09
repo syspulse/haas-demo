@@ -27,6 +27,9 @@ import io.syspulse.skel.ingest.flow.Flows
 
 import spray.json._
 import DefaultJsonProtocol._
+import io.syspulse.skel.serde.Parq._
+import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
+
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.ingest.price.Config
@@ -39,7 +42,7 @@ import io.syspulse.haas.ingest.price.PriceURI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Config)
+abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Config,parqEncoders:ParquetRecordEncoder[T],parsResolver:ParquetSchemaResolver[T])
   extends Pipeline[T,T,Price](feed,output,config.throttle,config.delimiter,config.buffer,throttleSource = config.throttleSource) {
 
   protected val log = Logger(s"${this}")

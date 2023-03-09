@@ -148,6 +148,7 @@ val sharedConfigAssembly = Seq(
     val cp = (assembly / fullClasspath).value
     cp filter { f =>
       f.data.getName.contains("snakeyaml-1.27-android.jar") || 
+      f.data.getName.contains("activation-1.1.1") ||
       f.data.getName.contains("jakarta.activation-api-1.2.1") ||
       f.data.getName.contains("jakarta.activation-2.0.1") 
       //|| f.data.getName == "spark-core_2.11-2.0.1.jar"
@@ -323,7 +324,8 @@ lazy val ingest_token = (project in file("haas-ingest/ingest-token"))
       libSkelIngest,
       libSkelIngestFlow,
       libSkelIngestElastic,
-      libUpickleLib
+      libUpickleLib,
+      libSkelSerde
     ),
      
   )
@@ -347,6 +349,8 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
       libSkelDSL,
       libSkelNotify,
       libUpickleLib,
+
+      libSkelSerde,
 
       libSkelCrypto,
       libEthAbi,
@@ -425,7 +429,9 @@ lazy val ingest_price = (project in file("haas-ingest/ingest-price"))
       libSkelIngest,
       libSkelIngestFlow,
       libSkelIngestElastic,
-      libUpickleLib
+      libUpickleLib,
+
+      libSkelSerde
     ),
      
   )
@@ -455,7 +461,9 @@ lazy val haas_intercept = (project in file("haas-intercept"))
 
       libSkelCrypto,
       libEthAbi,
-      libScalaTest % "test"
+      libScalaTest % "test",
+
+      libSkelSerde
     ),
   )
 
@@ -505,7 +513,9 @@ lazy val ingest_mempool = (project in file("haas-ingest/ingest-mempool"))
       libSkelIngest,
       libSkelIngestFlow,
       libSkelIngestElastic,
-      libUpickleLib
+      libUpickleLib,
+
+      libSkelSerde
     ),
      
   )

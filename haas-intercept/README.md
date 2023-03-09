@@ -103,3 +103,38 @@ feed {
 ## Test transaction
 
 https://etherscan.io/tx/0x6a3d8584a6272a1d73ff297592b401fe10d3a90fd385efff55f68f32f29ecf61
+
+
+## Scripts
+
+### Transaction
+
+Script can access transaction fields with direct varibale name (e.g `value + 10`).
+
+If Script returns __non__ `null` value, it is used as String in the body of generated Alarm.
+Json string can be returned for kafka or http webhook trigger. HTML string can be passed to email trigger as body.
+
+If Script returns `null`, Transaction will not generate any alarm
+
+The list of injected variables for __Transaction__:
+
+`from_address` - Addres with prefix '0x'
+`to_address`   - Can be __null__ !
+`value`        - BigInt (number)
+`gas`          - Max gas
+`price`        - gwei price for gas
+`input`        - Input data for Contract (0x0 for native transfer)
+`block_number` - Block number
+`hash`         - Transaction hash
+`ts`           - Timestamp im __milliseconds__
+`nonce`        - Nonce 
+`max_fee`      - Base Max Fee
+`max_tip`      - Miner Tip
+`type`         - Tx type
+`gas_used_cumulative` - Cumulative gas consumed
+`gas_used`      - Gas used
+`contract`      - Contract code (if contract is deployed)
+`receipt_root`  - Receipt root hash
+`status`        - Transaction status (0 - Failed, 1 - OK)
+`price_effective` - Effective price
+
