@@ -196,11 +196,13 @@ services:
       FEED_ETHEREUM_BLOCK: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.blocks/intercept/latest
       FEED_ETHEREUM_TOKEN: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.token_transfers/intercept/latest
       FEED_ETHEREUM_EVENT: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.logs/intercept/latest
+      FEED_ETHEREUM_MEMPOOL: kafka://broker-1.hacken.dev:9092/ethereum.mainnet.mempool/intercept/latest
 
       FEED_ZKSYNC_TX: kafka://broker-1.hacken.dev:9092/zksync.mainnet.transactions/intercept/latest
       FEED_ZKSYNC_BLOCK: kafka://broker-1.hacken.dev:9092/zksync.mainnet.blocks/intercept/latest
       FEED_ZKSYNC_TOKEN: kafka://broker-1.hacken.dev:9092/zksync.mainnet.token_transfers/intercept/latest
       FEED_ZKSYNC_EVENT: kafka://broker-1.hacken.dev:9092/zksync.mainnet.logs/intercept/latest
+      FEED_ZKSYNC_MEMPOOL: kafka://broker-1.hacken.dev:9092/zksync.mainnet.mempool/intercept/latest
       
       DATASTORE: dir:///store/intercept
       STORE_SCRIPT: dir:///store/script

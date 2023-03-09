@@ -14,11 +14,13 @@ case class Config(
   feedTx:String = "",
   feedToken:String = "",
   feedLog:String = "",
+  feedMempool:String = "",
 
   outputBlock:String = "",
   outputTx:String = "",
   outputToken:String = "",
   outputLog:String = "",
+  outputMempool:String = "",
   
   abi:String = "abi/",
   source:String="",

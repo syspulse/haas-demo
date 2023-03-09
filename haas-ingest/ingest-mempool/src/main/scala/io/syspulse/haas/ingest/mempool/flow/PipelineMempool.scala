@@ -31,9 +31,9 @@ import io.syspulse.skel.serde.Parq._
 
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
+import io.syspulse.haas.evm.EvmTxPoolJson._
+import io.syspulse.haas.evm.EvmTx
 import io.syspulse.haas.serde.MempoolJson._
-import io.syspulse.haas.ingest.mempool.evm.EvmTx
 
 import io.syspulse.haas.core.MempoolTx
 

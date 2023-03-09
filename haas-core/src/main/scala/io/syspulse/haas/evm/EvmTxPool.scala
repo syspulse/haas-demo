@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.mempool.evm
+package io.syspulse.haas.evm
 
 import scala.jdk.CollectionConverters._
 

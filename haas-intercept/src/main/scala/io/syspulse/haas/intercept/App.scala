@@ -30,6 +30,7 @@ case class ConfigBlockchain(
   feedToken:String = "null://",
   feedEvent:String = "null://",
   feedFunc:String = "null://",
+  feedMempool:String = "null://",
 )
 
 case class Config(  
@@ -46,6 +47,7 @@ case class Config(
   feedToken:String = "null://",
   feedEvent:String = "null://",
   feedFunc:String = "null://",
+  feedMempool:String = "null://",
 
   bid:Seq[String] = Seq("ethereum"),
   blockchains:Map[Blockchain.ID,ConfigBlockchain] = Map(),
@@ -114,6 +116,7 @@ object App extends skel.Server {
         ArgString('_', "feed.{bid}.token",s"TokenTransfe Feed"),
         ArgString('_', "feed.{bid}.event",s"EventLog Feed"),
         ArgString('_', "feed.{bid}.func",s"Function Tx Feed"),
+        ArgString('_', "feed.{bid}.mempool",s"Mempool Tx Feed"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -167,6 +170,7 @@ object App extends skel.Server {
           feedToken = c.getString(s"feed.${bid}.token").getOrElse(d.feedToken),
           feedEvent = c.getString(s"feed.${bid}.event").getOrElse(d.feedEvent),
           feedFunc = c.getString(s"feed.${bid}.func").getOrElse(d.feedFunc),
+          feedMempool = c.getString(s"feed.${bid}.mempool").getOrElse(d.feedMempool),
         )
       ).toMap,
       
@@ -268,6 +272,10 @@ object App extends skel.Server {
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output,ixFunc)(config)
           //val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
 
+          val ixMempool = new InterceptorMempool(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppMempool = new PipelineEthInterceptMempool(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output,ixMempool)(config)
+
           // start pipelines
           // val r1 = ppTx.run()
           // val r2 = ppBlock.run()
@@ -281,9 +289,10 @@ object App extends skel.Server {
             s"${b.bid}.${ixToken.entity()}" -> ixToken,
             s"${b.bid}.${ixEvent.entity()}" -> ixEvent,
             s"${b.bid}.${ixFunc.entity()}" -> ixFunc,
+            s"${b.bid}.${ixMempool.entity()}" -> ixMempool,
           )
 
-          (blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc)
+          (blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc,ppMempool)
 
         })
         
@@ -308,13 +317,14 @@ object App extends skel.Server {
           )
         )
 
-        blockchainInterceptors.foreach{ case(blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc) => 
+        blockchainInterceptors.foreach{ case(blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc,ppMempool) => 
           // start pipelines
-          val r1 = ppTx.run()
-          val r2 = ppBlock.run()
-          val r3 = ppToken.run()
-          val r4 = ppEvent.run()
-          val r5 = ppFunc.run()
+          ppTx.run()
+          ppBlock.run()
+          ppToken.run()
+          ppEvent.run()
+          ppFunc.run()
+          ppMempool.run()
         }
         
         //(r1,Some(ppTx))
@@ -359,6 +369,9 @@ object App extends skel.Server {
           case "func" =>
             new PipelineEthInterceptFunc(config.feed,config.output, 
                 new InterceptorFunc(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
+          case "mempool" =>
+            new PipelineEthInterceptMempool(config.feed,config.output, 
+                new InterceptorMempool(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
         }
 
         (pp.run(),Some(pp))

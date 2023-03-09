@@ -35,10 +35,10 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.DataSource
 
-import io.syspulse.haas.ingest.mempool.evm.{EvmTx,EvmTxPool}
-import io.syspulse.haas.ingest.mempool.evm.EvmTxPoolJson._
+import io.syspulse.haas.evm.{EvmTx,EvmTxPool}
+import io.syspulse.haas.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._
-import io.syspulse.haas.ingest.mempool.evm.EvmTxRaw
+import io.syspulse.haas.evm.EvmTxRaw
 
 class PipelineEvmTxPool(feed:String,output:String,delta:Boolean)(implicit config:Config) 
   extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer,chunk = 0){
