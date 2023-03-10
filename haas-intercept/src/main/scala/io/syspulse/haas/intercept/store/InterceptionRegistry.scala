@@ -29,6 +29,7 @@ object InterceptionRegistry {
   
   final case class GetScripts(replyTo: ActorRef[Scripts]) extends Command
   final case class GetScript(id:Script.ID,replyTo: ActorRef[Try[Script]]) extends Command
+  final case class UpdateScript(id:Script.ID, uid:Option[UUID], scriptUpdate: ScriptUpdateReq, replyTo: ActorRef[Try[Script]]) extends Command
 
   final case class GetInterceptions(history:Option[Long],replyTo: ActorRef[Interceptions]) extends Command
   final case class GetInterception(id:ID,history:Option[Long],replyTo: ActorRef[Try[Interception]]) extends Command
@@ -41,7 +42,6 @@ object InterceptionRegistry {
   
   final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Try[Interception]]) extends Command
   final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
-
   final case class DeleteInterception(id: ID, replyTo: ActorRef[InterceptionActionRes]) extends Command
   
   // this var reference is unfortunately needed for Metrics access
@@ -62,6 +62,12 @@ object InterceptionRegistry {
 
       case GetScript(id, replyTo) =>
         replyTo ! storeScript.?(id)
+        Behaviors.same
+
+      case UpdateScript(id, uid, req, replyTo) =>
+        // WARNING: ignore UserId for now
+        // WARNING: changing script must also trigger recompile on-demand !
+        replyTo ! storeScript.update(id, req.name,req.desc,req.src)
         Behaviors.same
 
       case GetInterceptions(history,replyTo) =>
@@ -119,7 +125,8 @@ object InterceptionRegistry {
                   None                  
               }
             } else {
-              val scriptId = Util.sha256(c.script)
+              // generate scirptId unique per user
+              val scriptId = c.uid.getOrElse(UUID(Array.fill[Byte](16)(0))).toString.replaceAll("-","") + "-" + Util.sha256(c.script).take(16)
               val script = Script(scriptId,"js",c.script,c.name,System.currentTimeMillis,uid = c.uid)
               storeScript.+(script)
               Some(script)

@@ -42,4 +42,10 @@ class ScriptStoreMem extends ScriptStore {
     ).toList
   }
 
+  def update(id:ID,name:Option[String]=None,desc:Option[String]=None,src:Option[String]=None):Try[Script]= {
+    ?(id) match {
+      case Success(script) => Success(modify(script,name,desc,src))
+      case f => f
+    }
+  }
 }

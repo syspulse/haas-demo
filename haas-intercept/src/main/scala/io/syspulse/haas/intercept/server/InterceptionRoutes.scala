@@ -1,5 +1,7 @@
 package io.syspulse.haas.intercept.server
 
+import scala.util.Try
+
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
@@ -50,8 +52,6 @@ import io.syspulse.haas.intercept.store.InterceptionRegistry._
 import io.syspulse.haas.intercept._
 import io.syspulse.haas.intercept.script._
 
-import io.syspulse.haas.intercept.script.ScriptJson
-import scala.util.Try
 import akka.http.scaladsl.model.headers.RawHeader
 import io.syspulse.skel.crypto.eth.abi.AbiContract
 import io.syspulse.skel.crypto.eth.abi.AbiStore
@@ -78,6 +78,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   
   def getScripts(): Future[Scripts] = registry.ask(GetScripts)
   def getScript(id: Script.ID): Future[Try[Script]] = registry.ask(GetScript(id, _))
+  def updateScript(id: Script.ID, uid:Option[UUID], scriptUpdate: ScriptUpdateReq ): Future[Try[Script]] = registry.ask(UpdateScript(id, uid, scriptUpdate, _))
 
   def getInterceptions(history:Option[Long]): Future[Interceptions] = registry.ask(GetInterceptions(history, _))
   def getInterception(id: Interception.ID,history:Option[Long]): Future[Try[Interception]] = registry.ask(GetInterception(id,history, _))
@@ -246,6 +247,24 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
+  @POST @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Update script",
+    parameters = Array(
+      new Parameter(name = "id", in = ParameterIn.PATH, description = "Script ID"),
+      new Parameter(name = "name", in = ParameterIn.PATH, description = "Name"),
+      new Parameter(name = "desc", in = ParameterIn.PATH, description = "Description"),
+      new Parameter(name = "src", in = ParameterIn.PATH, description = "Script")
+    ),
+    responses = Array(new ApiResponse(responseCode="200",description = "Updated Script",content=Array(new Content(schema=new Schema(implementation = classOf[Script])))))
+  )
+  def putScriptRoute(id:String,uid:Option[UUID]) = put {
+    entity(as[ScriptUpdateReq]) { req =>
+      onSuccess(updateScript(id,uid,req)) { r =>
+        complete(r)
+      }
+    }
+  }
+
   val corsAllow = CorsSettings(system.classicSystem)
     //.withAllowGenericHttpRequests(true)
     .withAllowCredentials(true)
@@ -264,7 +283,8 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
         pathPrefix("script") {
           authenticate()(authn => {
             pathPrefix(Segment) { id => 
-              getScriptRoute(id)
+              getScriptRoute(id) ~
+              putScriptRoute(id,authn.getUser)
             } ~ 
             pathEndOrSingleSlash {
               getScriptsRoute()

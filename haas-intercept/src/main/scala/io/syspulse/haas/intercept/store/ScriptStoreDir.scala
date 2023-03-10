@@ -3,6 +3,8 @@ package io.syspulse.haas.intercept.store
 import scala.util.Try
 import scala.util.{Success,Failure}
 import scala.collection.immutable
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
 import com.typesafe.scalalogging.Logger
 import io.jvm.uuid._
@@ -14,10 +16,8 @@ import DefaultJsonProtocol._
 
 import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.intercept.script.Script.ID
+import io.syspulse.haas.intercept.server.ScriptJson
 
-import io.syspulse.haas.intercept.script.ScriptJson
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
 // Preload from file during start
 class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
   import ScriptJson._
@@ -74,12 +74,17 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     log.info(s"Loaded store: ${size}")
   }
 
+  def write(sc:Script):Try[Script] = {
+    os.write.over(os.Path(dir,os.pwd) / s"${sc.id}.json",sc.toJson.prettyPrint)
+    Success(sc)
+  }
+
   override def +(sc:Script):Try[ScriptStore] = {     
     super.+(sc)
     
     if(loading) return Success(this)
 
-    os.write.over(os.Path(dir,os.pwd) / s"${sc.id}.json",sc.toJson.prettyPrint)
+    write(sc)
     Success(this)
   }
 
@@ -88,6 +93,9 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     os.remove(os.Path(dir,os.pwd) / s"${sc.id}.json")
     Success(this)
   }
+
+  override def update(id:ID,name:Option[String]=None,desc:Option[String]=None,src:Option[String]=None):Try[Script]= 
+    super.update(id,name,desc,src).flatMap( sc => write(sc))
 
   loading = true
   load(dir)

@@ -21,4 +21,15 @@ trait ScriptStore extends Store[Script,ID] {
   def size:Long
 
   def ??(txt:String):List[Script]
+
+  def update(id:ID, name:Option[String] = None, desc:Option[String] = None, src:Option[String] = None):Try[Script]
+
+  protected def modify(sc:Script,name:Option[String]=None,desc:Option[String]=None,src:Option[String]=None):Script = {    
+    (for {
+      u0 <- Some(sc)
+      u1 <- Some(if(name.isDefined) u0.copy(name = name.get) else u0)
+      u2 <- Some(if(desc.isDefined) u1.copy(desc = desc) else u1)
+      u3 <- Some(if(src.isDefined) u2.copy(src = src.get) else u2)
+    } yield u3.copy(ts = Some(System.currentTimeMillis))).get    
+  }
 }
