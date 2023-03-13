@@ -15,6 +15,7 @@ import io.syspulse.haas.intercept.script._
 import io.syspulse.haas.core.Blockchain
 
 final case class Interceptions(interceptions: immutable.Seq[Interception])
+
 final case class InterceptionCreateReq(
   id:Option[Interception.ID],
   name:String, 
@@ -28,8 +29,20 @@ final case class InterceptionCreateReq(
   limit:Option[Int] = None // history limit
 )
 
-final case class InterceptionActionRes(status: String,id:Option[String])
-final case class InterceptionRes(interception: Option[Interception])
+final case class InterceptionUpdateReq(
+  id:Option[Interception.ID] = None,
+  name:Option[String] = None, 
+  script:Option[String] = None, 
+  alarm:Option[List[String]] = None,
+  uid:Option[UUID] = None, 
+  bid:Option[Blockchain.ID] = None,
+  entity:Option[String] = None,
+  abi:Option[String] = None,
+  contract:Option[String] = None
+)
+
+final case class ActionRes(status: String,id:Option[String])
+final case class InterceptionRes(ix: Option[Interception])
 final case class InterceptionCommandReq(command:String,id:Option[Interception.ID]=None)
 
 object InterceptionProto extends JsonCommon {
@@ -38,6 +51,7 @@ object InterceptionProto extends JsonCommon {
   implicit val jf_ix = jsonFormat1(Interceptions)
   implicit val jf_ixs = jsonFormat1(InterceptionRes)
   implicit val jf_CreateReq = jsonFormat10(InterceptionCreateReq)
-  implicit val jf_ActionRes = jsonFormat2(InterceptionActionRes)
-  implicit val jf_5 = jsonFormat2(InterceptionCommandReq)
+  implicit val jf_ActionRes = jsonFormat2(ActionRes)
+  implicit val jf_IxCmdReq = jsonFormat2(InterceptionCommandReq)
+  implicit val jf_UpdateReq = jsonFormat9(InterceptionUpdateReq)
 }

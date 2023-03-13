@@ -30,6 +30,7 @@ object InterceptionRegistry {
   final case class GetScripts(replyTo: ActorRef[Scripts]) extends Command
   final case class GetScript(id:Script.ID,replyTo: ActorRef[Try[Script]]) extends Command
   final case class UpdateScript(id:Script.ID, uid:Option[UUID], scriptUpdate: ScriptUpdateReq, replyTo: ActorRef[Try[Script]]) extends Command
+  final case class DelScript(id:Script.ID,replyTo: ActorRef[Try[ActionRes]]) extends Command
 
   final case class GetInterceptions(history:Option[Long],replyTo: ActorRef[Interceptions]) extends Command
   final case class GetInterception(id:ID,history:Option[Long],replyTo: ActorRef[Try[Interception]]) extends Command
@@ -40,34 +41,128 @@ object InterceptionRegistry {
   final case class GetInterceptionAbi(id:ID,aid:AbiStore.ID,replyTo: ActorRef[Try[AbiContract]]) extends Command
 
   
-  final case class CreateInterception(interceptionCreate: InterceptionCreateReq, replyTo: ActorRef[Try[Interception]]) extends Command
-  final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[InterceptionActionRes]) extends Command
-  final case class DeleteInterception(id: ID, replyTo: ActorRef[InterceptionActionRes]) extends Command
+  final case class CreateInterception(req: InterceptionCreateReq, replyTo: ActorRef[Try[Interception]]) extends Command
+  final case class CommandInterception(interceptionComman: InterceptionCommandReq, replyTo: ActorRef[ActionRes]) extends Command
+  final case class DeleteInterception(id: ID, replyTo: ActorRef[ActionRes]) extends Command
+  final case class UpdateInterception(id: ID, req: InterceptionUpdateReq, replyTo: ActorRef[Try[Interception]]) extends Command
   
   // this var reference is unfortunately needed for Metrics access
   var store: InterceptionStore = null //new InterceptionStoreDB //new InterceptionStoreCache
 
-  def apply(store: InterceptionStore,storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(implicit config:Config): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: InterceptionStore,scriptStore:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(implicit config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
-    registry(store,storeScript,abiStore,interceptors)(config)
+    registry(store,scriptStore,abiStore,interceptors)(config)
   }
 
-  private def registry(store: InterceptionStore, storeScript:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(config:Config): Behavior[io.syspulse.skel.Command] = {
+  private def registry(store: InterceptionStore, scriptStore:ScriptStore, abiStore:AbiStore, interceptors:Map[String,Interceptor[_]])(config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
-    Behaviors.receiveMessage {
+    def create(c:InterceptionCreateReq):Try[Interception] = {
+      log.info(s"${c}")
+      for {
+        script <- {
+          // special case to reference script body
+          if(c.script.trim.startsWith("ref://")) {
+            val scriptId = c.script.trim.stripPrefix("ref://")
+            scriptStore.?(scriptId) match {
+              case Failure(e) => 
+                log.error(s"script not found: ${scriptId}")
+                //replyTo ! Failure(e)
+                Failure(e)
+              case s => s
+            }
+          } else {
+            // generate scirptId unique per user
+            val scriptId = c.uid.getOrElse(UUID(Array.fill[Byte](16)(0))).toString.replaceAll("-","") + "-" + Util.sha256(c.script).take(16)
+            val script = Script(scriptId,"js",c.script,c.name,System.currentTimeMillis,uid = c.uid)
+            scriptStore.+(script)
+            
+            Success(script)
+          }
+        }
+        entity <- {
+          Success(c.entity.getOrElse("tx"))            
+        }
+        bid <- {
+          Success(c.bid.getOrElse(Blockchain.ETHEREUM_MAINNET).toLowerCase)
+        }
+        abiId <- { entity match {
+          case "event" | "function" | "func" => 
+            if(c.abi.isDefined && c.contract.isDefined) {
+              val abiId = c.contract.get
+              val ac = AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis))
+              
+              log.info(s"${ac}")
+              val r = abiStore.+(ac)
+              
+              if(r.isFailure) {
+                log.error(s"ABI not decoded: ${abiId}: ${r}")
+                //replyTo ! Failure(new Exception(s"ABI not decoded: ${abiId}: ${r}"))
+                Failure(new Exception(s"ABI not decoded: ${abiId}: ${r}"))
+              } else {
+                log.info(s"abiStore: ${abiStore.size}")
+                Success(abiId)
+              }
+            } else {
+              log.error(s"ABI or Contract not found: ${entity}")
+              //replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))
+              Failure(new Exception(s"ABI or Contract not found: ${entity}"))
+            }
+          case _ => 
+            Success("")
+        }}
+        ix <- {
+          val ix = Interception(
+            c.id.getOrElse(UUID.random), 
+            c.name, 
+            script.id, 
+            c.alarm, 
+            c.uid, 
+            entity, 
+            if(abiId.isBlank) None else Some(abiId),
+            bid = Some(bid),
+            limit = c.limit.orElse(Some(config.history))
+          )
+          
+          log.info(s"${ix}")
+          Success(ix)
+        }
+        ix2 <- {
+          val ixLocator = s"${bid}.${entity}"
+          interceptors.get(ixLocator) match {
+            case Some(interceptor) => 
+              val store1 = store.+(ix)
+              interceptor.+(ix)
+              //replyTo ! Success(ix)
+              Success(ix)
+            case None => 
+              log.warn(s"Interceptor not found: '${ixLocator}'")
+              //replyTo ! Failure(new Exception(s"Interceptor not found: '${ixLocator}'"))
+              Failure(new Exception(s"Interceptor not found: '${ixLocator}'"))
+          }
+        }
+                
+      } yield ix2      
+    }
+
+    Behaviors.receive { (ctx,msg) => msg match {
       case GetScripts(replyTo) =>
-        replyTo ! Scripts(storeScript.all)
+        replyTo ! Scripts(scriptStore.all)
         Behaviors.same
 
       case GetScript(id, replyTo) =>
-        replyTo ! storeScript.?(id)
+        replyTo ! scriptStore.?(id)
+        Behaviors.same
+
+      case DelScript(id, replyTo) =>
+        val r = scriptStore.del(id).map(_ => ActionRes("deleted",Some(id)))
+        replyTo ! r
         Behaviors.same
 
       case UpdateScript(id, uid, req, replyTo) =>
         // WARNING: ignore UserId for now
         // WARNING: changing script must also trigger recompile on-demand !
-        replyTo ! storeScript.update(id, req.name,req.desc,req.src)
+        replyTo ! scriptStore.update(id, req.name,req.desc,req.src)
         Behaviors.same
 
       case GetInterceptions(history,replyTo) =>
@@ -110,92 +205,33 @@ object InterceptionRegistry {
         replyTo ! Interceptions(store.search(txt))
         Behaviors.same
       
-      case CreateInterception(c, replyTo) =>
-        log.info(s"${c}")
+      case UpdateInterception(id,u,replyTo) =>
+        // very heavy and inefficient
         for {
-          script <- {
-            // special case to reference script body
-            if(c.script.trim.startsWith("ref://")) {
-              val scriptId = c.script.trim.stripPrefix("ref://")
-              storeScript.?(scriptId) match {
-                case Success(s) => Some(s)
-                case Failure(e) => 
-                  log.error(s"script not found: ${scriptId}")
-                  replyTo ! Failure(e)
-                  None                  
-              }
-            } else {
-              // generate scirptId unique per user
-              val scriptId = c.uid.getOrElse(UUID(Array.fill[Byte](16)(0))).toString.replaceAll("-","") + "-" + Util.sha256(c.script).take(16)
-              val script = Script(scriptId,"js",c.script,c.name,System.currentTimeMillis,uid = c.uid)
-              storeScript.+(script)
-              Some(script)
-            }
+          ix1 <- store.?(id)
+          script <- scriptStore.?(ix1.scriptId)
+          abiJson <- if(ix1.aid.isDefined) abiStore.?(ix1.aid.get).map( a => Some(a.json)) else Success(None)
+          ix2 <- {
+            val req = InterceptionCreateReq(
+                id = Some(id),
+                name = u.name.getOrElse(ix1.name),
+                script = u.script.getOrElse(script.src),
+                alarm = u.alarm.getOrElse(ix1.alarm), 
+                uid = (if(u.uid.isDefined) u.uid else ix1.uid),
+                bid = (if(u.bid.isDefined) u.bid else ix1.bid),
+                entity = (if(u.entity.isDefined) u.entity else Some(ix1.entity)),
+                abi = (if(u.abi.isDefined) u.abi else abiJson),
+                contract = u.contract)
+
+            create( req )
           }
-          entity <- {
-            Some(c.entity.getOrElse("tx"))
-          }
-          bid <- {
-            Some(c.bid.getOrElse(Blockchain.ETHEREUM_MAINNET).toLowerCase)
-          }
-          abiId <- { entity match {
-            case "event" | "function" | "func" => 
-              if(c.abi.isDefined && c.contract.isDefined) {
-                val abiId = c.contract.get
-                val ac = AbiContract(abiId,c.abi.get,Some(System.currentTimeMillis))
-                
-                log.info(s"${ac}")
-                val r = abiStore.+(ac)
-                
-                if(r.isFailure) {
-                  log.error(s"ABI not decoded: ${abiId}: ${r}")
-                  replyTo ! Failure(new Exception(s"ABI not decoded: ${abiId}: ${r}"))
-                  None
-                } else {
-                  log.info(s"abiStore: ${abiStore.size}")
-                  Some(abiId)
-                }
-              } else {
-                log.error(s"ABI or Contract not found: ${entity}")
-                replyTo ! Failure(new Exception(s"ABI or Contract not found: ${entity}"))
-                None
-              }
-            case _ => 
-              Some("")
-          }}
-          ix <- {
-            val ix = Interception(
-              c.id.getOrElse(UUID.random), 
-              c.name, 
-              script.id, 
-              c.alarm, 
-              c.uid, 
-              entity, 
-              if(abiId.isBlank) None else Some(abiId),
-              bid = Some(bid),
-              limit = c.limit.orElse(Some(config.history))
-            )
-            
-            log.info(s"${ix}")
-            Some(ix)
-          }
-          store1 <- {
-            val ixLocator = s"${bid}.${entity}"
-            interceptors.get(ixLocator) match {
-              case Some(interceptor) => 
-                val store1 = store.+(ix)
-                interceptor.+(ix)
-                replyTo ! Success(ix)
-                Some(store1)
-              case None => 
-                log.warn(s"Interceptor not found: '${ixLocator}'")
-                replyTo ! Failure(new Exception(s"Interceptor not found: '${ixLocator}'"))
-                None
-            }
-          }
-                  
-        } yield store1
-          
+        } yield ix2
+        
+        Behaviors.same
+
+      case CreateInterception(c, replyTo) =>
+        val ix = create(c)
+        replyTo ! ix
         Behaviors.same                      
 
       case CommandInterception(c, replyTo) =>
@@ -203,7 +239,7 @@ object InterceptionRegistry {
 
         if(! ix.isDefined) {
           log.warn(s"Interceptor not found: id='${c.id}'")
-          replyTo ! InterceptionActionRes("not found",c.id.map(_.toString))  
+          replyTo ! ActionRes("not found",c.id.map(_.toString))  
         } else {
           val id = ix.get.id
           val status = c.command match {
@@ -220,7 +256,7 @@ object InterceptionRegistry {
             case _ => "unknown"
           }
           
-          replyTo ! InterceptionActionRes(status,Some(id.toString))
+          replyTo ! ActionRes(status,Some(id.toString))
         }
         Behaviors.same
       
@@ -229,7 +265,7 @@ object InterceptionRegistry {
 
         interceptors.values.foreach(intx => intx.-(id))
 
-        replyTo ! InterceptionActionRes(s"Success",Some(id.toString))
+        replyTo ! ActionRes(s"Success",Some(id.toString))
         
         Behaviors.same
 
@@ -238,6 +274,6 @@ object InterceptionRegistry {
         replyTo ! r
 
         Behaviors.same
-    }
+    }}
   }
 }

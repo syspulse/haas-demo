@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.parameters.RequestBody
-import jakarta.ws.rs.{Consumes, POST, GET, DELETE, Path, Produces}
+import jakarta.ws.rs.{Consumes, POST, PUT, GET, DELETE, Path, Produces}
 import jakarta.ws.rs.core.MediaType
 
 import io.prometheus.client.CollectorRegistry
@@ -75,10 +75,12 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   val metricGetCount: Counter = Counter.build().name("skel_intercept_get_total").help("Interception gets").register(cr)
   val metricDeleteCount: Counter = Counter.build().name("skel_intercept_delete_total").help("Interception deletes").register(cr)
   val metricCreateCount: Counter = Counter.build().name("skel_intercept_create_total").help("Interception creates").register(cr)
+  val metricUpdateCount: Counter = Counter.build().name("skel_intercept_update_total").help("Interception updates").register(cr)
   
   def getScripts(): Future[Scripts] = registry.ask(GetScripts)
   def getScript(id: Script.ID): Future[Try[Script]] = registry.ask(GetScript(id, _))
   def updateScript(id: Script.ID, uid:Option[UUID], scriptUpdate: ScriptUpdateReq ): Future[Try[Script]] = registry.ask(UpdateScript(id, uid, scriptUpdate, _))
+  def delScript(id: Script.ID): Future[Try[ActionRes]] = registry.ask(DelScript(id, _))
 
   def getInterceptions(history:Option[Long]): Future[Interceptions] = registry.ask(GetInterceptions(history, _))
   def getInterception(id: Interception.ID,history:Option[Long]): Future[Try[Interception]] = registry.ask(GetInterception(id,history, _))
@@ -88,19 +90,20 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   
   def getInterceptionAbi(id: Interception.ID,aid:AbiStore.ID): Future[Try[AbiContract]] = registry.ask(GetInterceptionAbi(id,aid, _))
   
-  def createInterception(interceptCreate: InterceptionCreateReq): Future[Try[Interception]] = registry.ask(CreateInterception(interceptCreate, _))
-  def deleteInterception(id: Interception.ID): Future[InterceptionActionRes] = registry.ask(DeleteInterception(id, _))
-  def commandInterception(interceptCommand: InterceptionCommandReq): Future[InterceptionActionRes] = registry.ask(CommandInterception(interceptCommand, _))
+  def createInterception(req: InterceptionCreateReq): Future[Try[Interception]] = registry.ask(CreateInterception(req, _))
+  def deleteInterception(id: Interception.ID): Future[ActionRes] = registry.ask(DeleteInterception(id, _))
+  def commandInterception(interceptCommand: InterceptionCommandReq): Future[ActionRes] = registry.ask(CommandInterception(interceptCommand, _))
+  def updateInterception(id: Interception.ID,req: InterceptionUpdateReq): Future[Try[Interception]] = registry.ask(UpdateInterception(id,req, _))
 
   @GET @Path("/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Return Interception by id",
     parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id")),
     responses = Array(new ApiResponse(responseCode="200",description = "Interception returned",content=Array(new Content(schema=new Schema(implementation = classOf[Interception])))))
   )
-  def getInterceptionRoute(id: String) = get {
+  def getInterceptionRoute(id: Interception.ID) = get {
     rejectEmptyResponse {
       parameters("history".as[Long].optional) { (history) => 
-        onSuccess(getInterception(UUID(id),history)) { r =>
+        onSuccess(getInterception(id,history)) { r =>
           metricGetCount.inc()
           encodeResponse { complete(r) }
         }
@@ -186,10 +189,10 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   @Operation(tags = Array("intercept"),summary = "Delete Interception by id",
     parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Interception id (uuid)")),
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Interception deleted",content = Array(new Content(schema = new Schema(implementation = classOf[Interception])))))
+      new ApiResponse(responseCode = "200", description = "Interception deleted",content = Array(new Content(schema = new Schema(implementation = classOf[ActionRes])))))
   )
-  def deleteInterceptionRoute(id: String) = delete {
-    onSuccess(deleteInterception(UUID(id))) { r =>
+  def deleteInterceptionRoute(id:Interception.ID) = delete {
+    onSuccess(deleteInterception(id)) { r =>
       metricDeleteCount.inc()
       complete((StatusCodes.OK, r))
     }
@@ -199,14 +202,28 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Create Interception",
     requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionCreateReq])))),
-    responses = Array(new ApiResponse(responseCode = "200", description = "Interception created",content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionActionRes])))))
+    responses = Array(new ApiResponse(responseCode = "200", description = "Interception created",content = Array(new Content(schema = new Schema(implementation = classOf[Interception])))))
   )
   def createInterceptionRoute = post {
-    entity(as[InterceptionCreateReq]) { interceptCreate =>
-      onSuccess(createInterception(interceptCreate)) { r =>
-
+    entity(as[InterceptionCreateReq]) { req =>
+      onSuccess(createInterception(req)) { r =>
         metricCreateCount.inc()
         complete((StatusCodes.Created, r))
+      }
+    }
+  }
+
+  @PUT @Path("/{id}") @Consumes(Array(MediaType.APPLICATION_JSON))
+  @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Update Interception",
+    requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionCreateReq])))),
+    responses = Array(new ApiResponse(responseCode = "200", description = "Updated interception",content = Array(new Content(schema = new Schema(implementation = classOf[Interception])))))
+  )
+  def updateInterceptionRoute(id:Interception.ID) = put {
+    entity(as[InterceptionUpdateReq]) { req =>
+      onSuccess(updateInterception(id,req)) { r =>
+        metricUpdateCount.inc()
+        complete((StatusCodes.OK, r))
       }
     }
   }
@@ -215,7 +232,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Interception Command",
     requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionCommandReq])))),
-    responses = Array(new ApiResponse(responseCode = "200", description = "Interception updated",content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionActionRes])))))
+    responses = Array(new ApiResponse(responseCode = "200", description = "Interception updated",content = Array(new Content(schema = new Schema(implementation = classOf[ActionRes])))))
   )
   def commandInterceptionRoute(id:Interception.ID) = post {
     entity(as[InterceptionCommandReq]) { interceptCommand =>
@@ -247,7 +264,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
     }
   }
 
-  @POST @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @PUT @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Update script",
     parameters = Array(
       new Parameter(name = "id", in = ParameterIn.PATH, description = "Script ID"),
@@ -260,6 +277,19 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   def putScriptRoute(id:String,uid:Option[UUID]) = put {
     entity(as[ScriptUpdateReq]) { req =>
       onSuccess(updateScript(id,uid,req)) { r =>
+        complete(r)
+      }
+    }
+  }
+
+  @DELETE @Path("/script/{id}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("intercept"),summary = "Delete Script by id",
+    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Script ID")),
+    responses = Array(new ApiResponse(responseCode="200",description = "Result status",content=Array(new Content(schema=new Schema(implementation = classOf[ActionRes])))))
+  )
+  def delScriptRoute(id: String) = delete {
+    rejectEmptyResponse {
+      onSuccess(delScript(id)) { r =>
         complete(r)
       }
     }
@@ -284,7 +314,8 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           authenticate()(authn => {
             pathPrefix(Segment) { id => 
               getScriptRoute(id) ~
-              putScriptRoute(id,authn.getUser)
+              putScriptRoute(id,authn.getUser) ~
+              delScriptRoute(id)
             } ~ 
             pathEndOrSingleSlash {
               getScriptsRoute()
@@ -322,11 +353,13 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
           ) ~
           pathEndOrSingleSlash {
             authenticate()(authn =>
-              getInterceptionRoute(id)
+              getInterceptionRoute(UUID(id))
               ~ 
-              deleteInterceptionRoute(id)
+              deleteInterceptionRoute(UUID(id))
               ~
-              commandInterceptionRoute(UUID(id))              
+              updateInterceptionRoute(UUID(id))
+              ~
+              commandInterceptionRoute(UUID(id)) 
             )        
           }
         }
