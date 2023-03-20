@@ -119,7 +119,7 @@ class PipelineChainlink(feed:String,output:String)(implicit config:Config) exten
             Seq()
         }
       } else {
-        val price = data.split(",").toList match {
+        val price = data.split(",",-1).toList match {
           case rpc :: id :: result :: Nil => 
             Some(ChainlinkPrice(rpc,id,result))
             None

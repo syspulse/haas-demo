@@ -88,7 +88,7 @@ class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) exten
             Seq()
         }
       } else {
-        val price = data.split(",").toList match {
+        val price = data.split(",",-1).toList match {
           case id :: ts :: v :: Nil => 
             Some(CoinGeckoPrice(pairs = Map(id -> Map("usd" -> v.toDouble))))
             None

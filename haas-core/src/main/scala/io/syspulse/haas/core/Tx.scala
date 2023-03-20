@@ -17,13 +17,13 @@ case class Tx(
   non:Long,
   fee:Option[BigInt],
   tip:Option[BigInt], 
-  typ:Int,      
+  typ:Option[Int],
   used2: Long,            // cumulative used
   used: Long,             // gas used
   cntr: Option[String],  // contract
   root: Option[String],   // receipt root
   sts: Int,               // status
-  p0: BigInt              // price Effective
+  p0: Option[BigInt]      // price Effective
 
   //timestamp:Option[Long]
 ) extends Ingestable {

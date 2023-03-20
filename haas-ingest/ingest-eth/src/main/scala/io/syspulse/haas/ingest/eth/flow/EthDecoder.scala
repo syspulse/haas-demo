@@ -69,11 +69,11 @@ trait EthDecoder[T] {
       } else {
         // assume CSV
         // ignore header
-        // 
+        // number,hash,parent_hash,nonce,sha3_uncles,logs_bloom,transactions_root,state_root,receipts_root,miner,difficulty,total_difficulty,size,extra_data,gas_limit,gas_used,timestamp,transaction_count,base_fee_per_gas
         if(data.stripLeading().startsWith("number")) {
           Seq.empty
         } else {
-          val block = data.split(",").toList match {
+          val block = data.split(",",-1).toList match {
             case number :: hash :: parent_hash :: nonce :: sha3_uncles :: logs_bloom :: transactions_root :: 
                  state_root :: receipts_root :: miner :: difficulty :: total_difficulty :: size :: extra_data :: 
                  gas_limit :: gas_used :: timestamp :: transaction_count :: base_fee_per_gas :: Nil =>
@@ -93,7 +93,7 @@ trait EthDecoder[T] {
 
                     ts,
                     transaction_count.toLong,
-                    base_fee_per_gas.toLong                    
+                    if(base_fee_per_gas.isEmpty()) None else Option(base_fee_per_gas.toLong)
                   ))            
                   
             case _ => 
@@ -130,7 +130,7 @@ trait EthDecoder[T] {
         if(data.stripLeading().startsWith("hash")) {
           Seq.empty
         } else {
-          val tx = data.split(",").toList match {
+          val tx = data.split(",",-1).toList match {
             case hash :: nonce :: block_hash :: block_number :: transaction_index :: from_address :: to_address :: 
                  value :: gas :: gas_price :: input :: block_timestamp :: max_fee_per_gas :: max_priority_fee_per_gas :: 
                  transaction_type :: 
@@ -155,13 +155,13 @@ trait EthDecoder[T] {
                     nonce.toLong,
                     Option(max_fee_per_gas).map(BigInt(_)),
                     Option(max_priority_fee_per_gas).map(BigInt(_)), 
-                    transaction_type.toInt, 
+                    if(transaction_type.isEmpty) None else Option(transaction_type.toInt), 
                     receipt_cumulative_gas_used.toLong, 
                     receipt_gas_used.toLong, 
                     Option(receipt_contract_address), 
                     Option(receipt_root), 
                     receipt_status.toInt, 
-                    BigInt(receipt_effective_gas_price)
+                    if(receipt_effective_gas_price.isEmpty) None else Option(BigInt(receipt_effective_gas_price))
                   ))
             // this is format of Tx. WHY !?
             case ts :: transaction_index :: hash :: block_number :: from_address :: to_address :: 
@@ -184,7 +184,7 @@ trait EthDecoder[T] {
                     input,
                     BigInt(value),
 
-                    0L,None,None, 0, 0L, 0L, None, None, 0, BigInt(0) 
+                    0L,None,None, None, 0L, 0L, None, None, 0, None
                   ))
                   
             case _ => 
@@ -222,7 +222,7 @@ trait EthDecoder[T] {
         if(data.stripLeading().startsWith("token_address")) {
           Seq.empty
         } else {
-          val tt = data.split(",").toList match {
+          val tt = data.split(",",-1).toList match {
             case tokenAddress :: from_address :: to_address :: value :: 
               transaction_hash :: log_index :: block_number :: block_timestamp :: Nil =>
             
@@ -268,7 +268,7 @@ trait EthDecoder[T] {
   //       if(data.stripLeading().startsWith("log_index")) {
   //         Seq.empty
   //       } else {
-  //         val tt = data.split(",").toList match {
+  //         val tt = data.split(",",-1).toList match {
   //           case block_timestamp :: block_number :: address :: data :: 
   //             transaction_hash :: log_index :: topics :: Nil =>
             
@@ -314,7 +314,7 @@ trait EthDecoder[T] {
         if(data.stripLeading().startsWith("type")) {
           Seq.empty
         } else {
-          val tt = data.split(",").toList match {
+          val tt = data.split(",",-1).toList match {
             case log_index :: transaction_hash :: transaction_index :: address :: 
                  data :: topics :: block_number :: block_timestamp :: block_hash :: 
                  item_id :: item_timestamp :: Nil =>

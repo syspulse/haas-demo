@@ -63,7 +63,7 @@ class PipelineCryptoCompTerse(feed:String,output:String)(implicit config:Config)
         }
       } else {
         // assume csv
-        val price = data.split(",").toList match {
+        val price = data.split(",",-1).toList match {
           case id :: ts :: v :: Nil => 
             //Some(CryptoCompTerse(pairs = Map(id -> Map("USD" -> CryptoCompData(id,v.toDouble,ts.toLong)))))
             None

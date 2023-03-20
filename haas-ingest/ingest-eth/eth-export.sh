@@ -2,17 +2,16 @@
 #
 
 #ETH_RPC=${ETH_RPC:-http://api.infura.io}
-ETH_RPC=${ETH_RPC:-http://geth.hacken.dev:8545}
+ETH_RPC=${ETH_RPC:-http://geth2.hacken.cloud:8545}
 
 START_BLOCK=${1:-latest}
 END_BLOCK=${2:-latest}
 OUTPUT=${OUTPUT:- -}
-ENTITY=${ENTITY:-export_token_transfers}
+ENTITY=${ENTITY:-token_transfers}
 EXTRA=${EXTRA}
 
-DOCKER_IMG=${DOCKER_IMG:-syspulse/ethereum-etl:2.0.3.1}
-DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com}
-DOCKER_DEF=${DOCKER_DEF:-}
+DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+#DOCKE=DOCKER=${DOCKER:-none}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -50,20 +49,10 @@ esac
 
 export PYTHONUNBUFFERED="1"
 
-if [ "$DOCKER" != "" ]; then
+if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ]; then
   >&2 echo "DOCKER: $DOCKER"
-  case "$DOCKER" in
-     "aws")
-        docker run --rm --name eth-export ${DOCKER_AWS}/${DOCKER_IMG} $ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
-        ;;    
-     "local"|"default")
-        docker run --rm --name eth-export ${DOCKER_DEF}${DOCKER_IMG} $ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
-        ;;
-     *)
-        docker run --rm --name eth-export $DOCKER $ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
-  esac
-  
+  docker run --rm --name eth-export ${DOCKER} export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
 else
   # requires patched ethereum-etl: https://github.com/syspulse/ethereum-etl/tree/feature/export-tokens-timestamp
-  ethereumetl $ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
+  ethereumetl export_${ENTITY} $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
 fi

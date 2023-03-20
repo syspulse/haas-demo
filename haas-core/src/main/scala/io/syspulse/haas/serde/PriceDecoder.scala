@@ -21,7 +21,7 @@ class PriceDecoder extends Decoder[Price] {
         Seq(price)
       } else {
         // assume csv
-        val price = data.split(",").toList match {
+        val price = data.split(",",-1).toList match {
           case id :: ts :: v :: pair :: xid :: Nil => 
             Some(Price(id,ts.toLong,v.toDouble,Option(pair),xid.toLong))
           case _ => {

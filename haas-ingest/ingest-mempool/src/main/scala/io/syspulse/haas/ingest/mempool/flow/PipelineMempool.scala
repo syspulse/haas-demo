@@ -60,7 +60,7 @@ class PipelineMempool(feed:String,output:String)(implicit config:Config) extends
             Seq()
         }
       } else {
-        data.split(",").toList match {
+        data.split(",",-1).toList match {
           case ts :: pool :: from :: gas :: p :: fee :: tip :: hash :: inp :: non :: to :: v :: typ :: sig :: Nil =>
             Seq(MempoolTx(
               ts.toLong,

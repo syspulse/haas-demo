@@ -25,7 +25,7 @@ case class Block(
 
   ts:Long, 
   cnt:Long, // transaction count
-  fee:Long, // base fee
+  fee:Option[Long], // base fee
 
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(i)

@@ -21,7 +21,7 @@ object Supply {
   def fromFile(file:String):Array[(Int, String, BigInt)] = {
     Source.fromFile(file)
       .getLines()
-      .flatMap(s => s.split(",").toList match {
+      .flatMap(s => s.split(",",-1).toList match {
         case erc20 :: from_addr :: to_addr :: value :: _ :: _ :: block :: Nil => Some(
           List(
             (block.toInt,from_addr,- BigInt(value)),

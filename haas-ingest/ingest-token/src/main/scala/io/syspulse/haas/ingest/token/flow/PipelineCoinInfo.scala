@@ -73,7 +73,7 @@ class PipelineCoinInfo(feed:String,output:String)(implicit config:Config) extend
       } else {
         // assume csv
         // FIX ME !
-        val coin = data.split(",").toList match {
+        val coin = data.split(",",-1).toList match {
           case id :: symbol :: name :: contract_address :: category :: icon :: Nil => 
             Some(CoinInfo(id,symbol,name,Some(contract_address),categories = Util.csvToList(category),image = Image("","",icon)))
           case id :: symbol :: name :: contract_address :: Nil => Some(CoinInfo(id,symbol,name,Some(contract_address)))

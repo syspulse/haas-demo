@@ -134,7 +134,7 @@ class PipelineEvmTxPool(feed:String,output:String,delta:Boolean)(implicit config
             Seq()
         }
       } else {
-        val m = data.split(",").toList match {
+        val m = data.split(",",-1).toList match {
           case rpc :: id :: result :: Nil => 
             log.error(s"not implemented: '${data}'")
             None

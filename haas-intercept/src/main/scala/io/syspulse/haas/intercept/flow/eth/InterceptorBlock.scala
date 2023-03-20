@@ -57,7 +57,7 @@ class InterceptorBlock(bid:Blockchain.ID,interceptionStore:InterceptionStore,scr
 
       ("timestamp" -> b.ts),
       ("transaction_count" -> b.cnt),
-      ("base_fee_per_gas" -> b.fee),      
+      ("base_fee_per_gas" -> b.fee.getOrElse("null")),
     )
   }
  

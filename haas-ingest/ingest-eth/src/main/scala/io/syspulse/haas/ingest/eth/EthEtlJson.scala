@@ -34,7 +34,7 @@ case class EthBlock(
 
   timestamp:Long,
   transaction_count:Long,
-  base_fee_per_gas:Long,
+  base_fee_per_gas:Option[Long],
 )  extends Ingestable
 
 case class EthTx(
@@ -52,13 +52,13 @@ case class EthTx(
   nonce:Long,
   max_fee_per_gas:Option[BigInt] = None,
   max_priority_fee_per_gas:Option[BigInt] = None, 
-  transaction_type:Int, 
+  transaction_type: Option[Int], 
   receipt_cumulative_gas_used: Long, 
   receipt_gas_used: Long, 
   receipt_contract_address: Option[String], 
   receipt_root: Option[String], 
   receipt_status: Int, 
-  receipt_effective_gas_price: BigInt
+  receipt_effective_gas_price: Option[BigInt]
 
 )  extends Ingestable
 

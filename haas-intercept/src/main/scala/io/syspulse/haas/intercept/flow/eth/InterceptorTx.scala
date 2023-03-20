@@ -49,13 +49,13 @@ class InterceptorTx(bid:Blockchain.ID,interceptionStore:InterceptionStore,script
       ("nonce" -> tx.non),
       ("max_fee" -> tx.fee.getOrElse("null")),
       ("max_tip" -> tx.tip.getOrElse("null")),
-      ("type" -> tx.typ),
+      ("type" -> tx.typ.getOrElse("null")),
       ("gas_used_cumulative" -> tx.used2),
       ("gas_used" -> tx.used),
       ("contract" -> tx.cntr.getOrElse("null")),
       ("receipt_root" -> tx.root.getOrElse("null")),
       ("status" -> tx.sts),
-      ("price_effective" -> tx.p0),
+      ("price_effective" -> tx.p0.getOrElse("null")),
 
     )
   }

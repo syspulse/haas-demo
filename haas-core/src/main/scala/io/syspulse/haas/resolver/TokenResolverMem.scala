@@ -18,7 +18,7 @@ class TokenResolverMem(datastore:Option[String] = None) extends Resolver[String,
 
   val store = default ++ default.map{case(k,v) => v -> k} ++ {
     if(!datastore.isDefined) Map[String,String]() else {
-      val r = datastore.get.split("\n").filter(!_.isEmpty()).flatMap(_.split(",").toList match {
+      val r = datastore.get.split("\n").filter(!_.isEmpty()).flatMap(_.split(",",-1).toList match {
         case id :: ticker :: Nil => Some(id.trim -> ticker.trim)
         case _ => None
       }).toMap

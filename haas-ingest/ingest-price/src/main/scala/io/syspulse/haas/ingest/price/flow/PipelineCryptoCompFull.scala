@@ -64,7 +64,7 @@ class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config)
         }
       } else {
         // assume csv
-        val price = data.split(",").toList match {
+        val price = data.split(",",-1).toList match {
           case id :: ts :: v :: Nil => 
             Some(CryptoCompPriceFull(`RAW` = Map(id -> Map("USD" -> CryptoCompPriceData(id,v.toDouble,ts.toLong)))))
           case _ => {
