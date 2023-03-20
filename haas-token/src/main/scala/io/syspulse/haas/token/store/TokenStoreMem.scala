@@ -14,6 +14,7 @@ import io.jvm.uuid._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 import io.syspulse.haas.token.server.Tokens
+import io.syspulse.haas.core.TokenBlockchain
 
 class TokenStoreMem extends TokenStore {
   val log = Logger(s"${this}")
@@ -78,4 +79,15 @@ class TokenStoreMem extends TokenStore {
       Tokens(Seq(),Some(0))
     else
       search(Seq(txt + ".*"),from,size)
+
+  def update(id:ID, symbol:Option[String] = None, name:Option[String] = None,
+             cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
+             contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = 
+    this.?(id) match {
+      case Success(t) => 
+        val t1 = modify(t,symbol,name,cat,icon,dcml,contracts)
+        this.+(t1)
+        Success(t1)
+      case f => f
+    }
 }

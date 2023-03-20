@@ -18,15 +18,44 @@ import io.syspulse.haas.ingest.coingecko.CoinGeckoTokenJson
 import io.syspulse.haas.ingest.coingecko._
 import io.syspulse.haas.core.DataSource
 import io.syspulse.haas.core.TokenBlockchain
+import io.syspulse.skel.store.StoreDir
 
-class TokenStoreDir(dir:String = "store/") extends TokenStoreMem {
+import io.syspulse.haas.serde.TokenJson._
+import io.syspulse.haas.token.server.Tokens
+
+class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with TokenStore {
   import CoinGeckoTokenJson._
 
-  @volatile var loading = false
+  val store = new TokenStoreMem()
 
+  def all:Seq[Token] = store.all
+  def size:Long = store.size
+  override def +(u:Token):Try[TokenStoreDir] = super.+(u).flatMap(_ => store.+(u)).map(_ => this)
+
+  override def del(uid:ID):Try[TokenStoreDir] = super.del(uid).flatMap(_ => store.del(uid)).map(_ => this)
+  override def ?(uid:ID):Try[Token] = store.?(uid)
+
+  def search(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = store.search(txt,from,size)
+  def search(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.search(txt,from,size)
+
+  def ???(from:Option[Int],size:Option[Int]):Tokens = store.???(from,size)
+
+  def scan(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.scan(txt,from,size)  
+  def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.grep(txt,from,size)
+  def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.typing(txt,from,size)
+
+  override def update(id:ID, symbol:Option[String] = None, name:Option[String] = None,
+             cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
+             contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = 
+    store.update(id,symbol,name,cat,icon,dcml,contracts).flatMap(t => writeFile(t))
+
+  // load in Coingecko format
+  loadCoingGecko(dir)
+
+  // preload
   load(dir)
 
-  def load(dir:String) = {
+  def loadCoingGecko(dir:String) = {
     val storeDir = os.Path(dir,os.pwd)
     log.info(s"Loading dir store: ${storeDir}")
 

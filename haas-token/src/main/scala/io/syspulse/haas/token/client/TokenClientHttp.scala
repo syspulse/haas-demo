@@ -47,9 +47,13 @@ class TokenClientHttp(uri:String)(implicit as:ActorSystem[_], ec:ExecutionContex
   
   def reqGetToken(id:Token.ID) = HttpRequest(method = HttpMethods.GET, uri = s"${uri}/${id}")  
   def reqGetTokens() = HttpRequest(method = HttpMethods.GET, uri = s"${uri}")
-  def reqPostToken(id:String,symbol:String,name:String) =  HttpRequest(method = HttpMethods.POST, uri = s"${uri}",
+  def reqPostToken(id:String,symbol:String,name:String,
+                   cat:Option[List[String]] = None, 
+                   icon:Option[String]=None, 
+                   decimals:Option[Int] = None, 
+                   contracts: Option[Map[String,String]] = None) =  HttpRequest(method = HttpMethods.POST, uri = s"${uri}",
         entity = HttpEntity(ContentTypes.`application/json`, 
-          TokenCreateReq(id,symbol,name).toJson.toString)
+          TokenCreateReq(id,symbol,name,cat,icon,decimals,contracts).toJson.toString)
       )
   def reqDeleteToken(id:Token.ID) = HttpRequest(method = HttpMethods.DELETE, uri = s"${uri}/${id}")
 

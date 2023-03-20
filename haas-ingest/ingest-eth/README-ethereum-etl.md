@@ -50,19 +50,24 @@ ENTITY="block,transaction,log,token_transfer" ./eth-stream.sh
 
 Export to stdout is by default in __CSV__ !
 
-Export token transfer:
+Export token transfers to `stdout`
 ```
-ENTITY="export_token_transfers" ./eth-export.sh
+ENTITY="token_transfers" ./eth-export.sh
 ```
 
-Export logs:
+Export All (`block`,`tx`,`log`,`token_transfer`) to Hive directory:
+```
+ENTITY=all OUTPUT=output ./eth-export.sh 0 1
+```
+Files will have `\r\n`, processing requires delimiter:
+```
+./run-ingest-eth.sh -e block -f dirs://output/blocks --delimiter='\r\n
+```
+
+
+Export only logs:
 __NOT SUPPORTED__ !
 It requires transaction hashes !
 ```
-ENTITY="export_receipts_and_logs" ./eth-export.sh
+ENTITY="receipts_and_logs" ./eth-export.sh
 ```
-
-
-
-
-

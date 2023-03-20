@@ -13,4 +13,6 @@ object Blockchain {
 
   val ETHEREUM_MAINNET:ID = "ethereum"
   val ZKSYNC_MAINNET:ID = "zksync"
+  val OPTIMISM_MAINNET:ID = "optimism"
+  val ARBITRUM_MAINNET:ID = "arbitrum"
 }

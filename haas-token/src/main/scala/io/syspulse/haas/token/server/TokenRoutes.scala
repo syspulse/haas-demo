@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.parameters.RequestBody
-import jakarta.ws.rs.{Consumes, POST, GET, DELETE, Path, Produces}
+import jakarta.ws.rs.{Consumes, POST, PUT, GET, DELETE, Path, Produces}
 import jakarta.ws.rs.core.MediaType
 
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
@@ -74,6 +74,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   val metricGetCount: Counter = Counter.build().name("skel_token_get_total").help("Token gets").register(cr)
   val metricDeleteCount: Counter = Counter.build().name("skel_token_delete_total").help("Token deletes").register(cr)
   val metricCreateCount: Counter = Counter.build().name("skel_token_create_total").help("Token creates").register(cr)
+  val metricUpdateCount: Counter = Counter.build().name("skel_token_update_total").help("Token updates").register(cr)
   
   def getTokens(): Future[Tokens] = registry.ask(GetTokens)
   def getTokensPage(from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(GetTokensPage(from,size, _))
@@ -82,7 +83,8 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   def getTokenBySearch(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(SearchToken(txt, from,size,_))
   def getTokenByTyping(txt: String,from:Option[Int],size:Option[Int]): Future[Tokens] = registry.ask(TypingToken(txt, from,size,_))
 
-  def createToken(tokenCreate: TokenCreateReq): Future[Token] = registry.ask(CreateToken(tokenCreate, _))
+  def createToken(req: TokenCreateReq): Future[Token] = registry.ask(CreateToken(req, _))
+  def updateToken(id:Token.ID, req: TokenUpdateReq): Future[Try[Token]] = registry.ask(UpdateToken(id,req, _))
   def deleteToken(id: Token.ID): Future[TokenActionRes] = registry.ask(DeleteToken(id, _))
   def randomToken(): Future[Token] = registry.ask(RandomToken(_))
 
@@ -194,13 +196,27 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
   @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("token"),summary = "Create Token",
     requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[TokenCreateReq])))),
-    responses = Array(new ApiResponse(responseCode = "200", description = "Token created",content = Array(new Content(schema = new Schema(implementation = classOf[TokenActionRes])))))
+    responses = Array(new ApiResponse(responseCode = "200", description = "Token created",content = Array(new Content(schema = new Schema(implementation = classOf[Token])))))
   )
   def createTokenRoute = post {
-    entity(as[TokenCreateReq]) { tokenCreate =>
-      onSuccess(createToken(tokenCreate)) { r =>
+    entity(as[TokenCreateReq]) { req =>
+      onSuccess(createToken(req)) { r =>
         metricCreateCount.inc()
         complete((StatusCodes.Created, r))
+      }
+    }
+  }
+  @PUT @Path("/") @Consumes(Array(MediaType.APPLICATION_JSON))
+  @Produces(Array(MediaType.APPLICATION_JSON))
+  @Operation(tags = Array("token"),summary = "Update Token",
+    requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[TokenUpdateReq])))),
+    responses = Array(new ApiResponse(responseCode = "200", description = "Token updated",content = Array(new Content(schema = new Schema(implementation = classOf[Token])))))
+  )
+  def updateTokenRoute(id:String) = put {
+    entity(as[TokenUpdateReq]) { req =>
+      onSuccess(updateToken(id,req)) { r =>
+        metricUpdateCount.inc()
+        complete(r)
       }
     }
   }
@@ -222,7 +238,7 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
         pathEndOrSingleSlash {
           concat(
             authenticate()(authn =>
-              authorize(Permissions.isAdmin(authn)) {              
+              authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {              
                 createTokenRoute  
               } ~
               getTokensRoute()
@@ -258,8 +274,9 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
             authenticate()(authn =>              
               getTokenRoute(id)
               ~ 
-              authorize(Permissions.isAdmin(authn)) {
-                deleteTokenRoute(id)
+              authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {
+                deleteTokenRoute(id) ~
+                updateTokenRoute(id)
               }
             )            
           }

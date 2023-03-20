@@ -15,6 +15,7 @@ import io.syspulse.haas.token.server._
 import io.syspulse.haas.token._
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
+import io.syspulse.haas.core.TokenBlockchain
 
 object TokenRegistry {
   val log = Logger(s"${this}")
@@ -26,7 +27,8 @@ object TokenRegistry {
   final case class SearchToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   final case class TypingToken(txt:String,from:Option[Int],size:Option[Int],replyTo: ActorRef[Tokens]) extends Command
   
-  final case class CreateToken(tokenCreate: TokenCreateReq, replyTo: ActorRef[Token]) extends Command
+  final case class CreateToken(req: TokenCreateReq, replyTo: ActorRef[Token]) extends Command
+  final case class UpdateToken(id:ID, req: TokenUpdateReq, replyTo: ActorRef[Try[Token]]) extends Command
   final case class RandomToken(replyTo: ActorRef[Token]) extends Command
 
   final case class DeleteToken(id: ID, replyTo: ActorRef[TokenActionRes]) extends Command
@@ -77,22 +79,43 @@ object TokenRegistry {
         replyTo ! tt
         Behaviors.same
 
-      case CreateToken(tokenCreate, replyTo) =>
-        val token = Token(tokenCreate.id, tokenCreate.symbol,tokenCreate.name,tokenCreate.contractAddress)
+      case CreateToken(req, replyTo) =>
+        val token = Token(
+          req.id, 
+          req.symbol,
+          req.name,
+          cat = req.cat.getOrElse(Seq()).toList,
+          icon = req.icon,
+          dcml = req.decimals,
+          chain = req.contracts.getOrElse(Map()).map{ case(bid,addr) => 
+            TokenBlockchain(bid.toLowerCase,addr.toLowerCase)
+          }.toSeq)
                 
         val store1 = store.+(token)
 
         replyTo ! token
-        registry(store1.getOrElse(store))
+        Behaviors.same
+        
+      case UpdateToken(id, req, replyTo) =>
+        val t1 = store.update(id,req.symbol,req.name,req.cat,req.icon,req.decimals,
+          req.contracts.map { 
+            _.map{ case(bid,addr) => 
+              TokenBlockchain(bid.toLowerCase,addr.toLowerCase)
+            }.toSeq
+          }
+        )
+
+        replyTo ! t1
+        Behaviors.same
 
       case RandomToken(replyTo) =>
         //replyTo ! TokenRandomRes(secret,qrImage)
         Behaviors.same
       
-      case DeleteToken(vid, replyTo) =>
-        val store1 = store.del(vid)
-        replyTo ! TokenActionRes(s"Success",Some(vid.toString))
-        registry(store1.getOrElse(store))
+      case DeleteToken(id, replyTo) =>
+        val store1 = store.del(id)
+        replyTo ! TokenActionRes(s"deleted",Some(id.toString))
+        Behaviors.same
     }
   }
 }
