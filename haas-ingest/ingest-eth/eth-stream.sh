@@ -14,7 +14,7 @@ OUTPUT=${2}
 ENTITY=${ENTITY:-transaction}
 
 #DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
-#DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
 DOCKE=DOCKER=${DOCKER:-none}
 DOCKER_STATE=${DOCKER_STATE:-state/}
 
@@ -62,11 +62,24 @@ export PYTHONUNBUFFERED="1"
 
 >&2 echo "START_BLOCK: $START_BLOCK"
 
-if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ] ; then
+if [ "$DOCKER" != "" ]; then
    >&2 echo "DOCKER: ${DOCKER}"
-   docker run --rm --name eth-stream \
-      -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
-      $DOCKER stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK -b ${BATCH_SIZE}
+
+   case "$DOCKER" in
+     "aws")
+        docker run --rm --name eth-stream \
+            -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
+            $DOCKER_AWS \
+            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK -b ${BATCH_SIZE}
+        ;;     
+     *)
+        docker run --rm --name eth-stream \
+            -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
+            $DOCKER \
+            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK -b ${BATCH_SIZE}
+        ;;
+   esac
+   
 else
    ethereumetl stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l $LAST_BLOCK -b ${BATCH_SIZE}
 fi

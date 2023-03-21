@@ -10,8 +10,12 @@ OUTPUT=${OUTPUT:- -}
 ENTITY=${ENTITY:-token_transfers}
 EXTRA=${EXTRA}
 
-DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
-#DOCKE=DOCKER=${DOCKER:-none}
+BUCKET_DIR=${BUCKET_DIR:-/data}
+
+DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+
+DOCKER=${DOCKER:-aws}
+#DOCKER=${DOCKER:-none}
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -49,9 +53,23 @@ esac
 
 export PYTHONUNBUFFERED="1"
 
-if [ "$DOCKER" != "" ] && [ "$DOCKER" != "none" ]; then
-  >&2 echo "DOCKER: $DOCKER"
-  docker run --rm --name eth-export ${DOCKER} export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
+if [ "$DOCKER" != "" ]; then   
+   >&2 echo "DOCKER: $DOCKER"
+   
+   case "$DOCKER" in
+     "aws")
+        docker run --rm --name eth-export \
+            -v $BUCKET_DIR:$BUCKET_DIR \
+            ${DOCKER_AWS} \
+            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
+        ;;     
+     *)
+        docker run --rm --name eth-export \
+            -v $BUCKET_DIR:$BUCKET_DIR \
+            ${DOCKER} \
+            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
+        ;;
+   esac
 else
   # requires patched ethereum-etl: https://github.com/syspulse/ethereum-etl/tree/feature/export-tokens-timestamp
   ethereumetl export_${ENTITY} $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
