@@ -52,7 +52,8 @@ abstract class PipelineEthTokenTransfer[E <: skel.Ingestable](feed:String,output
     tt.from,
     tt.to,
     tt.value,
-    tt.txHash
+    tt.txHash,
+    tt.logIndex
   )
   
   override def parse(data:String):Seq[EthTokenTransfer] = parseTokenTransfer(data)

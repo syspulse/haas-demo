@@ -10,6 +10,7 @@ case class TokenTransfer(
   to:String,
   value:BigInt,
   hash:String,
+  i:Int
   
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)

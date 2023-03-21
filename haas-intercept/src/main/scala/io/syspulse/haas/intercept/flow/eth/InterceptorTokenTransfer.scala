@@ -43,6 +43,7 @@ class InterceptorTokenTransfer(bid:Blockchain.ID,interceptionStore:InterceptionS
       ("value" -> t.value),
       ("block_number" -> t.block),
       ("hash" -> t.hash), //("transaction_hash" -> t.hash),
+      ("index" -> t.i), //("transaction_hash" -> t.hash),
       ("ts" -> t.ts),
     )
   }

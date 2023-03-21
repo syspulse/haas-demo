@@ -11,5 +11,5 @@ import io.syspulse.haas.core.TokenTransfer
 
 object TokenTransferJson extends DefaultJsonProtocol {
   
-  implicit val jf_tokentransfer = jsonFormat7(TokenTransfer.apply _)
+  implicit val jf_tokentransfer = jsonFormat8(TokenTransfer.apply _)
 }
