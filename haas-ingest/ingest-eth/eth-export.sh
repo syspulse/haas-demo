@@ -66,8 +66,7 @@ case "$OUTPUT" in
       ;;      
 esac
 
-#echo "Block: $START_BLOCK_ARG" >&2
-
+>&2 echo "Blocks: $START_BLOCK_ARG  $END_BLOCK_ARG"
 >&2 echo "WORKERS: $WORKERS"
 >&2 echo "BATCH: $BATCH"
 
