@@ -17,6 +17,9 @@ DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/e
 DOCKER=${DOCKER:-aws}
 #DOCKER=${DOCKER:-none}
 
+WORKERS=${WORKERS:-1}
+BATCH=${BATCH:-100}
+
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
   START_BLOCK_ARG="-s $START_BLOCK"
@@ -51,6 +54,9 @@ esac
 
 #echo "Block: $START_BLOCK_ARG" >&2
 
+>&2 echo "WORKERS: $WORKERS"
+>&2 echo "BATCH: $BATCH"
+
 export PYTHONUNBUFFERED="1"
 
 if [ "$DOCKER" != "" ]; then   
@@ -61,16 +67,25 @@ if [ "$DOCKER" != "" ]; then
         docker run --rm --name eth-export \
             -v $BUCKET_DIR:$BUCKET_DIR \
             ${DOCKER_AWS} \
-            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
+            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
+            -w $WORKERS \
+            -B $BATCH \
+            --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
         ;;     
      *)
         docker run --rm --name eth-export \
             -v $BUCKET_DIR:$BUCKET_DIR \
             ${DOCKER} \
-            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
+            export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
+            -w $WORKERS \
+            -B $BATCH \
+            --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
         ;;
    esac
 else
   # requires patched ethereum-etl: https://github.com/syspulse/ethereum-etl/tree/feature/export-tokens-timestamp
-  ethereumetl export_${ENTITY} $START_BLOCK_ARG $END_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
+  ethereumetl export_${ENTITY} $START_BLOCK_ARG $END_BLOCK_ARG \
+   -w $WORKERS \
+   -B $BATCH \
+   --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
 fi
