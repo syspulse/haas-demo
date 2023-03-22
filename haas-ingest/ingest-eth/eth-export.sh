@@ -2,7 +2,8 @@
 #
 
 #ETH_RPC=${ETH_RPC:-http://api.infura.io}
-ETH_RPC=${ETH_RPC:-http://geth2.hacken.cloud:8545}
+#ETH_RPC=${ETH_RPC:-http://geth2.hacken.cloud:8545}
+ETH_RPC=${ETH_RPC:-http://geth2.hacken.dev:8545}
 
 START_BLOCK=${1:-latest}
 END_BLOCK=${2:-latest}
@@ -19,6 +20,19 @@ DOCKER=${DOCKER:-aws}
 
 WORKERS=${WORKERS:-1}
 BATCH=${BATCH:-100}
+
+case "$ENTITY" in 
+   "token_transfers")
+      BATCH_ARG="-b $BATCH"
+      ;;
+   "all")
+      BATCH_ARG="-B $BATCH"
+      ;;
+   *)
+      BATCH_ARG="-B $BATCH"
+      ;;
+esac
+
 
 if [ "$START_BLOCK" != "latest" ]; then
   rm -f last_synced_block.txt
@@ -69,7 +83,7 @@ if [ "$DOCKER" != "" ]; then
             ${DOCKER_AWS} \
             export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
             -w $WORKERS \
-            -B $BATCH \
+            ${BATCH_ARG} \
             --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
         ;;     
      *)
@@ -78,7 +92,7 @@ if [ "$DOCKER" != "" ]; then
             ${DOCKER} \
             export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
             -w $WORKERS \
-            -B $BATCH \
+            ${BATCH_ARG} \
             --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA  
         ;;
    esac
@@ -86,6 +100,6 @@ else
   # requires patched ethereum-etl: https://github.com/syspulse/ethereum-etl/tree/feature/export-tokens-timestamp
   ethereumetl export_${ENTITY} $START_BLOCK_ARG $END_BLOCK_ARG \
    -w $WORKERS \
-   -B $BATCH \
+   ${BATCH_ARG} \
    --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
 fi
