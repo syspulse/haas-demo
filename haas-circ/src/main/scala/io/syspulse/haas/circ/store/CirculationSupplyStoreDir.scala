@@ -16,6 +16,9 @@ import DefaultJsonProtocol._
 import os._
 import scala.collection.SortedSet
 
+object CirculationSupplyStoreDir {
+  val FILE_NAME = "circulating_supply.json"
+}
 
 // temporary structure to catch tokenId
 case class TokenCirculating(tid:String,circ:Circulation)
@@ -40,7 +43,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
       .filter(_.toIO.isFile())
       .filter( f => {
         log.debug(s"${f}: ${f.toIO.getName}")
-        f.toIO.getName == "circulating_supply.json"
+        f.toIO.getName == CirculationSupplyStoreDir.FILE_NAME
       })
       .map(f => {
         log.info(s"Loading file: ${f}")

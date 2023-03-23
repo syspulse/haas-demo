@@ -2,9 +2,11 @@
 
 DIR=${1:-./}
 
-FILE=supply.json
+FILE=${2:-supply.json}
 
-for d in `ls $DIR`; do echo "dir: ${d}"; cat $d/circulating_supply.json >>$FILE; echo "" >>FILE ; done
+rm $FILE
 
-echo "Supply: `wc -l $FILE`"
+for d in `find $DIR -name "circulating_supply.json"`; do echo "File: ${d}"; cat $d >>$FILE; echo "" >>FILE ; done
+
+echo "Supply: $FILE"
  
