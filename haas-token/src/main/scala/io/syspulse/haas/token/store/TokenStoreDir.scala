@@ -53,7 +53,7 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
   loadCoingGecko(dir)
 
   // preload
-  load(dir)
+  load(dir,hint = "\"cat\"")
 
   def loadCoingGecko(dir:String) = {
     val storeDir = os.Path(dir,os.pwd)
@@ -68,9 +68,13 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
       })
       .map(fileData => fileData.split("\n").map { data =>
         try {
-          val cg = data.parseJson.convertTo[CoinInfo]
-          log.debug(s"coin=${cg}")
-          Seq(cg.toToken)
+          if(data.contains("asset_platform_id")) {
+            val cg = data.parseJson.convertTo[CoinInfo]
+            log.debug(s"coin=${cg}")
+            Seq(cg.toToken)
+          } else 
+            // skip
+            Seq()
         } catch {
           case e:Exception => 
             log.error(s"could not parse data: ${data}",e); 
