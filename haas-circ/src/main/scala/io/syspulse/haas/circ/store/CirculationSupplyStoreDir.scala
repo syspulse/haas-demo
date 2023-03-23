@@ -28,7 +28,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
     val dd = load(dir)
     dd.foreach(d => this.+(d))
 
-    log.info(s"Loaded store: ${this.size}")
+    log.info(s"Loaded store: CirculationSupply = ${this.size}")
   }
 
   
@@ -46,12 +46,15 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         log.info(s"Loading file: ${f}")
         (f,os.read(f))
       })
+      .flatMap{ case (f,data) => 
+        data.split("\n").map(d => (f,d))        
+      }
       .flatMap{ case (f,data) => {
         parseCirculation(data).map{ case(tid,c) => TokenCirculating(tid,c)}
       }}
       
     log.debug(s"${circs}")
-    log.info(s"Circulations: ${circs.size}")
+    log.info(s"Circulations = ${circs.size}")
 
     circs.groupBy(_.tid).map{ case(tid,circ) => {
       CirculationSupply(
