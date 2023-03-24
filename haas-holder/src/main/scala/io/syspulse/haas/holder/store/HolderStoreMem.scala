@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.Logger
 
 import io.jvm.uuid._
 
-import io.syspulse.haas.core.Holders
+import io.syspulse.haas.core.{Holders,Holder}
 import io.syspulse.haas.core.Holders.ID
 import io.syspulse.haas.holder.server.Holderss
 import scala.collection.mutable
@@ -47,7 +47,7 @@ class HolderStoreMem extends HolderStore {
           hh
             .drop(from.getOrElse(0))
             .take(size.getOrElse(10))
-            .map(h => h.copy(addrs = h.addrs.take(limit.getOrElse(10))))
+            .map(h => h.copy(holders = h.holders.take(limit.getOrElse(10))))
             .toSeq,
           total=Some(hh.size)
         )
@@ -66,18 +66,18 @@ class HolderStoreMem extends HolderStore {
       case None =>   
         holders + (h.token.toLowerCase -> mutable.SortedSet[Holders](h))
     }
-    log.info(s"holders=${holders}")
+    //log.info(s"holders=${holders}")
     Success(this)
   }
   
   def ?(id:ID):Try[Holders] = holders.get(id) match {
     case Some(hh) => 
-      val allHolders = hh.foldLeft(Map[String,BigInt]())((m,h) => m ++ h.addrs)
+      val allHolders = hh.foldLeft(Seq[Holder]())((m,h) => m ++ h.holders)
       Success(
         Holders(
           ts = 0L,
           token = id,
-          addrs = allHolders
+          holders = allHolders
         )
       )     
     case None => Failure(new Exception(s"not found: ${id}"))

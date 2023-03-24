@@ -6,7 +6,7 @@ import scala.collection.immutable
 
 import com.typesafe.scalalogging.Logger
 
-import io.syspulse.haas.core.Holders
+import io.syspulse.haas.core.{Holder,Holders}
 import io.syspulse.haas.core.Holders.ID
 
 import os._
@@ -98,18 +98,17 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
         this.+(h)
       }}
       
-    log.debug(s"${all}")
+    //log.info(s"${all}")
     log.info(s"Holders = ${this.size}")
   }
 
-  def parseHolders(lines:String):Map[String,BigInt] = {
+  def parseHolders(lines:String):Seq[Holder] = {
     // ignore possible header
-    lines.split("[\r\n]").filter(!_.trim.isEmpty()).filter(!_.startsWith("address,")).flatMap(data => {
-      
+    lines.split("[\r\n]").filter(!_.trim.isEmpty()).filter(!_.startsWith("address,")).flatMap(data => {      
       try {
         data.split(",",-1).toList match {
           case addr :: balance :: Nil => 
-            Some(addr -> BigInt(balance))
+            Some(Holder(addr,BigInt(balance)))            
           case _ => 
             None
         }
@@ -118,7 +117,7 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
           log.error(s"could not parse data: ${data}",e); 
           None
       }
-    }).toMap
+    }).sorted.toSeq    
   }
 
   // preload
