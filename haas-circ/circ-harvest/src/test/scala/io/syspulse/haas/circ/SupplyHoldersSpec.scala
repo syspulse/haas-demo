@@ -10,10 +10,10 @@ import io.syspulse.haas.core._
 import io.syspulse.skel.util.Util
 import java.math.BigInteger
 
-class HoldersSpec extends AnyWordSpec with Matchers {
+class SupplyHoldersSpec extends AnyWordSpec with Matchers {
   val testDir = this.getClass.getClassLoader.getResource(".").getPath + "../../../"
 
-  "HoldersSpec" should {
+  "SupplyHoldersSpec" should {
     
     "holders should be 1" in {
 

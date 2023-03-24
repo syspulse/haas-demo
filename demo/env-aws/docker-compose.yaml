@@ -37,6 +37,29 @@ services:
               echo skel-user: OK && \
               exit 0'"
 
+  skel-auth:
+    image: syspulse/skel-auth:latest
+    container_name: skel-auth
+    restart: always
+    volumes:
+      - "${PWD}/store:/store"
+    ports:
+      - 8080:8080
+    networks:
+      - demo
+    command: server
+    environment:
+      # JAVA_OPTS: -Dgod
+      DATASTORE: mem://
+      STORE_CRED: dir:///store/auth/cred
+      USER_URI: http://skel-user:8080/api/v1/user
+      GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
+      GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
+      TWITTER_AUTH_CLIENT_ID: ${TWITTER_AUTH_CLIENT_ID}
+      TWITTER_AUTH_CLIENT_SECRET: ${TWITTER_AUTH_CLIENT_SECRET}
+      ETH_AUTH_CLIENT_ID: ${ETH_AUTH_CLIENT_ID}
+      ETH_AUTH_CLIENT_SECRET: ${ETH_AUTH_CLIENT_SECRET}
+
   skel-user:
     image: syspulse/skel-user:latest
     container_name: skel-user
@@ -109,30 +132,6 @@ services:
       DATASTORE: dir:///store/label
       #DATASTORE: dir:///data
       #DATASTORE: resources://
-
-  skel-auth:
-    image: syspulse/skel-auth:latest
-    container_name: skel-auth
-    restart: always
-    volumes:
-      - "${PWD}/store:/store"
-    ports:
-      - 8080:8080
-    networks:
-      - demo
-    command: server
-    environment:
-      # JAVA_OPTS: -Dgod
-      DATASTORE: mem://
-      STORE_CRED: dir:///store/auth/cred
-      USER_URI: http://skel-user:8080/api/v1/user
-      GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
-      GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
-      TWITTER_AUTH_CLIENT_ID: ${TWITTER_AUTH_CLIENT_ID}
-      TWITTER_AUTH_CLIENT_SECRET: ${TWITTER_AUTH_CLIENT_SECRET}
-      ETH_AUTH_CLIENT_ID: ${ETH_AUTH_CLIENT_ID}
-      ETH_AUTH_CLIENT_SECRET: ${ETH_AUTH_CLIENT_SECRET}
-
 
   haas-token:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-token:latest

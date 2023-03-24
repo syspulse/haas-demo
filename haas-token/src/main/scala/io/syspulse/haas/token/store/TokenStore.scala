@@ -17,7 +17,7 @@ import io.syspulse.haas.core.TokenBlockchain
 trait TokenStore extends Store[Token,ID] {
   def getKey(t:Token):ID = t.id
   
-  def +(yell:Token):Try[TokenStore]
+  def +(t:Token):Try[TokenStore]
   
   def del(id:ID):Try[TokenStore]
   
