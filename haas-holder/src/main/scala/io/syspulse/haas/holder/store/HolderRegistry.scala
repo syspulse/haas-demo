@@ -20,7 +20,7 @@ object HolderRegistry {
   val log = Logger(s"${this}")
   
   final case class GetHolderss(replyTo: ActorRef[Holderss]) extends Command
-  final case class GetHoldersPage(id:ID,from:Option[Int],size:Option[Int],replyTo: ActorRef[Holderss]) extends Command
+  final case class GetHoldersPage(id:ID,ts0:Option[Long],ts1:Option[Long],from:Option[Int],size:Option[Int],limit:Option[Int],replyTo: ActorRef[Holderss]) extends Command
   final case class GetHolders(ids:Seq[ID],replyTo: ActorRef[Holderss]) extends Command
     
   // this var reference is unfortunately needed for Metrics access
@@ -40,8 +40,8 @@ object HolderRegistry {
         replyTo ! Holderss(tt,Some(tt.size))
         Behaviors.same
 
-      case GetHoldersPage(id,from,size,replyTo) =>
-        val tt = store.???(id,from,size)
+      case GetHoldersPage(id,ts0,ts1,from,size,limit,replyTo) =>
+        val tt = store.???(id,ts0,ts1,from,size,limit)
         replyTo ! tt
         Behaviors.same
 

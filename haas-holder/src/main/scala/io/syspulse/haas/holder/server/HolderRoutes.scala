@@ -37,6 +37,7 @@ import io.prometheus.client.Counter
 import io.syspulse.skel.service.Routeable
 import io.syspulse.skel.service.CommonRoutes
 
+import io.syspulse.skel.util.TimeUtil
 import io.syspulse.skel.Command
 
 import scala.concurrent.Await
@@ -77,12 +78,11 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
   val metricUpdateCount: Counter = Counter.build().name("skel_holder_update_total").help("Holders updates").register(cr)
   
   def getHolderss(): Future[Holderss] = registry.ask(GetHolderss)
-  def getHoldersPage(id:String,from:Option[Int],size:Option[Int]): Future[Holderss] = registry.ask(GetHoldersPage(id,from,size, _))
+  def getHoldersPage(id:String,ts0:Option[Long],ts1:Option[Long],from:Option[Int],size:Option[Int],limit:Option[Int]): Future[Holderss] = registry.ask(GetHoldersPage(id,ts0,ts1,from,size,limit, _))
   def getHolders(ids: Seq[Holders.ID]): Future[Holderss] = registry.ask(GetHolders(ids, _))    
 
-  @GET @Path("/{addr,addr}") @Produces(Array(MediaType.APPLICATION_JSON))
+  @GET @Path("/") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("holder"),summary = "Return Holders for mulitple Tokens",
-    parameters = Array(new Parameter(name = "id", in = ParameterIn.PATH, description = "Token Address")),
     responses = Array(new ApiResponse(responseCode="200",description = "Holders",content=Array(new Content(schema=new Schema(implementation = classOf[Holderss])))))
   )
   def getAllRoute() = get {
@@ -111,6 +111,8 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
   @GET @Path("/{addr}") @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("holder"), summary = "Return Holders for Token",
     parameters = Array(
+      new Parameter(name = "ts0", in = ParameterIn.PATH, description = "Start Timestamp (optional)"),
+      new Parameter(name = "ts1", in = ParameterIn.PATH, description = "End Timestamp (optional)"),
       new Parameter(name = "from", in = ParameterIn.PATH, description = "Page from (inclusive)"),
       new Parameter(name = "size", in = ParameterIn.PATH, description = "Page size"),
     ),
@@ -118,18 +120,15 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
       new ApiResponse(responseCode = "200", description = "List of Holders",content = Array(new Content(schema = new Schema(implementation = classOf[Holderss])))))
   )
   def getHolderssRoute(addr:String) = get {
-    parameters("from".as[Int].optional,"size".as[Int].optional) { (from,size) =>
-      if(from.isDefined || size.isDefined)
-        onSuccess(getHoldersPage(addr,from,size)) { r =>
-            metricGetCount.inc()
-            complete(r)
-          }
-      else {
+    parameters("ts0".as[String].optional, "ts1".as[String].optional,"from".as[Int].optional,"size".as[Int].optional,"limit".as[Int].optional) { (ts0,ts1,from,size,limit) =>
+      onSuccess(getHoldersPage(addr,
+        ts0.map(t => TimeUtil.wordToTs(t,0L).get),
+        ts1.map(t => TimeUtil.wordToTs(t,Long.MaxValue).get),
+        from,size,limit)) { r =>
+
         metricGetCount.inc()
-        //complete(getHolders())
-        complete(getHoldersPage(addr,Some(0),Some(10)))
-      }
-    }
+        complete(r)
+    }}
   }
 
   

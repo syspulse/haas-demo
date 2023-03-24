@@ -60,7 +60,8 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
 
   override def ?(id:ID):Try[Holders] = store.?(id)
 
-  def ???(id:ID,from:Option[Int],size:Option[Int]):Holderss = store.???(id,from,size)
+  def ???(id:ID,ts0:Option[Long],ts1:Option[Long],from:Option[Int],size:Option[Int],limit:Option[Int]):Holderss = 
+    store.???(id,ts0,ts1,from,size,limit)
 
   override def load(dir:String,hint:String="") = {
     val storeDir = os.Path(dir,os.pwd)
@@ -93,7 +94,6 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
       .map{ case (data,token,ts) => {
         val holders = parseHolders(data)
         val h = Holders(ts,token,holders)
-        println(s"====================> ${h}")
             
         this.+(h)
       }}

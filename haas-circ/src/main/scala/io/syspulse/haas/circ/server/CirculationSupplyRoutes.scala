@@ -35,7 +35,7 @@ import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
 
-import io.syspulse.skel.cli.CliUtil
+import io.syspulse.skel.util.TimeUtil
 
 import io.syspulse.skel.service.Routeable
 import io.syspulse.skel.service.CommonRoutes
@@ -93,15 +93,15 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getCirculationSupply( CirculationSupply(id), 
-            CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
-            
-            metricGetCount.inc()
-            
-            config.httpZip match {
-              case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
-              case _ => encodeResponse { complete(r) }
-            }
-        }}
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          
+          metricGetCount.inc()
+          
+          config.httpZip match {
+            case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+            case _ => encodeResponse { complete(r) }
+          }
+      }}
     }
   }
 
@@ -118,14 +118,14 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getCirculationSupplyByToken( tid, 
-            CliUtil.wordToTs(ts0.getOrElse(""),0L).get, CliUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
-            
-            metricGetCount.inc()
-            
-            config.httpZip match {
-              case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
-              case _ => encodeResponse { complete(r) }
-            }
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          
+          metricGetCount.inc()
+          
+          config.httpZip match {
+            case "gzip" => encodeResponseWith(Coders.Gzip) { complete(r) }
+            case _ => encodeResponse { complete(r) }
+          }
         }}
     }
   }

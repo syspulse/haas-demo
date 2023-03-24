@@ -23,6 +23,6 @@ trait HolderStore extends Store[Holders,ID] {
   def all:Seq[Holders]
   def size:Long
 
-  def ???(id:ID,from:Option[Int],size:Option[Int]):Holderss
+  def ???(id:ID,ts0:Option[Long],ts1:Option[Long],from:Option[Int],size:Option[Int],limit:Option[Int]):Holderss
 
 }

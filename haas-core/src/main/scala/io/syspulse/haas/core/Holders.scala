@@ -6,7 +6,7 @@ import io.syspulse.skel.Ingestable
 case class Holders(
   ts:Long,
   token:String,
-  addrs:Map[String,BigInt]
+  addrs:Map[String,BigInt] = Map()
     
   ) extends Ingestable with Ordered[Holders] {
   override def getKey:Option[Any] = Some(token)

@@ -8,14 +8,14 @@ SERVICE_URI=${SERVICE_URI:-http://127.0.0.1:8080/api/v1/token}
 ACCESS_TOKEN=${ACCESS_TOKEN-`cat ACCESS_TOKEN`}
 
 if [ "$FROM" != "" ] || [ "$SIZE" != "" ]; then
-   PREFIX="?"
+   PARAMS="?"
 fi
 if [ "$FROM" != "" ]; then
-   PREFIX=$PREFIX"from=${FROM}&"
+   PARAMS=$PARAMS"from=${FROM}&"
 fi
 if [ "$SIZE" != "" ]; then
-   PREFIX=$PREFIX"size=${SIZE}"
+   PARAMS=$PARAMS"size=${SIZE}"
 fi
 
 
-curl -S -s -D /dev/stderr -X GET -H 'Content-Type: application/json' -H "Authorization: Bearer $ACCESS_TOKEN" $SERVICE_URI/search/${TXT}${PREFIX}
+curl -S -s -D /dev/stderr -X GET -H 'Content-Type: application/json' -H "Authorization: Bearer $ACCESS_TOKEN" $SERVICE_URI/search/${TXT}${PARAMS}
