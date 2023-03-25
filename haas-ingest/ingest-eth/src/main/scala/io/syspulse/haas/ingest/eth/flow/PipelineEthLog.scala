@@ -46,7 +46,7 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 abstract class PipelineEthLog[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineEth[EthLog,Event,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  def apiSuffix():String = s"/event"
+  def apiSuffix():String = s"/log"
   
   override def parse(data:String):Seq[EthLog] = parseEventLog(data)
 
