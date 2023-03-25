@@ -29,6 +29,7 @@ case class ConfigBlockchain(
   feedBlock:String = "null://",
   feedToken:String = "null://",
   feedEvent:String = "null://",
+  feedLog:String = "null://",
   feedFunc:String = "null://",
   feedMempool:String = "null://",
 )
@@ -46,6 +47,7 @@ case class Config(
   feedBlock:String = "null://",
   feedToken:String = "null://",
   feedEvent:String = "null://",
+  feedLog:String = "null://",
   feedFunc:String = "null://",
   feedMempool:String = "null://",
 
@@ -103,18 +105,13 @@ object App extends skel.Server {
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
 
-        // ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
-        // ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
-        // ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
-        // ArgString('_', "feed.event",s"EventLog Feed (def: ${d.feedEvent})"),
-        // ArgString('_', "feed.func",s"Function Tx Feed (def: ${d.feedFunc})"),
-        
         ArgString('_', "bid",s"Blockchains (def=${d.bid})"),
 
         ArgString('_', "feed.{bid}.tx",s"Tx Feed"),
         ArgString('_', "feed.{bid}.block",s"Block Feed"),
         ArgString('_', "feed.{bid}.token",s"TokenTransfe Feed"),
         ArgString('_', "feed.{bid}.event",s"EventLog Feed"),
+        ArgString('_', "feed.{bid}.log",s"EventLog Feed (synonim)"),
         ArgString('_', "feed.{bid}.func",s"Function Tx Feed"),
         ArgString('_', "feed.{bid}.mempool",s"Mempool Tx Feed"),
 
@@ -131,9 +128,7 @@ object App extends skel.Server {
         ArgString('d', "datastore",s"datastore for intercetpions (def: ${d.datastore})"),
         ArgString('s', "store.script",s"datastore for Scripts to execute on TX (def=${d.scriptStore})"),
         ArgString('_', "store.abi",s"ABI definitions store (def: ${d.abiStore})"),
-        // ArgString('_', "store.event",s"Event Signatures store (def: ${d.eventStore})"),
-        // ArgString('_', "store.func",s"Function signatures store (def: ${d.funcStore})"),
-
+ 
         ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
 
@@ -157,11 +152,6 @@ object App extends skel.Server {
       output = c.getString("output").getOrElse(d.output),
       entity = c.getString("entity").getOrElse(d.entity),
 
-      // feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
-      // feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
-      // feedToken = c.getString("feed.token").getOrElse(d.feedToken),
-      // feedEvent = c.getString("feed.event").getOrElse(d.feedEvent),
-      // feedFunc = c.getString("feed.func").getOrElse(d.feedFunc),
       bid = c.getListString("bid",d.bid),
       blockchains = c.getListString("bid",d.bid).map( bid => 
         bid -> ConfigBlockchain(bid,
@@ -169,6 +159,7 @@ object App extends skel.Server {
           feedBlock = c.getString(s"feed.${bid}.block").getOrElse(d.feedBlock),
           feedToken = c.getString(s"feed.${bid}.token").getOrElse(d.feedToken),
           feedEvent = c.getString(s"feed.${bid}.event").getOrElse(d.feedEvent),
+          feedLog = c.getString(s"feed.${bid}.log").getOrElse(d.feedLog),
           feedFunc = c.getString(s"feed.${bid}.func").getOrElse(d.feedFunc),
           feedMempool = c.getString(s"feed.${bid}.mempool").getOrElse(d.feedMempool),
         )
@@ -250,39 +241,32 @@ object App extends skel.Server {
           val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppTx = new PipelineEthInterceptTx(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
-          //val ppTx = new PipelineEthInterceptTx(if(config.feedTx.nonEmpty) config.feedTx else config.feed, config.output,ixTx)(config)
-
+          
           val ixBlock = new InterceptorBlock(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppBlock = new PipelineEthInterceptBlock(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedBlock else config.feed, config.output,ixBlock)(config)
-          //val ppBlock = new PipelineEthInterceptBlock(if(config.feedBlock.nonEmpty) config.feedBlock else config.feed, config.output,ixBlock)(config)
-
+          
           val ixToken = new InterceptorTokenTransfer(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppToken = new PipelineEthInterceptTokenTransfer(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedToken else config.feed, config.output,ixToken)(config)
-          //val ppToken = new PipelineEthInterceptTokenTransfer(if(config.feedToken.nonEmpty) config.feedToken else config.feed, config.output,ixToken)(config)
-
+          
           val ixEvent = new InterceptorEvent(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppEvent = new PipelineEthInterceptEvent(
-            if(!b.bid.isEmpty) config.blockchains(b.bid).feedEvent else config.feed, config.output,ixEvent)(config)
-          //val ppEvent = new PipelineEthInterceptEvent(if(config.feedEvent.nonEmpty) config.feedEvent else config.feed, config.output,ixEvent)(config)
-
+            if(!b.bid.isEmpty) {
+              if(config.blockchains(b.bid).feedEvent.isEmpty) 
+                config.blockchains(b.bid).feedLog 
+              else
+                config.blockchains(b.bid).feedEvent
+            } else config.feed, config.output, ixEvent)(config)
+          
           val ixFunc = new InterceptorFunc(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppFunc = new PipelineEthInterceptFunc(
-            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output,ixFunc)(config)
-          //val ppFunc = new PipelineEthInterceptFunc(if(config.feedFunc.nonEmpty) config.feedFunc else config.feed, config.output,ixFunc)(config)
-
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output, ixFunc)(config)
+          
           val ixMempool = new InterceptorMempool(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppMempool = new PipelineEthInterceptMempool(
-            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output,ixMempool)(config)
-
-          // start pipelines
-          // val r1 = ppTx.run()
-          // val r2 = ppBlock.run()
-          // val r3 = ppToken.run()
-          // val r4 = ppEvent.run()
-          // val r5 = ppFunc.run()
-
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output, ixMempool)(config)
+          
           val blockchainIx = List(
             s"${b.bid}.${ixTx.entity()}" -> ixTx,
             s"${b.bid}.${ixBlock.entity()}" -> ixBlock,
@@ -304,13 +288,6 @@ object App extends skel.Server {
             (InterceptionRegistry(datastoreInterceptions,
                                   datastoreScripts,
                                   abiStore,
-                                  // Map(
-                                  //   ixTx.entity() -> ixTx,
-                                  //   ixBlock.entity() -> ixBlock,
-                                  //   ixToken.entity() -> ixToken,
-                                  //   ixEvent.entity() -> ixEvent,
-                                  //   ixFunc.entity() -> ixFunc,
-                                  // )
                                   blockchainInterceptors.flatMap(_._1).toMap
                                   ),
               "InterceptionRegistry",(r, ac) => new InterceptionRoutes(r)(ac) )

@@ -18,7 +18,7 @@ OUTPUT=${2:-kafka/172.17.0.1:9093/zksync.mainnet.}
 ENTITY=${ENTITY:-transaction,block,token_transfer,log}
 
 #DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.0.3.1}
-DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.1}
+DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.2}
 DOCKER_STATE=${DOCKER_STATE:-state/}
 
 POLL=${POLL:-12}
