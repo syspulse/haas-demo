@@ -1,20 +1,11 @@
 package io.syspulse.haas.ingest.eth.flow
 
 import java.util.concurrent.atomic.AtomicLong
-import io.syspulse.skel.ingest.flow.Flows
-
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
-import akka.util.ByteString
-import akka.http.javadsl.Http
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.headers.Accept
-import akka.http.scaladsl.model.MediaTypes
-import akka.http.scaladsl
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.Flow
+import com.github.tototoshi.csv._
 
 import io.syspulse.skel
 import io.syspulse.skel.config._
@@ -22,8 +13,6 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest._
-import io.syspulse.skel.ingest.store._
-import io.syspulse.skel.ingest.flow.Pipeline
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -229,7 +218,7 @@ trait EthDecoder[T] {
         Seq()
     }
   }
-
+  
   def parseTokenTransfer(data:String):Seq[EthTokenTransfer] = {
     if(data.isEmpty()) return Seq()
 
@@ -292,30 +281,33 @@ trait EthDecoder[T] {
         Seq(tt)
 
       } else {
-        // ignore header
-        if(data.stripLeading().startsWith("type")) {
+        // log_index,transaction_hash,transaction_index,block_hash,block_number,block_timestamp,address,data,topics
+        // topics is the list: ,"0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c,0x000000000000000000000000e33c8e3a0d14a81f0dd7e174830089e82f65fc85"
+
+        if(data.stripLeading().startsWith("log_index")) {
           Seq.empty
         } else {
-          val tt = data.split(",",-1).toList match {
-            case log_index :: transaction_hash :: transaction_index :: address :: 
-                 data :: topics :: block_number :: block_timestamp :: block_hash :: 
-                 item_id :: item_timestamp :: Nil =>
-                
-              // ATTENTION: Stupid ethereum-etl insert '\r' !
-              val ts = block_timestamp.trim.toLong
-              latestTs.set(ts * 1000L)
+          val tt = CSVParser.parse(data,'\\',',','\"') match {
+            case Some(d) => d match {
+              case log_index :: transaction_hash :: transaction_index :: 
+                   block_hash :: block_number :: block_timestamp :: 
+                   address :: data :: topics :: Nil =>
+                  
+                val ts = block_timestamp.trim.toLong
+                latestTs.set(ts * 1000L)
 
-              Seq(EthLog(
-                log_index.toInt,
-                transaction_hash,
-                transaction_index.toInt,
-                address,
-                data,
-                List(topics),
-                block_number.toLong,
-                ts,
-                block_hash
-              ))
+                Seq(EthLog(
+                  log_index.toInt,
+                  transaction_hash,
+                  transaction_index.toInt,
+                  address,
+                  data,
+                  topics.split(",").toList,
+                  block_number.toLong,
+                  ts,
+                  block_hash
+                ))
+            }
 
             case _ => 
               log.error(s"failed to parse: '${data}'")

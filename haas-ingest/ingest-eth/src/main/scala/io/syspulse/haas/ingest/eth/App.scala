@@ -139,6 +139,7 @@ object App extends skel.Server {
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");
+            sys.exit(1)
             None
         })
 

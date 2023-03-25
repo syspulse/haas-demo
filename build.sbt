@@ -352,6 +352,7 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
       libSkelNotify,
       libUpickleLib,
 
+      libCsv,
       libSkelSerde,
 
       libSkelCrypto,
