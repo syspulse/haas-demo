@@ -29,7 +29,7 @@ case "$ENTITY" in
       BATCH_ARG="-B $BATCH"
       ;;
    *)
-      BATCH_ARG="-B $BATCH"
+      BATCH_ARG=""
       ;;
 esac
 
@@ -77,7 +77,7 @@ if [ "$DOCKER" != "" ]; then
    
    case "$DOCKER" in
      "aws")
-        docker run --rm --name eth-export \
+        docker run --rm --name eth-export-${START_BLOCK} \
             -v $BUCKET_DIR:$BUCKET_DIR \
             ${DOCKER_AWS} \
             export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
@@ -86,7 +86,7 @@ if [ "$DOCKER" != "" ]; then
             --provider-uri $ETH_RPC $OUTPUT $OUTPUT_FILE $EXTRA
         ;;     
      *)
-        docker run --rm --name eth-export \
+        docker run --rm --name eth-export-${START_BLOCK} \
             -v $BUCKET_DIR:$BUCKET_DIR \
             ${DOCKER} \
             export_$ENTITY $START_BLOCK_ARG $END_BLOCK_ARG \
