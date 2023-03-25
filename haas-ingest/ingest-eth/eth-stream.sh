@@ -18,7 +18,7 @@ DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/e
 DOCKE=DOCKER=${DOCKER:-none}
 DOCKER_STATE=${DOCKER_STATE:-state/}
 
-LAST_BLOCK=${LAST_BLOCK:-last_synced_block.txt}
+LAST_BLOCK=${LAST_BLOCK:-$DOCKER_STATE/last_synced_block.txt}
 BATCH_SIZE=${BATCH_SIZE:-100}
 
 case "$START_BLOCK" in
@@ -70,13 +70,13 @@ if [ "$DOCKER" != "" ]; then
         docker run --rm --name eth-stream \
             -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
             $DOCKER_AWS \
-            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK -b ${BATCH_SIZE}
+            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l $LAST_BLOCK -b ${BATCH_SIZE}
         ;;     
      *)
         docker run --rm --name eth-stream \
             -v `pwd`/$DOCKER_STATE:/$DOCKER_STATE \
             $DOCKER \
-            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l /$DOCKER_STATE/$LAST_BLOCK -b ${BATCH_SIZE}
+            stream -e "${ENTITY}" $START_BLOCK_ARG --provider-uri $ETH_RPC $OUTPUT -l $LAST_BLOCK -b ${BATCH_SIZE}
         ;;
    esac
    

@@ -35,6 +35,11 @@ Stream token transfer:
 ENTITY=token_transfer ./eth-stream.sh
 ```
 
+Stream event logs:
+```
+ENTITY=log ./eth-stream.sh
+```
+
 Stream ALL (__requires openethereum__ !):
 
 ```
@@ -44,6 +49,12 @@ ENTITY="block,transaction,log,token_transfer,trace,contract,token" ./eth-stream.
 Stream ALL (no tracing required):
 ```
 ENTITY="block,transaction,log,token_transfer" ./eth-stream.sh
+```
+
+Stream with docker:
+
+```
+ETH_RPC=http://geth2.hacken.cloud:8545 DOCKER=aws ENTITY=log ./eth-stream.sh
 ```
 
 ## Export
