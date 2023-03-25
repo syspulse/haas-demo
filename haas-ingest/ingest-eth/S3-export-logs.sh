@@ -20,4 +20,4 @@ END=${2:-10861675}
 #./eth-export-blocks.sh $START $END | ./run-ingest-eth.sh -e block -o "fs3:///mnt/s4/data/dev/ethereum/raw/csv/blocks/{yyyy}/{MM}/{dd}/transfer-{HH}.csv"
 #./eth-export-blocks.sh $START $END | ./run-ingest-eth.sh -e block -o "fs3:///data/blocks/{yyyy}/{MM}/{dd}/transfer-{HH}.csv"
 
-./eth-export-blocks.sh $START $END | ./run-ingest-eth.sh -e block --delimiter='\r\n'
+./eth-export-blocks.sh $START $END | ./run-ingest-eth.sh -e block

@@ -49,6 +49,8 @@ trait EthDecoder[T] {
   import TokenTransferJson._
   import EventJson._
 
+  def OptionEmpty(s:String) = if(s.isEmpty()) None else Some(s)
+
   var latestTs:AtomicLong = new AtomicLong(0)
 
   def parseBlock(data:String):Seq[EthBlock] = {
@@ -93,7 +95,7 @@ trait EthDecoder[T] {
 
                     ts,
                     transaction_count.toLong,
-                    if(base_fee_per_gas.isEmpty()) None else Option(base_fee_per_gas.toLong)
+                    OptionEmpty(base_fee_per_gas).map(_.toLong)
                   ))            
                   
             case _ => 
@@ -120,17 +122,33 @@ trait EthDecoder[T] {
         
         val ts = tx.block_timestamp
         latestTs.set(ts * 1000L)
-
-        // Seq(Tx(tx.ts,tx.txIndex,tx.hash,tx.blockNumber,tx.fromAddress,tx.toAddress,tx.gas,tx.gasPrice,tx.input,tx.value))
+        
         Seq(tx)
       } else {
         // assume CSV
         // ignore header
-        // hash,nonce,block_hash,block_number,transaction_index,from_address,to_address,value,gas,gas_price,input,block_timestamp,max_fee_per_gas,max_priority_fee_per_gas,transaction_type
+        // hash, nonce, block_hash, block_number,transaction_index,from_address,to_address,value,gas,gas_price,input,block_timestamp,max_fee_per_gas,max_priority_fee_per_gas,transaction_type
+
+        // hash: 0x0e087906d6e435003b18dc167ead9d0900dd938656df2bc7367895b2eb9f520c,
+        // nonce: 21011,
+        // block_hash: 0x32e4dd857b5b7e756551a00271e44b61dbda0a91db951cf79a3e58adb28f5c09,
+        // block_number: 10861674,
+        // transaction_index: 53,
+        // from_address: 0x06b8c5883ec71bc3f4b332081519f23834c8706e,
+        // to_address: 0x7ce83e67789df6d97ba47c1326cb9f8c506a5f05,
+        // value: 20779246197000000000,
+        // gas: 21000,
+        // gas_price: 216700000000,
+        // input: 0x,
+        // block_timestamp: 1600107086,
+        // max_fee_per_gas:,
+        // max_priority_fee_per_gas:,
+        // transaction_type: 0
         if(data.stripLeading().startsWith("hash")) {
           Seq.empty
         } else {
           val tx = data.split(",",-1).toList match {
+            // New EIP-1155 Transaction Type
             case hash :: nonce :: block_hash :: block_number :: transaction_index :: from_address :: to_address :: 
                  value :: gas :: gas_price :: input :: block_timestamp :: max_fee_per_gas :: max_priority_fee_per_gas :: 
                  transaction_type :: 
@@ -146,45 +164,56 @@ trait EthDecoder[T] {
                     hash,
                     block_number.toLong,
                     from_address.toLowerCase(),
-                    Option(to_address.toLowerCase()),
+                    OptionEmpty(to_address.toLowerCase()),
                     gas.toLong,
                     BigInt(gas_price),
                     input,
                     BigInt(value),
 
                     nonce.toLong,
-                    Option(max_fee_per_gas).map(BigInt(_)),
-                    Option(max_priority_fee_per_gas).map(BigInt(_)), 
-                    if(transaction_type.isEmpty) None else Option(transaction_type.toInt), 
+                    OptionEmpty(max_fee_per_gas).map(BigInt(_)),
+                    OptionEmpty(max_priority_fee_per_gas).map(BigInt(_)), 
+                    OptionEmpty(transaction_type).map(_.toInt), 
+
                     receipt_cumulative_gas_used.toLong, 
                     receipt_gas_used.toLong, 
-                    Option(receipt_contract_address), 
-                    Option(receipt_root), 
+                    OptionEmpty(receipt_contract_address), 
+                    OptionEmpty(receipt_root), 
                     receipt_status.toInt, 
-                    if(receipt_effective_gas_price.isEmpty) None else Option(BigInt(receipt_effective_gas_price))
+                    OptionEmpty(receipt_effective_gas_price).map(BigInt(_))
                   ))
-            // this is format of Tx. WHY !?
-            case ts :: transaction_index :: hash :: block_number :: from_address :: to_address :: 
-                 gas :: gas_price :: input :: value :: Nil =>
+
+            // Old Transaction Type
+            case hash :: nonce :: block_hash :: block_number :: transaction_index :: from_address :: to_address :: 
+                 value :: gas :: gas_price :: input :: block_timestamp :: max_fee_per_gas :: max_priority_fee_per_gas :: 
+                 transaction_type :: Nil =>
                 
-                 log.warn(s"Deprecated EthTx format: ${data}")
+                 val ts = block_timestamp.toLong
+                 latestTs.set(ts * 1000L)
 
-                 latestTs.set(ts.toLong)
-
-                 Seq(
-                  EthTx(
-                    ts.toLong,
+                 Seq(EthTx(
+                    ts,
                     transaction_index.toInt,
                     hash,
                     block_number.toLong,
                     from_address.toLowerCase(),
-                    Option(to_address.toLowerCase()),
+                    OptionEmpty(to_address.toLowerCase()),
                     gas.toLong,
                     BigInt(gas_price),
                     input,
                     BigInt(value),
 
-                    0L,None,None, None, 0L, 0L, None, None, 0, None
+                    nonce.toLong,
+                    OptionEmpty(max_fee_per_gas).map(BigInt(_)),
+                    OptionEmpty(max_priority_fee_per_gas).map(BigInt(_)), 
+                    OptionEmpty(transaction_type).map(_.toInt), 
+
+                    0L, 
+                    0L, 
+                    None, 
+                    None, 
+                    0, 
+                    None
                   ))
                   
             case _ => 
@@ -249,54 +278,7 @@ trait EthDecoder[T] {
     }
   }
 
-  // def parseEvent(data:String):Seq[Event] = {
-  //   if(data.isEmpty()) return Seq()
-
-  //   try {
-  //     // check it is JSON
-  //     if(data.stripLeading().startsWith("{")) {
-  //       val tt = data.parseJson.convertTo[EthLog]
-        
-  //       val ts = tt.block_timestamp
-  //       latestTs.set(ts * 1000L)
-
-  //       Seq(Event(ts, tt.block_number, tt.address, tt.data, tt.transaction_hash, tt.topics))
-  //     } else {
-  //       // assume CSV
-  //       // ignore header
-  //       // 
-  //       if(data.stripLeading().startsWith("log_index")) {
-  //         Seq.empty
-  //       } else {
-  //         val tt = data.split(",",-1).toList match {
-  //           case block_timestamp :: block_number :: address :: data :: 
-  //             transaction_hash :: log_index :: topics :: Nil =>
-            
-  //             val ts = block_timestamp.toLong
-  //             latestTs.set(ts * 1000L)
-
-  //             Seq(Event(
-  //               ts,
-  //               block_number.toLong,
-  //               address.toLowerCase(),
-  //               data,
-  //               transaction_hash,
-  //               Util.csvToList(topics)
-  //             ))      
-  //           case _ => 
-  //             log.error(s"failed to parse: '${data}'")
-  //             Seq()
-  //         }
-  //         tt
-  //       }
-  //     }
-  //   } catch {
-  //     case e:Exception => 
-  //       log.error(s"failed to parse: '${data}'",e)
-  //       Seq()
-  //   }
-  // }
-
+  
   def parseEventLog(data:String):Seq[EthLog] = {
     if(data.isEmpty()) return Seq()
 

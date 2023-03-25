@@ -6,4 +6,3 @@ export EXTRA=""
 export OUTPUT=NONE
 
 ./eth-export.sh $@
-
