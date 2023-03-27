@@ -17,6 +17,7 @@ import io.syspulse.haas.circ.server.CirculationSupplyRoutes
 import io.syspulse.haas.circ.client.CirculationSupplyClientHttp
 import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
+import io.syspulse.haas.core.Defaults
 
 case class Config(  
   host:String="0.0.0.0",
@@ -28,6 +29,8 @@ case class Config(
   limit:Long = 0L,
   freq: Long = 0L,
   logFile:String = "",   
+
+  tokensDefault:Seq[String] = Defaults.TOKEN_SET.keys.toSeq,
       
   datastore:String = "mem://",
 
@@ -52,8 +55,9 @@ object App extends skel.Server {
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         
         ArgString('_', "http.zip",s"Compress large response (def: ${d.httpZip})"),
+        ArgString('_', "tokens.default",s"Default token set (def: ${d.tokensDefault.mkString(",")})"),
         
-        ArgString('d', "datastore",s"datastore [elastic://localhost:9200/circ, mem, dir://store, file://circs.json, resources://, resources://file] (def: ${d.datastore})"),
+        ArgString('d', "datastore",s"datastore [mem://,dir://store] (def: ${d.datastore})"),
         
         ArgCmd("server","Server"),
         ArgCmd("client","Client"),
@@ -67,6 +71,7 @@ object App extends skel.Server {
       uri = c.getString("http.uri").getOrElse(d.uri),
 
       httpZip = c.getString("http.zip").getOrElse(d.httpZip),
+      tokensDefault = c.getListString("tokens.default",d.tokensDefault),
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
       cmd = c.getCmd().getOrElse(d.cmd),

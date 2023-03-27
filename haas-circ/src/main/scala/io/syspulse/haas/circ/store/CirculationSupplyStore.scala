@@ -41,7 +41,7 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
     this.findByToken(tid,0L,Long.MaxValue).map(cs => cs.copy(history = SortedSet(cs.history.last)))
   }
 
-  def lastByTokens(tokens:Seq[String] = Defaults.TOKEN_SET.keys.toSeq,from:Int=0,size:Int=10):Seq[CirculationSupply] = {
+  def lastByTokens(tokens:Seq[String],from:Int=0,size:Int=10):Seq[CirculationSupply] = {
     tokens.flatMap( tid => {
       lastByToken(tid) match {
         case Some(c) => Some(c)
