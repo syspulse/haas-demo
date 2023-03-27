@@ -10,4 +10,3 @@ export OUTPUT_FILE="--output -"
 #export OUTPUT_FILE="--output TOKENS.json"
 
 ./eth-export.sh $@
-

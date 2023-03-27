@@ -43,7 +43,7 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 abstract class PipelineEthTokenTransfer[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineEth[EthTokenTransfer,TokenTransfer,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  def apiSuffix():String = s"/token-transfer"
+  def apiSuffix():String = s"/transfer"
 
   def convert(tt:EthTokenTransfer):TokenTransfer = TokenTransfer(
     tt.blockTimestamp * 1000L,

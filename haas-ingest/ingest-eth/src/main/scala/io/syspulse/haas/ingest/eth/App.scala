@@ -36,18 +36,18 @@ object App extends skel.Server {
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
         ArgString('_', "feed.block",s"Block Feed (def: ${d.feedBlock})"),
-        ArgString('_', "feed.token",s"Token Feed (def: ${d.feedToken})"),
+        ArgString('_', "feed.transfer",s"Token Transfer Feed (def: ${d.feedTransfer})"),
         ArgString('_', "feed.log",s"EventLog Feed (def: ${d.feedLog})"),
         ArgString('_', "feed.mempool",s"Mempool Feed (def: ${d.feedMempool})"),
 
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),        
         ArgString('_', "output.tx",s"Tx Feed (def: ${d.outputTx})"),
         ArgString('_', "output.block",s"Block Feed (def: ${d.outputBlock})"),
-        ArgString('_', "output.token",s"Token Feed (def: ${d.outputToken})"),
+        ArgString('_', "output.transfer",s"Token Transfer Feed (def: ${d.outputTransfer})"),
         ArgString('_', "output.log",s"EventLog Feed (def: ${d.outputLog})"),
         ArgString('_', "output.mempool",s"Mempool Feed (def: ${d.outputMempool})"),
 
-        ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log|event) def=${d.entity}"),
+        ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,transfer,log|event) def=${d.entity}"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -81,13 +81,13 @@ object App extends skel.Server {
       
       feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
       feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
-      feedToken = c.getString("feed.token").getOrElse(d.feedToken),
+      feedTransfer = c.getString("feed.transfer").getOrElse(d.feedTransfer),
       feedLog = c.getString("feed.log").getOrElse(d.feedLog),
       feedMempool = c.getString("feed.mempool").getOrElse(d.feedMempool),
 
       outputBlock = c.getString("output.block").getOrElse(d.outputBlock),
       outputTx = c.getString("output.tx").getOrElse(d.outputTx),
-      outputToken = c.getString("output.token").getOrElse(d.outputToken),
+      outputTransfer = c.getString("output.transfer").getOrElse(d.outputTransfer),
       outputLog = c.getString("output.log").getOrElse(d.outputLog),
       outputMempool = c.getString("output.mempool").getOrElse(d.outputMempool),
 
@@ -125,8 +125,8 @@ object App extends skel.Server {
             Some(new PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           
-          case "token" =>
-            Some(new PipelineTokenTransfer(orf(config.feedToken,config.feed),orf(config.outputToken,config.output),
+          case "transfer" | "token" =>
+            Some(new PipelineTokenTransfer(orf(config.feedTransfer,config.feed),orf(config.outputTransfer,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
           case "log" | "event" => 
@@ -155,7 +155,7 @@ object App extends skel.Server {
         //     new PipelineBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)          
         //   // case "block-tx" =>
         //   //   new PipelineEthBlockTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)            
-        //   case "token" =>
+        //   case "transfer" =>
         //     new PipelineTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
         //   case "log" | "event" =>
         //     new PipelineLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)

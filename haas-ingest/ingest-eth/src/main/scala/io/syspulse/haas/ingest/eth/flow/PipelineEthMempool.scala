@@ -39,7 +39,7 @@ import io.syspulse.haas.serde.MempoolJson._
 abstract class PipelineEthMempool[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineEth[EvmTx,MempoolTx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
   
-  def apiSuffix():String = s"/"
+  def apiSuffix():String = s"/mempool"
 
   // only json is supported !
   override def parse(data:String):Seq[EvmTx] = Seq(

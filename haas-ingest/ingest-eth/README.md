@@ -41,10 +41,10 @@ Limit (`--limit=10`) is important when file is rolled over:
 ENTITY=block ./eth-ingest.sh -e block -o fs3://output/blk-{HH_mm_ss}.log --limit=10
 ```
 
-Stream Tokens to S3 compatible mount:
+Stream Token Transfers to S3 compatible mount:
 
 ```
-ENTITY=token_transfer ./eth-ingest.sh -e token -o fs3://output/token-{HH_mm_ss}.log --limit=100
+ENTITY=token_transfer ./eth-ingest.sh -e transfer -o fs3://output/transfer-{HH_mm_ss}.log --limit=100
 ```
 
 Stream from latest block into Hive
@@ -65,7 +65,7 @@ Export transactions into directory structure for Hive/Spark processing:
 Export Token transfers (with filter by token address)
 
 ```
-./eth-export-tokens.sh 10000000 10000001 | ./run-ingest-eth.sh ingest -e token --filter 0x2b591e99afe9f32eaa6214f7b7629768c40eeb39 -f stdin://
+./eth-export-transfers.sh 10000000 10000001 | ./run-ingest-eth.sh ingest -e transfer --filter 0x2b591e99afe9f32eaa6214f7b7629768c40eeb39 -f stdin://
 ```
 
 ## via Kafka
