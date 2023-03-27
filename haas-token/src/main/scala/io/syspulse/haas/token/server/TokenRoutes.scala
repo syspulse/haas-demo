@@ -238,9 +238,10 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
         pathEndOrSingleSlash {
           concat(
             authenticate()(authn =>
-              authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {              
-                createTokenRoute  
-              } ~
+              // authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {              
+              //   createTokenRoute
+              // } ~
+              createTokenRoute ~
               getTokensRoute()
             ),          
           )
@@ -274,10 +275,12 @@ class TokenRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_]
             authenticate()(authn =>              
               getTokenRoute(id)
               ~ 
-              authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {
-                deleteTokenRoute(id) ~
-                updateTokenRoute(id)
-              }
+              // authorize(Permissions.isAdmin(authn) || Permissions.isService(authn)) {
+              //   deleteTokenRoute(id) ~
+              //   updateTokenRoute(id)
+              // }
+              deleteTokenRoute(id) ~
+              updateTokenRoute(id)              
             )            
           }
         }
