@@ -164,7 +164,8 @@ services:
     environment:
       #JAVA_OPTS: -Dgod
       S3_BUCKET: ${S3_BUCKET}
-      DATASTORE: dir:///mnt/s3/data/dev/ethereum/token/
+      #DATASTORE: dir:///mnt/s3/data/dev/ethereum/token/
+      DATASTORE: dir:///mnt/s3/data/dev/ethereum/supply/token
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
