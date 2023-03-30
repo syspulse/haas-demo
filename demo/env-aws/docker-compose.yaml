@@ -116,9 +116,9 @@ services:
       CONFIRM_URI: http://api.hacken.cloud
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
-  skel-tag:
+  haas-label:
     image: syspulse/skel-tag:latest
-    container_name: skel-tag
+    container_name: haas-label
     restart: always
     volumes:
       - "${PWD}/store:/store"
@@ -229,6 +229,30 @@ services:
       #JAVA_OPTS: -Dgod
       DATASTORE: dir:///store/abi
 
+  haas-price:
+    privileged: true
+    image: syspulse/skel-telemetry:latest
+    container_name: haas-price
+    restart: always
+    ports:
+      - 8096:8080
+    volumes:
+      - "${S3_MOUNT}:${S3_MOUNT}"
+    networks:
+      - demo
+    command: server
+    environment:
+      JAVA_OPTS: -Dgod
+      S3_BUCKET: ${S3_BUCKET}
+      #DATASTORE: dir://${S3_MOUNT}/data/dev/coingecko/raw/csv/price/2023/03/28      
+      DATASTORE: dir:///mnt/s3/data/dev/coingecko/raw/csv/price/2023/03/28
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCOUNT: ${AWS_ACCOUNT}
+      HTTP_URI: /api/v1/price
+
   nginx:
     image: nginx
     container_name: nginx
@@ -237,11 +261,12 @@ services:
       - skel-user
       - skel-notify
       - skel-enroll
-      - skel-tag
+      - haas-label
       - haas-token
       - haas-circ
       - haas-intercept
       - haas-abi
+      - haas-price
       - sparkmagic
     restart: always
     volumes:
