@@ -8,11 +8,11 @@ object Defaults {
   val STETH = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
 
   val TOKEN_SET = Map (
-    "solidly" -> "SOLID",
+    //"solidly" -> "SOLID",
     "0x888ef71766ca594ded1f0fa3ae64ed2941740a20" -> "SOLID",
-    "kyber-network-crystal" -> "KNC",
+    //"kyber-network-crystal" -> "KNC",
     "0xdefa4e8a7bcba345f687a2f1456f5edd9ce97202" -> "KNC",
-    "balancer" -> "BAL",
+    //"balancer" -> "BAL",
     "0xba100000625a3754423978a60c9317c58a424e3d" -> "BAL",
 
     "verse" -> "VERSE",

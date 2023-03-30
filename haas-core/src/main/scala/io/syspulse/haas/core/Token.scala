@@ -9,7 +9,9 @@ case class TokenBlockchain(
 )
 
 case class Token(
-  id:Token.ID, symbol:String, name:String, 
+  id:Token.ID, 
+  symbol:String, 
+  name:String, 
   addr:Option[String] = None,   // default primary address 
   cat:List[String] = List(), 
   icon:Option[String] = None, 
