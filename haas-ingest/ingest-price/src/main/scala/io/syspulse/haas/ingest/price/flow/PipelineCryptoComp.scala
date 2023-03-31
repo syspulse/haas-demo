@@ -40,21 +40,27 @@ import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
-import io.syspulse.haas.core.resolver.TokenResolverMem
+import io.syspulse.haas.core.resolver.ResolverToken
+import io.syspulse.haas.core.resolver.ResolverNone
 
 abstract class PipelineCryptoComp[T](feed:String,output:String)(implicit config:Config,parqEncoders:ParquetRecordEncoder[T],parsResolver:ParquetSchemaResolver[T]) 
   extends PipelinePrice[T](feed:String,output:String){
   
   val sourceID = DataSource.id("cryptocomp")
-  val TOKENS_SLOT = "COINS"
 
-  val idResolver = new TokenResolverMem(if(config.idResolver.isEmpty) None else Some(config.idResolver))
+  val idResolver = if(config.resolver.isEmpty) 
+    new ResolverNone()
+  else 
+    new ResolverToken(config.resolver)
 
   override def resolve(tokens:Seq[String]) = 
     //tokens.flatMap(idResolver.resolve _).mkString(",")
     super.resolve(tokens.flatMap(idResolver.resolve _))
 
-  // def apiSuffix():String = s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
-  def apiSuffix():String = s"?fsyms=${resolve(tokensFilter)}&tsyms=${config.tokensPair.mkString(",")}"
+  def apiPrefix:String
+  
+  def apiSuffix():String = 
+    s"${apiPrefix}?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
+    //s"?fsyms=${resolve(tokensFilter)}&tsyms=${config.tokensPair.mkString(",")}"
   
 }

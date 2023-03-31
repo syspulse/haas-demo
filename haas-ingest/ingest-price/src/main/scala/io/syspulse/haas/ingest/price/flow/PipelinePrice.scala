@@ -65,7 +65,8 @@ abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Confi
     }
   }
 
-  def TOKENS_SLOT:String
+  val TOKENS_SLOT = "_COINS_"
+
   def apiSuffix():String
 
   // URI encode
@@ -86,10 +87,11 @@ abstract class PipelinePrice[T](feed:String,output:String)(implicit config:Confi
         // val reqs = tokensFilter.map( t => 
         //   HttpRequest(uri = feed.replaceFirst(TOKEN_SLOT,t)).withHeaders(Accept(MediaTypes.`application/json`))
         // )
-        val reqs = Seq(
-          HttpRequest(uri = feed.replaceFirst(TOKENS_SLOT,tokensFilter.mkString(",")))
-            .withHeaders(Accept(MediaTypes.`application/json`))
-        )
+        val reqs = tokensFilter.grouped(config.tokensLimit).map( tokenRange => {
+          HttpRequest(uri = feed.replaceFirst(TOKENS_SLOT,resolve(tokenRange)))
+              .withHeaders(Accept(MediaTypes.`application/json`))
+          }).toSeq
+        
         log.info(s"reqs=${reqs}")
 
         val s = Source.tick(FiniteDuration(10,TimeUnit.MILLISECONDS), 

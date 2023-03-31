@@ -2,9 +2,6 @@ package io.syspulse.haas.ingest.price
 
 import io.syspulse.haas.ingest.coingecko.CoinGeckoURI
 
-/* 
-price://host:port/api
-*/
 
 case class PriceURI(uri:String,apiSuffix:String="") {
   
@@ -18,8 +15,10 @@ case class PriceURI(uri:String,apiSuffix:String="") {
     uri.trim.split("://").toList match {
       case "http" :: host :: Nil => 
         Some(build("http://",host,"/data/",apiSuffix))
+      
       case "cryptocomp" :: host :: Nil => 
         Some(build("http://",host,"/api/",""))
+
       case "cryptocomp" :: _ => 
         Some(build("https://","min-api.cryptocompare.com","/data/",apiSuffix))
       

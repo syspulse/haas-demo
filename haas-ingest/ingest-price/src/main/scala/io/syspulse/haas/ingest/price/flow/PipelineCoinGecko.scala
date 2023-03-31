@@ -42,18 +42,15 @@ import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
-import io.syspulse.haas.core.resolver.TokenResolverMem
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-
 
 class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) extends PipelinePrice[CoinGeckoPrice](feed:String,output:String){
   
   import CoinGeckoPriceJson._
   
   val sourceID = DataSource.id("coingecko")
-  val TOKENS_SLOT = "COINS"
-
+  
   override def fromUri(uri:String):Seq[String] = {
     uri.split("://").toList match {
       case "file" :: file :: Nil =>
@@ -67,10 +64,10 @@ class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) exten
         super.fromUri(uri)
     }
   }
-
-  //def resolve(tokens:Seq[String]) = URLEncoder.encode(tokens.mkString(","), StandardCharsets.UTF_8.toString())
-
-  def apiSuffix():String = s"?ids=${resolve(tokensFilter)}&vs_currencies=${config.tokensPair.mkString(",")}"
+  
+  def apiSuffix():String = 
+    s"?ids=${TOKENS_SLOT}&vs_currencies=${config.tokensPair.mkString(",")}"
+    //s"?ids=${resolve(tokensFilter)}&vs_currencies=${config.tokensPair.mkString(",")}"
     //s"?fsyms=${TOKENS_SLOT}&tsyms=${config.tokensPair.mkString(",")}"
 
   def parse(data:String):Seq[CoinGeckoPrice] = {
@@ -107,7 +104,7 @@ class PipelineCoinGecko(feed:String,output:String)(implicit config:Config) exten
     }
   }
 
-   def transform(cct: CoinGeckoPrice): Seq[Price] = {
+  def transform(cct: CoinGeckoPrice): Seq[Price] = {
     cct.pairs.map{ case(token,pair) =>
       pair.map{ case(p,price) => 
         config.priceFormat match {

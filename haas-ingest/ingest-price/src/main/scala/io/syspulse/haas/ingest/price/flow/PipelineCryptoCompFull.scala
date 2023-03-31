@@ -47,8 +47,8 @@ class PipelineCryptoCompFull(feed:String,output:String)(implicit config:Config)
 
   import CryptoCompPriceJson._
 
-  override def apiSuffix():String = "pricemultifull" + super.apiSuffix()
-
+  override def apiPrefix = "pricemultifull"
+  
   def parseCryptoCompFull(data:String):Seq[CryptoCompPriceFull] = {
     if(data.isEmpty()) return Seq()
     try {

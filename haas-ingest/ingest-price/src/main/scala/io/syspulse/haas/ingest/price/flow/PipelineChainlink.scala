@@ -38,7 +38,7 @@ import io.syspulse.haas.serde.PriceJson._
 import io.syspulse.haas.ingest.price.PriceURI
 import akka.stream.scaladsl.Framing
 import io.syspulse.haas.serde.PriceDecoder
-import io.syspulse.haas.core.resolver.TokenResolverMem
+import io.syspulse.haas.core.resolver.ResolverToken
 import akka.http.javadsl.model.ContentType
 
 import io.syspulse.haas.ingest.price.feed.ChainlinkPrice
@@ -47,16 +47,15 @@ class PipelineChainlink(feed:String,output:String)(implicit config:Config) exten
   import ChainlinkPriceJson._
 
   val sourceID = DataSource.id("chainlink")
-  val TOKENS_SLOT = ""
-
+  
   def apiSuffix():String = ""
 
   // Oracle Contracts -> TokenId
-  val resolver = new TokenResolverMem(Some(
+  val resolver = new ResolverToken(
     """0x553303d460ee0afb37edff9be42922d8ff63220e,uniswap
     0xcfe54b5cd566ab89272946f602d76ea879cab4a8,staked-ether
     0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419,ribbon-finance""".toLowerCase()
-  ))
+  )
   
   override def source(feed:String) = {
     feed.split("://").toList match {

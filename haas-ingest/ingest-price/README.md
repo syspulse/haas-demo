@@ -58,6 +58,8 @@ cast call 0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419 'latestRound()(uint256)'
 
 ## CryptoCompare
 
+__ATTENTION__: IDs are tickers: `UNI` 
+
 ```
 curl -X GET 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD' -H 'accept: application/json'| jq .
 ```
@@ -81,9 +83,19 @@ AAVE,LINK,NODE,ETH,ENS,FOAM,GMX,HNT,LPT,MATIC,NEAR,NOIA,OP,PCN,SOL,UNI,RBN
 ./run-ingest-price.sh -e cryptocomp -f cryptocomp:// -o stdout://  --tokens=file://token-set-1.conf --delimiter=
 ```
 
-## Coingecko
+### Ingest with Resolver 
+
+Resolver from Coingecko token ids:
 
 ```
-./run-ingest-price.sh -e coingecko -f coingecko:// -o stdout://  --tokens=id://uniswap,ribbon-finance --delimiter=
+./run-ingest-price.sh ingest -e cryptocomp -t uniswap --resolver=file://cryptocompare/ALL.csv -f 'cryptocomp://' --delimiter=
+```
+
+## Coingecko
+
+__ATTENTION__: IDs are keys: `uniswap` 
+
+```
+./run-ingest-price.sh -e coingecko -f coingecko:// -o stdout://  --tokens=uniswap,ribbon-finance --delimiter=
 ```
 

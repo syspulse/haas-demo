@@ -25,7 +25,7 @@ case class Config(
   delimiter:String = "\n",//"\r\n",
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
-  throttleSource:Long = 1000L,
+  throttleSource:Long = 5000L,
   
   entity:String = "cryptocomp",
   priceFormat:String = "price",
@@ -34,11 +34,12 @@ case class Config(
   
   // tokens:Seq[String] = Seq("uniswap","ribbon-finance"),
   tokens:String = "id://uniswap,ribbon-finance",
+  tokensLimit:Int = 100,  // not more than 100 tokens in one request
 
   tokensPair:Seq[String] = Seq("USD"),
   ingestCron:String = "360", // 10 minutes
 
-  idResolver:String = "",
+  resolver:String = "",
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
@@ -63,6 +64,7 @@ object App {
         ArgString('e', "entity",s"Ingest entity: (cryptocomp,cryptocomp-full,coingecko,chainlink,price) (def=${d.entity})"),
         ArgString('t', "tokens",s"Token IDs uri (ex: 'id://uniswap,ribbon-finance', file://tokens.json, file://id.txt, def=${d.tokens})"),
         ArgString('_', "tokens.pair",s"Tokens pair (ex: 'ETH', def=${d.tokensPair})"),
+        ArgInt('_', "tokens.limit",s"Tokens limit in 1 request (def=${d.tokensLimit})"),
         
         ArgLong('_', "limit",s"Limit (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -78,7 +80,7 @@ object App {
         ArgString('d', "datastore",s"datastore [elastic,stdout,file] (def: ${d.datastore})"),
         ArgString('_', "ingest.cron",s"Ingest load cron (currently only seconds interval Tick supported) (def: ${d.ingestCron})"),
 
-        ArgString('_', "id.resolver",s"Source ID resovler (def: ${d.idResolver})"),
+        ArgString('_', "resolver",s"Source ID resovler (def: ${d.resolver})"),
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
@@ -99,15 +101,18 @@ object App {
       throttleSource = c.getLong("throttle.source").getOrElse(d.throttleSource),
 
       entity = c.getString("entity").getOrElse(d.entity),
+      
       tokens = c.getString("tokens").getOrElse(d.tokens),
       tokensPair = c.getListString("tokens.pair",d.tokensPair),
+      tokensLimit = c.getInt("tokens.limit").getOrElse(d.tokensLimit),
+      
       priceFormat = c.getString("price.format").getOrElse(d.priceFormat),
 
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
       ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
 
-      idResolver = c.getString("id.resolver").getOrElse(d.idResolver),
+      resolver = c.getString("resolver").getOrElse(d.resolver),
       
       cmd = c.getCmd().getOrElse(d.cmd),      
       params = c.getParams(),

@@ -41,8 +41,7 @@ class PipelinePricePrice(feed:String,output:String)(implicit config:Config) exte
   val sourceID = 0 // internal
   val decoder = new PriceDecoder()
   def apiSuffix():String = ""
-  val TOKENS_SLOT = ""
-
+  
   def parse(data:String):Seq[Price] = {
     decoder.parse(data)
   }
