@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.ingest.coingecko.CoinGeckoTokenJson
 import io.syspulse.haas.ingest.coingecko._
-import io.syspulse.haas.ingest.coingecko.CoingeckoURI
 
 import io.syspulse.haas.serde.TokenJson._
 

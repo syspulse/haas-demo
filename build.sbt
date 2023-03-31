@@ -281,7 +281,8 @@ lazy val ingest_coingecko = (project in file("haas-ingest/ingest-coingecko"))
     
     libraryDependencies ++= Seq(
       libSkelCore,
-      libUpickleLib
+      libUpickleLib,
+      libScalaTest % "test"
     ),
      
   )
