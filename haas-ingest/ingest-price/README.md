@@ -79,4 +79,11 @@ AAVE,LINK,NODE,ETH,ENS,FOAM,GMX,HNT,LPT,MATIC,NEAR,NOIA,OP,PCN,SOL,UNI,RBN
 
 ```
 ./run-ingest-price.sh -e cryptocomp -f cryptocomp:// -o stdout://  --tokens=file://token-set-1.conf --delimiter=
- ```
+```
+
+## Coingecko
+
+```
+./run-ingest-price.sh -e coingecko -f coingecko:// -o stdout://  --tokens=id://uniswap,ribbon-finance --delimiter=
+```
+

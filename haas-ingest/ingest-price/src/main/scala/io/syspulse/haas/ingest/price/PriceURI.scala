@@ -1,5 +1,7 @@
 package io.syspulse.haas.ingest.price
 
+import io.syspulse.haas.ingest.coingecko.CoinGeckoURI
+
 /* 
 price://host:port/api
 */
@@ -14,13 +16,19 @@ case class PriceURI(uri:String,apiSuffix:String="") {
     val prefix = "https://"
 
     uri.trim.split("://").toList match {
-      case "http" :: host :: Nil => Some(build("http://",host,"/data/",apiSuffix))
-      case "cryptocomp" :: host :: Nil => Some(build("http://",host,"/api/",""))
-      case "cryptocomp" :: Nil => Some(build("https://","min-api.cryptocompare.com","/data/",apiSuffix))
+      case "http" :: host :: Nil => 
+        Some(build("http://",host,"/data/",apiSuffix))
+      case "cryptocomp" :: host :: Nil => 
+        Some(build("http://",host,"/api/",""))
+      case "cryptocomp" :: _ => 
+        Some(build("https://","min-api.cryptocompare.com","/data/",apiSuffix))
       
-      case "coingecko" :: Nil => Some(build("https://","api.coingecko.com/api/v3","/simple/price/",apiSuffix))
+      case "coingecko" :: _ =>         
+        //Some(build("https://","api.coingecko.com/api/v3","/simple/price/",apiSuffix))
+        Some(CoinGeckoURI(uri,"/simple/price/"+apiSuffix).uri)
 
-      case "chainlink" :: Nil => Some(build("http://","geth.hacken.cloud:8545","",apiSuffix))
+      case "chainlink" :: _ => 
+        Some(build("http://","geth2.hacken.cloud:8545","",apiSuffix))
             
       case _ => None
     }
