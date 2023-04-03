@@ -74,13 +74,13 @@ __WARNING__: Delimiter must be empty !
 
 Ingest specific Token set from file:
 
-`token-set-1.conf`:
+`tokens.set`:
 ```
 AAVE,LINK,NODE,ETH,ENS,FOAM,GMX,HNT,LPT,MATIC,NEAR,NOIA,OP,PCN,SOL,UNI,RBN
 ```
 
 ```
-./run-ingest-price.sh -e cryptocomp -f cryptocomp:// -o stdout://  --tokens=file://token-set-1.conf --delimiter=
+./run-ingest-price.sh -e cryptocomp -f cryptocomp:// -o stdout://  --tokens=file://tokens.set --delimiter=
 ```
 
 ### Ingest with Resolver 
