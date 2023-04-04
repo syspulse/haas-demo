@@ -17,3 +17,7 @@ export TWITTER_AUTH_CLIENT_ID=""
 export TWITTER_AUTH_CLIENT_SECRET=""
 
 export S3_BUCKET=haas-data-dev
+
+# ==========================================================
+export KAFKA_BROKER=broker-1.hacken.dev:9092
+export S3_MOUNT=/mnt/s3

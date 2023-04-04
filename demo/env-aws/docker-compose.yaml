@@ -237,9 +237,7 @@ services:
     container_name: haas-price
     restart: always
     ports:
-      - 8096:8080
-    volumes:
-      - "${S3_MOUNT}:${S3_MOUNT}"
+      - 8096:8080    
     networks:
       - demo
     command: server

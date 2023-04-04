@@ -245,8 +245,9 @@ services:
     environment:
       JAVA_OPTS: -Dgod
       S3_BUCKET: ${S3_BUCKET}
-      #DATASTORE: dir://${S3_MOUNT}/data/dev/coingecko/raw/csv/price/2023/03/28      
-      DATASTORE: dir:///mnt/s3/data/dev/coingecko/raw/csv/price/2023/03/28
+      DATASTORE: dir://${S3_MOUNT}/data/dev/coingecko/raw/csv/price/2023/03/28 
+      #DATASTORE: dir:///mnt/s3/data/dev/coingecko/raw/csv/price/2023/03/28
+      STORE_EVICT: 86400000
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
