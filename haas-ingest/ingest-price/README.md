@@ -99,3 +99,12 @@ __ATTENTION__: IDs are keys: `uniswap`
 ./run-ingest-price.sh -e coingecko -f coingecko:// -o stdout://  --tokens=uniswap,ribbon-finance --delimiter=
 ```
 
+
+## Squash
+
+```
+amm squash-price.sc \
+    --dir /mnt/share/data/haas/haas-data-dev/data/dev/coingecko/raw/json/price \
+    --output /mnt/share/data/haas/haas-data-dev/data/dev/coingecko/price \
+    --name token
+```

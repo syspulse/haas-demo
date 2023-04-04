@@ -1,7 +1,7 @@
 import os._
 
 @main
-def main(dir:String,output:String="output",limit:String="2023") = {
+def main(dir:String, output:String, name:String, limit:String="2023") = {
   //val dirRegexp = """.*/(\d{4})/(\d{2})/(\d{2})/.*""".r
   val dirRegexp = """.*/(\S+)/([0-9]{4})/([0-9]{2})/([0-9]{2})/(.+)""".r
 
@@ -33,7 +33,7 @@ def main(dir:String,output:String="output",limit:String="2023") = {
 
         val ext = file.split("\\.").lastOption.getOrElse("data")
 
-        val outputFile = s"${outputDir}/token-${yyyy}-${mm}-${dd}.${ext}"
+        val outputFile = s"${outputDir}/${name}-${yyyy}-${mm}-${dd}.${ext}"
         os.write.append(os.Path(outputFile ,os.pwd),data)
 
         outputFile
