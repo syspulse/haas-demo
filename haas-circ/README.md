@@ -26,7 +26,9 @@ Scans all subdirectories for `circulating_supply.json` and concatenating them in
 Scanning years (*2015* - *2023* ) 
 
 ```
-cd /mnt/s3/data/dev/ethereum/supply/token/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984
-supply-squash-all.sh
+./supply-squash-all.sh /mnt/s3/data/dev/ethereum/token/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984/circulating-supply
+mv circulating_supply.json /mnt/s3/data/dev/ethereum/supply/token/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984/
 
 ```
+
+Balancer = /mnt/s3/data/dev/ethereum/token/0xba100000625a3754423978a60c9317c58a424e3d 

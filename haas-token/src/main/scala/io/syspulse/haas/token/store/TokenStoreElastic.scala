@@ -195,7 +195,7 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 
-  def update(id:ID, symbol:Option[String] = None, name:Option[String] = None,
+  def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
     cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
     contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = {
       

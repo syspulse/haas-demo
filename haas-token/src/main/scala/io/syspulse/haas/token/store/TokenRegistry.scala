@@ -84,6 +84,7 @@ object TokenRegistry {
           req.id, 
           req.symbol,
           req.name,
+          addr = req.contracts.getOrElse(Map()).get("ethereum"),
           cat = req.cat.getOrElse(Seq()).toList,
           icon = req.icon,
           dcml = req.decimals,
@@ -97,7 +98,14 @@ object TokenRegistry {
         Behaviors.same
         
       case UpdateToken(id, req, replyTo) =>
-        val t1 = store.update(id,req.symbol,req.name,req.cat,req.icon,req.decimals,
+        val t1 = store.update(
+          id,
+          req.symbol,
+          req.name,
+          req.contracts.getOrElse(Map()).get("ethereum"),
+          req.cat,
+          req.icon,
+          req.decimals,
           req.contracts.map { 
             _.map{ case(bid,addr) => 
               TokenBlockchain(bid.toLowerCase,addr.toLowerCase)

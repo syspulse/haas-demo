@@ -44,10 +44,10 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
   def grep(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.grep(txt,from,size)
   def typing(txt:String,from:Option[Int],size:Option[Int]):Tokens = store.typing(txt,from,size)
 
-  override def update(id:ID, symbol:Option[String] = None, name:Option[String] = None,
+  override def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
              cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
              contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = 
-    store.update(id,symbol,name,cat,icon,dcml,contracts).flatMap(t => writeFile(t))
+    store.update(id,symbol,name,addr,cat,icon,dcml,contracts).flatMap(t => writeFile(t))
 
   // load in Coingecko format
   loadCoingGecko(dir)

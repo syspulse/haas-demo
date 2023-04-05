@@ -104,7 +104,7 @@ __ATTENTION__: IDs are keys: `uniswap`
 
 ```
 amm squash-price.sc \
-    --dir /mnt/share/data/haas/haas-data-dev/data/dev/coingecko/raw/json/price \
-    --output /mnt/share/data/haas/haas-data-dev/data/dev/coingecko/price \
+    --dir /mnt/s4/data/dev/coingecko/raw/json/price \
+    --output /mnt/s4/data/dev/coingecko/price \
     --name token
 ```

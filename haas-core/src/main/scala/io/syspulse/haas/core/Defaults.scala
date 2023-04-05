@@ -10,13 +10,17 @@ object Defaults {
   val TOKEN_SET = Map (
     //"solidly" -> "SOLID",
     "0x888ef71766ca594ded1f0fa3ae64ed2941740a20" -> "SOLID",
+
     //"kyber-network-crystal" -> "KNC",
     "0xdefa4e8a7bcba345f687a2f1456f5edd9ce97202" -> "KNC",
     //"balancer" -> "BAL",
     "0xba100000625a3754423978a60c9317c58a424e3d" -> "BAL",
 
-    "verse" -> "VERSE",
+    "verse-bitcoin" -> "VERSE",
     "0x249ca82617ec3dfb2589c4c17ab7ec9765350a18" -> "VERSE",
+    
+    "solidly-v2" -> "SOLID",
+    "0x777172d858dc1599914a1c4c6c9fc48c99a60990" -> "SOLID",
 
     "aave" -> "AAVE",
     "chainlink" -> "LINK",
