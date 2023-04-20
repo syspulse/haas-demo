@@ -117,7 +117,7 @@ services:
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   haas-label:
-    image: syspulse/skel-tag:latest
+    image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/skel-tag:latest
     container_name: haas-label
     restart: always
     volumes:
@@ -164,6 +164,7 @@ services:
     environment:
       #JAVA_OPTS: -Dgod
       S3_BUCKET: ${S3_BUCKET}
+      TOKENS_DEFAULT: file:///mnt/s3/data/dev/info/tokens-circ.id
       #DATASTORE: dir:///mnt/s3/data/dev/ethereum/token/
       DATASTORE: dir:///mnt/s3/data/dev/ethereum/supply/token
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}

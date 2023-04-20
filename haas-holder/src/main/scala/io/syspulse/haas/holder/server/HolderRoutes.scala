@@ -89,7 +89,7 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
     rejectEmptyResponse {
       onSuccess(getHolderss()) { r =>
         metricGetCount.inc()
-        complete(r)
+        encodeResponse(complete(r))
       }
     }
   }
@@ -103,7 +103,7 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
     rejectEmptyResponse {
       onSuccess(getHolders(ids.split(",").toSeq)) { r =>
         metricGetCount.inc()
-        complete(r)
+        encodeResponse(complete(r))
       }
     }
   }
@@ -127,7 +127,7 @@ class HolderRoutes(registry: ActorRef[Command])(implicit context: ActorContext[_
         from,size,limit)) { r =>
 
         metricGetCount.inc()
-        complete(r)
+        encodeResponse(complete(r))
     }}
   }
 
