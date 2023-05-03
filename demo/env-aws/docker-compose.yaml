@@ -255,6 +255,23 @@ services:
       AWS_ACCOUNT: ${AWS_ACCOUNT}
       HTTP_URI: /api/v1/price
 
+  skel-job:
+    privileged: true
+    image: syspulse/skel-job:latest
+    container_name: skel-job
+    restart: always
+    ports:
+      - 8099:8080
+    volumes:
+      - "${PWD}/store:/store"
+    networks:
+      - demo
+    command: server
+    environment:
+      JAVA_OPTS: -Dgod
+      DATASTORE: dir:///store/job
+      POLL: 10000
+
   nginx:
     image: nginx
     container_name: nginx
@@ -269,6 +286,7 @@ services:
       - haas-intercept
       - haas-abi
       - haas-price
+      - skel-job
       - sparkmagic
     restart: always
     volumes:
