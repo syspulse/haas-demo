@@ -99,6 +99,7 @@ services:
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       AWS_REGION: ${AWS_REGION}
       AWS_ACCOUNT: ${AWS_ACCOUNT}
+      TIMEOUT_IDLE: 600000
 
   skel-enroll:
     image: syspulse/skel-enroll:latest
@@ -267,6 +268,7 @@ services:
       - 8099:8080
     volumes:
       - "${PWD}/store:/store"
+      - "${PWD}/auth:/auth"
     networks:
       - demo
     command: server
@@ -275,6 +277,7 @@ services:
       DATASTORE: dir:///store/job
       POLL: 10000
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   nginx:
     image: nginx
