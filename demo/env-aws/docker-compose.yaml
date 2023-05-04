@@ -80,6 +80,8 @@ services:
     image: syspulse/skel-notify:latest
     container_name: skel-notify
     restart: always
+    volumes:
+      - "${PWD}/store:/store"
     ports:
       - 8082:8080
     networks:
@@ -87,6 +89,7 @@ services:
     command: server
     environment:
       # JAVA_OPTS: -Dgod
+      DATASTORE: dir:///store/notify
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
