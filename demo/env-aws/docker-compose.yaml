@@ -274,11 +274,11 @@ services:
       - demo
     command: server
     environment:
-      JAVA_OPTS: -Dgod
+      # JAVA_OPTS: -Dgod
       DATASTORE: dir:///store/job
       POLL: 10000
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
-      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE      
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
 
   nginx:
     image: nginx
