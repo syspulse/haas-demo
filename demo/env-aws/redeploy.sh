@@ -26,7 +26,8 @@ if [ "$?" == "0" ]; then
    docker-compose up -d $DOCKER
 
    sleep 1
-   docker-compose restart nginx
+   # no need to restart after fixing nginx conf
+   #docker-compose restart nginx
 
    docker-compose logs -f  $DOCKER
 fi
