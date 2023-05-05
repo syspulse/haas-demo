@@ -1,5 +1,6 @@
 #!/bin/bash
-#
+#--------------------------------------
+CWD=`echo $(dirname $(readlink -f $0))`
 
 #ETH_RPC=${ETH_RPC:-http://api.infura.io}
 #ETH_RPC=${ETH_RPC:-http://geth2.hacken.cloud:8545}
@@ -74,9 +75,13 @@ export PYTHONUNBUFFERED="1"
 
 if [ "$DOCKER" != "" ]; then   
    >&2 echo "DOCKER: $DOCKER"
-   
+
+   # Apply AWS credentials
+   >&2 echo "ATTENTION: applying env: $CWD/../../demo/env-aws/env-aws.sh"
+   source $CWD/../../demo/env-aws/env-aws.sh
+
    case "$DOCKER" in
-     "aws")
+     "aws")        
         docker run --rm --name eth-export-${ENTITY}-${START_BLOCK} \
             -v $BUCKET_DIR:$BUCKET_DIR \
             ${DOCKER_AWS} \

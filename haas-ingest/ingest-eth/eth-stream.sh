@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # OUTPUT: kafka/localhost:9092
+CWD=`echo $(dirname $(readlink -f $0))`
 
 #ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
 #ETH_RPC=${ETH_RPC:-http://geth.hacken.dev:8545}
