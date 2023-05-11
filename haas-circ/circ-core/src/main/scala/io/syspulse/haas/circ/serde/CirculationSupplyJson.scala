@@ -12,6 +12,8 @@ import DefaultJsonProtocol._
 
 import io.syspulse.haas.circ
 import io.syspulse.haas.circ._
+import io.syspulse.haas.circ.{SupplyBucket, SupplyCategory, Circulation, CirculationSupply}
+import io.syspulse.haas.circ.SupplyHolder
 
 object CirculationSupplyJson extends JsonCommon {
   import JsonCommon._

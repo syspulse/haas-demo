@@ -53,8 +53,11 @@ object Defaults {
     "usd" -> "USD",
     
     UNI -> "UNI",
+    "uniswap" -> "UNI",
     RBN -> "RBN",
+    "ribbon-finance" -> "RBN",
     STETH -> "stETH",
+    "staked-ether" -> "stETH"
 
   )
 }

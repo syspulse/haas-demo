@@ -15,6 +15,8 @@ import DefaultJsonProtocol._
 
 import os._
 import scala.collection.SortedSet
+import io.syspulse.haas.circ.{SupplyBucket, SupplyCategory, Circulation, CirculationSupply}
+import io.syspulse.haas.circ.SupplyHolder
 
 object CirculationSupplyStoreDir {
   val FILE_NAME = "circulating_supply.json"
@@ -31,7 +33,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
     val dd = load(dir)
     dd.foreach(d => this.+(d))
 
-    log.info(s"Loaded store: CirculationSupply = ${this.size}")
+    log.info(s"Loaded store: CirculationSupply: ${this.size}")
   }
 
   
@@ -57,7 +59,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
       }}
       
     log.debug(s"${circs}")
-    log.info(s"Circulations = ${circs.size}")
+    log.info(s"Circulations: ${circs.size}: ${circs.map(_.tid).mkString(",")}")
 
     circs.groupBy(_.tid).map{ case(tid,circ) => {
       CirculationSupply(

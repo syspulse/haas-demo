@@ -549,3 +549,24 @@ lazy val haas_holder = (project in file("haas-holder"))
       libScalaTest % "test"
     ),
   )
+
+  lazy val haas_supply = (project in file("haas-supply"))
+  .dependsOn(haas_core)
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .settings (
+
+    sharedConfig,
+    sharedConfigAssembly,
+    sharedConfigDocker,
+    dockerBuildxSettings,
+
+    appDockerConfig("haas-supply","io.syspulse.haas.supply.App"),
+
+    libraryDependencies ++= libHttp ++ libDB ++ libTest ++ Seq(  
+      libSkelCore,
+      libSkelCli,
+      libSkelAuthCore,
+    ),    
+  )

@@ -32,3 +32,4 @@ for id in `cat $IDS_FILE`; do
     download $id
   fi
 done
+
