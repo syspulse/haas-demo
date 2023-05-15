@@ -100,7 +100,7 @@ services:
       AWS_REGION: ${AWS_REGION}
       AWS_ACCOUNT: ${AWS_ACCOUNT}
       TIMEOUT_IDLE: 600000
-      KAFKA_URI: kafka://broker-1.hacken.dev:9092
+      SYSLOG_URI: kafka://broker-1.hacken.dev:9092
 
   skel-enroll:
     image: syspulse/skel-enroll:latest
@@ -178,6 +178,7 @@ services:
       AWS_REGION: ${AWS_REGION}
       AWS_ACCOUNT: ${AWS_ACCOUNT}
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
+      SYSLOG_URI: kafka://broker-1.hacken.dev:9092
 
   haas-intercept:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-intercept:latest
@@ -278,7 +279,7 @@ services:
       DATASTORE: dir:///store/job
       POLL: 10000
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
-      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE      
 
   nginx:
     image: nginx

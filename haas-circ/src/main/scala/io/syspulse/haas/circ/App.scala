@@ -34,6 +34,9 @@ case class Config(
       
   datastore:String = "dir://",
 
+  syslogUri:String = "kafka://localhost:9092",
+  syslogChannel:String = "sys.notify",
+
   cmd:String = "server",
   params: Seq[String] = Seq(),
 )
@@ -58,6 +61,9 @@ object App extends skel.Server {
         ArgString('_', "tokens.default",s"Default token set (def: ${d.tokensDefault.mkString(",")})"),
         
         ArgString('d', "datastore",s"datastore [mem://,dir://store] (def: ${d.datastore})"),
+
+        ArgString('_', "syslog.uri",s"Syslog uir (kafka:// and syslog://) (def: ${d.syslogUri})"),
+        ArgString('_', "syslog.channel",s"Syslog OID (def: ${d.syslogChannel})"),
         
         ArgCmd("server","Server"),
         ArgCmd("client","Client"),
@@ -73,6 +79,9 @@ object App extends skel.Server {
       httpZip = c.getString("http.zip").getOrElse(d.httpZip),
       tokensDefault = c.getListString("tokens.default",d.tokensDefault),
       datastore = c.getString("datastore").getOrElse(d.datastore),
+
+      syslogUri = c.getString("syslog.uri").getOrElse(Configuration.withEnv(d.syslogUri)),
+      syslogChannel = c.getSmartString("syslog.channel").getOrElse(d.syslogChannel),
 
       cmd = c.getCmd().getOrElse(d.cmd),
       params = c.getParams(),
@@ -96,7 +105,7 @@ object App extends skel.Server {
       case "server" => 
         run( config.host, config.port,config.uri,c,
           Seq(
-            (CirculationSupplyRegistry(store),"CirculationSupplyRegistry",(r, ac) => new CirculationSupplyRoutes(r,config)(ac) )
+            (CirculationSupplyRegistry(store)(config),"CirculationSupplyRegistry",(r, ac) => new CirculationSupplyRoutes(r,config)(ac) )
           )
         )
       case "client" => {        

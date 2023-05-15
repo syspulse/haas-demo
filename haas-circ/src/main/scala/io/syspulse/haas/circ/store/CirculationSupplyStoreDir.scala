@@ -63,7 +63,7 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
       }}
       
     log.debug(s"${circs}")
-    log.info(s"Circulations: ${circs.size}: ${circs.map(_.tid).mkString(",")}")
+    log.info(s"Circulations: ${circs.size}: ${circs.map(_.tid).distinct.mkString(",")}")
 
     circs.groupBy(_.tid).map{ case(tid,circ) => {
       CirculationSupply(

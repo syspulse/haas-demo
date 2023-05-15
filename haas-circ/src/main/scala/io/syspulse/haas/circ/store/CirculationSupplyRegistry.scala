@@ -9,46 +9,18 @@ import com.typesafe.scalalogging.Logger
 import io.jvm.uuid._
 
 import io.syspulse.skel.Command
+import io.syspulse.skel.job.{JobNotification,JobNotificationJson}
 
 import io.syspulse.skel.syslog.{SyslogEvent,SyslogBus}
 import io.syspulse.haas.circ.server._
 import io.syspulse.haas.circ.CirculationSupply
 import io.syspulse.haas.circ.Circulation
+import io.syspulse.haas.circ.Config
 
-import io.syspulse.skel.job.{JobNotification,JobNotificationJson}
 
 object CirculationSupplyRegistry {
   val log = Logger(s"${this}")
-
-  val syslog = new SyslogBus() {
-    import spray.json._
-    import JobNotificationJson._
-
-    val ts0 = System.currentTimeMillis
-
-    override def recv(ev:SyslogEvent):SyslogEvent = {
-      log.info(s"event=${ev}")
-      if(ts0 < ev.ts) {
-        // ignore old events if missed
-        try {
-          val job = ev.msg.parseJson.convertTo[JobNotification]
-          log.info(s"job=${job}")
-          if(job.src.contains("circ-holders-supply")) {
-            store.clear()
-            store.reload()
-          } else 
-            log.warn(s"script: ${job.src}: ignoring")
-          
-        } catch {
-          case e:Exception => 
-            log.warn(s"expected JobNotification",e)
-        }        
-      }
-      ev
-    }
-  }.withScope("sys.job")
-
-  
+    
   final case class GetCirculationSupplys(replyTo: ActorRef[CirculationSupplys]) extends Command
   final case class GetCirculationSupply(id:CirculationSupply.ID,ts0:Long,ts1:Long,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
   final case class GetCirculationSupplyByToken(tid:String,ts0:Long,ts1:Long,replyTo: ActorRef[Option[CirculationSupply]]) extends Command
@@ -57,8 +29,37 @@ object CirculationSupplyRegistry {
   // this var reference is unfortunately needed for Metrics access
   var store: CirculationSupplyStore = null //new CirculationSupplyStoreDB //new CirculationSupplyStoreCache
 
-  def apply(store: CirculationSupplyStore = new CirculationSupplyStoreMem): Behavior[io.syspulse.skel.Command] = {
+  def apply(store: CirculationSupplyStore = new CirculationSupplyStoreMem)(implicit config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
+
+    val syslog = new SyslogBus(config.syslogUri,config.syslogChannel) {
+      import spray.json._
+      import JobNotificationJson._
+
+      val ts0 = System.currentTimeMillis
+
+      override def recv(ev:SyslogEvent):SyslogEvent = {
+        log.info(s"event=${ev}")
+        if(ts0 < ev.ts) {
+          // ignore old events if missed
+          try {
+            val job = ev.msg.parseJson.convertTo[JobNotification]
+            log.info(s"job=${job}")
+            if(job.src.contains("circ-holders-supply")) {
+              store.clear()
+              store.reload()
+            } else 
+              log.warn(s"script: ${job.src}: ignoring")
+            
+          } catch {
+            case e:Exception => 
+              log.warn(s"expected JobNotification",e)
+          }        
+        }
+        ev
+      }
+    }.withScope("sys.job")
+  
     registry(store)
   }
 
