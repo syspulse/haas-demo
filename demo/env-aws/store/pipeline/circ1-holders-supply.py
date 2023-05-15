@@ -21,7 +21,8 @@ import io
 import json
 
 token_address = token_addresses['ethereum']
-custom_locks = custom_locks['ethereum']
+try: custom_locks = custom_locks['ethereum']
+except: custom_locks = {}
 
 chain = 'ethereum'
 token_address = token_address.lower()
