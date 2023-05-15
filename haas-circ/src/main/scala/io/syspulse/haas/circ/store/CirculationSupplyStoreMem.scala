@@ -20,8 +20,12 @@ import io.syspulse.haas.circ.serde.CirculationSupplyJson
 
 class CirculationSupplyStoreMem extends CirculationSupplyStore {
   val log = Logger(s"${this}")
+
+  def reload() = {}
   
   var circs: Map[CirculationSupply.ID,CirculationSupply] = Map()
+
+  def clear() = Map()
 
   def all:Seq[CirculationSupply] = circs.values.toSeq
 

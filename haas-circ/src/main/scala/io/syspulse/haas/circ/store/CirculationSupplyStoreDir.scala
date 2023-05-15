@@ -6,7 +6,9 @@ import scala.collection.immutable
 
 import com.typesafe.scalalogging.Logger
 import io.jvm.uuid._
+
 import io.syspulse.skel.util.Util
+import io.syspulse.skel.syslog.{SyslogEvent,SyslogBus}
 
 import io.syspulse.haas.circ._
 
@@ -28,15 +30,17 @@ case class TokenCirculating(tid:String,circ:Circulation)
 // Preload from file during start
 class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) extends CirculationSupplyStoreMem {
   import CirculatingJson._
-  
-  if(preload) {
+    
+  override def reload() {
     val dd = load(dir)
     dd.foreach(d => this.+(d))
-
     log.info(s"Loaded store: CirculationSupply: ${this.size}")
   }
 
-  
+  if(preload) {
+    reload()
+  }
+
   def load(dir:String):Seq[CirculationSupply] = {
     val storeDir = os.Path(dir,os.pwd)
     log.info(s"Loading dir store: ${storeDir}")

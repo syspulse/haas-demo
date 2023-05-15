@@ -50,4 +50,7 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
       }
     }).drop(from).take(size)
   }
+
+  def reload():Unit
+  def clear():Unit
 }

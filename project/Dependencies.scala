@@ -198,6 +198,9 @@ object Dependencies {
     val libSkelCli =          "io.syspulse"                     %% "skel-cli"                       % skelVersion
     val libSkelSerde =        "io.syspulse"                     %% "skel-serde"                     % skelVersion
     
+    val libSkelSyslogCore =   "io.syspulse"                     %% "syslog-core"                    % skelVersion
+    val libSkelJobCore =      "io.syspulse"                     %% "job-core"                       % skelVersion
+    
     val libEthAbi =           "com.github.lbqds"                %% "ethabi"                         % "0.4.1"
   }
   

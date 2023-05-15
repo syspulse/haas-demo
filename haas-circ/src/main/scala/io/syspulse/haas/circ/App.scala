@@ -32,7 +32,7 @@ case class Config(
 
   tokensDefault:Seq[String] = Defaults.TOKEN_SET.keys.toSeq,
       
-  datastore:String = "mem://",
+  datastore:String = "dir://",
 
   cmd:String = "server",
   params: Seq[String] = Seq(),

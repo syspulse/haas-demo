@@ -410,6 +410,8 @@ lazy val haas_circ = (project in file("haas-circ"))
       libSkelCore,
       libSkelCli,
       libSkelAuthCore,
+      libSkelSyslogCore,
+      libSkelJobCore,
     ),    
   )
 
