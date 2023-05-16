@@ -427,6 +427,10 @@ def process(chain, token_address, token_id, from_date, to_date):
                 #print(address, category)  
         #print("Categories Distribution", categories_distribution)
 
+        if total_supply == 0:
+            print("WARN: total_supply=",total_supply)
+            total_supply = -1.0
+        
         active_locks_objects = []
         for key, value in active_locks.items():
             category = None
