@@ -32,7 +32,7 @@ object CirculationSupplyRegistry {
   def apply(store: CirculationSupplyStore = new CirculationSupplyStoreMem)(implicit config:Config): Behavior[io.syspulse.skel.Command] = {
     this.store = store
 
-    val syslog = new SyslogBus(config.syslogUri,config.syslogChannel) {
+    val syslog = new SyslogBus("circ",config.syslogUri,config.syslogChannel) {
       import spray.json._
       import JobNotificationJson._
 
