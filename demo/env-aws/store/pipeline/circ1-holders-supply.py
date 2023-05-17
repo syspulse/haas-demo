@@ -142,6 +142,7 @@ def get_transfers_for_day(chain, token_address, date):
         token_df = df.where((df.token_address == token_address)).select('sender_address', 'receiver_address', 'value');
         data = token_df.rdd.collect()
     except:
+        print('WARN: not transfers for:',date)
         data = []
     return data
 
