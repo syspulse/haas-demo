@@ -137,9 +137,12 @@ from pyspark.sql.functions import when
 def get_transfers_for_day(chain, token_address, date):
     date_str = date.strftime('%Y/%m/%d')
     path = f's3a://haas-data-dev/data/dev/{chain}/raw/csv/transfers/{date_str}/*'
-    df = spark.read.schema(schema).csv(path, inferSchema=True)
-    token_df = df.where((df.token_address == token_address)).select('sender_address', 'receiver_address', 'value');
-    data = token_df.rdd.collect()
+    try: 
+        df = spark.read.schema(schema).csv(path, inferSchema=True)
+        token_df = df.where((df.token_address == token_address)).select('sender_address', 'receiver_address', 'value');
+        data = token_df.rdd.collect()
+    except:
+        data = []
     return data
 
 from pyspark.sql.types import *
@@ -547,9 +550,9 @@ for file in s3_bucket.objects.filter(Prefix=input_path).limit(limit):
         print(file.key)
         body = file.get()['Body'].read()
         output.append(body)
-        # this is not working in for some reason (need extra slash because of job submission)
-        # output.append(b'\\n')
-        output.append(0x0a.to_bytes(1,'big'))
+        nl = 0x0a
+        nl = nl.to_bytes(1,"big")
+        output.append(nl)
 
 object = s3.Object(bucket, f'{output_path}/{output_file}')
 json = b"".join(output).decode("utf-8")
