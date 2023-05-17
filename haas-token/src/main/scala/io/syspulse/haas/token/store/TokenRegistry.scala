@@ -80,6 +80,7 @@ object TokenRegistry {
         Behaviors.same
 
       case CreateToken(req, replyTo) =>
+        val now = System.currentTimeMillis
         val token = Token(
           req.id, 
           req.symbol,
@@ -90,9 +91,12 @@ object TokenRegistry {
           dcml = req.decimals,
           chain = req.contracts.getOrElse(Map()).map{ case(bid,addr) => 
             TokenBlockchain(bid.toLowerCase,addr.toLowerCase)
-          }.toSeq)
+          }.toSeq,
+          ts0 = now,
+          ts = now
+        )
                 
-        val store1 = store.+(token)
+        val store1 = store.?+(token)
 
         replyTo ! token
         Behaviors.same

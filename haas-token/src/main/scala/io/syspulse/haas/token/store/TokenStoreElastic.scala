@@ -107,6 +107,18 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     }
   }
 
+  override def ?+(t:Token):Try[Token] = {
+    val t1 = ?(t.id) match {
+      case Success(t0) if(t0.ts > t.ts) => 
+        // don't update old duplicate
+        t0
+      case _ => 
+        this.+(t)
+        t
+    }
+    Success(t1)
+  }
+
    override def ??(ids:Seq[ID]):Seq[Token] = {
       val q = ids.foldLeft(ElasticDsl.search(elasticUri.index))( (e,id) => e.termQuery(("id",id)))
       val r = { client.execute { 

@@ -31,7 +31,9 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
 
   def all:Seq[Token] = store.all
   def size:Long = store.size
+  
   override def +(t:Token):Try[TokenStoreDir] = super.+(t).flatMap(_ => store.+(t)).map(_ => this)
+  override def ?+(t:Token):Try[Token] = super.+(t).flatMap(_ => store.?+(t))
 
   override def del(id:ID):Try[TokenStoreDir] = super.del(id).flatMap(_ => store.del(id)).map(_ => this)
   override def ?(id:ID):Try[Token] = store.?(id)

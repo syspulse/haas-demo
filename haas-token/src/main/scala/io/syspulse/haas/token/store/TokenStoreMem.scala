@@ -29,9 +29,21 @@ class TokenStoreMem extends TokenStore {
 
   def size:Long = tokens.size
 
-  def +(t:Token):Try[TokenStore] = { 
-    tokens = tokens + (t.id -> t)
-    log.info(s"${t}")
+  def ?+(t:Token):Try[Token] = {
+    val t1 =tokens.get(t.id) match {
+      case Some(t0) if(t0.ts > t.ts) => 
+        // don't update old duplicate
+        t0
+      case _ => 
+        tokens = tokens + (t.id -> t)
+        t
+    }
+    Success(t1)
+  }
+
+  def +(t:Token):Try[TokenStore] = {
+    log.info(s"${t}")    
+    tokens = tokens + (t.id -> t)    
     Success(this)
   }
 

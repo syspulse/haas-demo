@@ -20,6 +20,9 @@ trait TokenStore extends Store[Token,ID] {
   
   def +(t:Token):Try[TokenStore]
   
+  // add with duplicate
+  def ?+(t:Token):Try[Token]
+  
   def del(id:ID):Try[TokenStore]
   
   def all:Seq[Token]
@@ -53,6 +56,6 @@ trait TokenStore extends Store[Token,ID] {
       t6 <- Some(if(dcml.isDefined) t5.copy(dcml = dcml) else t5)
       t7 <- Some(if(chain.isDefined) t6.copy(chain = chain.get) else t6)
       t8 <- Some(if(locks.isDefined) t7.copy(locks = locks.get) else t7)
-    } yield t8).get
+    } yield t8).get.copy(ts = System.currentTimeMillis)
   }
 }

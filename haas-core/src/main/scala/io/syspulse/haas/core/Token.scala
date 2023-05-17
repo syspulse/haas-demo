@@ -30,8 +30,10 @@ case class Token(
 
   chain:Seq[TokenBlockchain] = Seq(),
   locks:Seq[TokenLocks] = Seq(),
-  
-  ) extends Ingestable {
+    
+  ts:Long = 0L,
+  ts0:Long = 0L,
+) extends Ingestable {
   override def getKey:Option[Any] = Some(id)
 }
 

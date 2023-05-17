@@ -14,5 +14,5 @@ object TokenJson extends DefaultJsonProtocol {
   implicit val jf_tok_tb = jsonFormat2(TokenBlockchain.apply _)
   implicit val jf_tok_lock = jsonFormat2(TokenLock.apply _)
   implicit val jf_tok_locks = jsonFormat2(TokenLocks.apply _)
-  implicit val jf_tok_tok = jsonFormat10(Token.apply _)
+  implicit val jf_tok_tok = jsonFormat12(Token.apply _)
 }
