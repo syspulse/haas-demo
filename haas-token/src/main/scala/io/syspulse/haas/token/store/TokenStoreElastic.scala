@@ -28,6 +28,7 @@ import io.syspulse.haas.token.server.Tokens
 import com.sksamuel.elastic4s.handlers.searches.queries.text.MatchQueryBuilderFn
 import com.sksamuel.elastic4s.requests.common.Operator
 import io.syspulse.haas.core.TokenBlockchain
+import io.syspulse.haas.core.TokenLocks
 
 class TokenStoreElastic(uri:String) extends TokenStore {
   private val log = Logger(s"${this}")
@@ -197,7 +198,8 @@ class TokenStoreElastic(uri:String) extends TokenStore {
 
   def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
     cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
-    contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = {
+    contracts:Option[Seq[TokenBlockchain]] = None,
+    locks:Option[Seq[TokenLocks]] = None):Try[Token] = {
       
     Failure(new UnsupportedOperationException(s"not implemented: ${id}"))
   }

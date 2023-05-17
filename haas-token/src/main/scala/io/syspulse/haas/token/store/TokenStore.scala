@@ -13,6 +13,7 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 import io.syspulse.haas.token.server.Tokens
 import io.syspulse.haas.core.TokenBlockchain
+import io.syspulse.haas.core.TokenLocks
 
 trait TokenStore extends Store[Token,ID] {
   def getKey(t:Token):ID = t.id
@@ -36,11 +37,13 @@ trait TokenStore extends Store[Token,ID] {
 
   def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
              cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
-             contracts:Option[Seq[TokenBlockchain]] = None):Try[Token]
+             contracts:Option[Seq[TokenBlockchain]] = None,
+             locks:Option[Seq[TokenLocks]] = None):Try[Token]
 
   protected def modify(t0:Token, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
              cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
-             chain:Option[Seq[TokenBlockchain]] = None):Token = {
+             chain:Option[Seq[TokenBlockchain]] = None,
+             locks:Option[Seq[TokenLocks]] = None):Token = {
     (for {
       t1 <- Some(if(symbol.isDefined) t0.copy(symbol = symbol.get) else t0)
       t2 <- Some(if(name.isDefined) t1.copy(name = name.get) else t1)
@@ -49,6 +52,7 @@ trait TokenStore extends Store[Token,ID] {
       t5 <- Some(if(icon.isDefined) t4.copy(icon = icon) else t4)
       t6 <- Some(if(dcml.isDefined) t5.copy(dcml = dcml) else t5)
       t7 <- Some(if(chain.isDefined) t6.copy(chain = chain.get) else t6)
-    } yield t7).get
+      t8 <- Some(if(locks.isDefined) t7.copy(locks = locks.get) else t7)
+    } yield t8).get
   }
 }

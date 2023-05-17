@@ -8,6 +8,16 @@ case class TokenBlockchain(
   addr:String
 )
 
+case class TokenLock(
+  addr:String,
+  tag:String
+)
+
+case class TokenLocks(
+  bid:Blockchain.ID,
+  lock:Seq[TokenLock]
+)
+
 case class Token(
   id:Token.ID, 
   symbol:String, 
@@ -18,7 +28,8 @@ case class Token(
   src:Option[Long] = None,
   dcml:Option[Int] = None,
 
-  chain:Seq[TokenBlockchain] = Seq()
+  chain:Seq[TokenBlockchain] = Seq(),
+  locks:Seq[TokenLocks] = Seq(),
   
   ) extends Ingestable {
   override def getKey:Option[Any] = Some(id)

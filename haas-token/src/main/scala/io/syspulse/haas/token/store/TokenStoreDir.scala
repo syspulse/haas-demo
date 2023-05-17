@@ -22,6 +22,7 @@ import io.syspulse.skel.store.StoreDir
 
 import io.syspulse.haas.serde.TokenJson._
 import io.syspulse.haas.token.server.Tokens
+import io.syspulse.haas.core.TokenLocks
 
 class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with TokenStore {
   import CoinGeckoTokenJson._
@@ -46,8 +47,8 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
 
   override def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
              cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
-             contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = 
-    store.update(id,symbol,name,addr,cat,icon,dcml,contracts).flatMap(t => writeFile(t))
+             contracts:Option[Seq[TokenBlockchain]] = None, locks:Option[Seq[TokenLocks]] = None):Try[Token] = 
+    store.update(id,symbol,name,addr,cat,icon,dcml,contracts,locks).flatMap(t => writeFile(t))
 
   // load in Coingecko format
   loadCoingGecko(dir)

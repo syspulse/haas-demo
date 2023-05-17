@@ -15,6 +15,7 @@ import io.syspulse.haas.core.Token
 import io.syspulse.haas.core.Token.ID
 import io.syspulse.haas.token.server.Tokens
 import io.syspulse.haas.core.TokenBlockchain
+import io.syspulse.haas.core.TokenLocks
 
 class TokenStoreMem extends TokenStore {
   val log = Logger(s"${this}")
@@ -82,10 +83,11 @@ class TokenStoreMem extends TokenStore {
 
   def update(id:ID, symbol:Option[String] = None, name:Option[String] = None, addr: Option[String] = None,
              cat:Option[List[String]] = None, icon:Option[String] = None, dcml:Option[Int] = None,
-             contracts:Option[Seq[TokenBlockchain]] = None):Try[Token] = 
+             contracts:Option[Seq[TokenBlockchain]] = None,
+             locks:Option[Seq[TokenLocks]] = None):Try[Token] = 
     this.?(id) match {
       case Success(t) => 
-        val t1 = modify(t,symbol,name,addr,cat,icon,dcml,contracts)
+        val t1 = modify(t,symbol,name,addr,cat,icon,dcml,contracts,locks)
         this.+(t1)
         Success(t1)
       case f => f

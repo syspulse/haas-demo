@@ -9,14 +9,17 @@ import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsVa
 import io.syspulse.skel.service.JsonCommon
 import io.syspulse.haas.core.Token
 import io.syspulse.haas.serde.TokenJson
+import io.syspulse.haas.core.TokenLocks
 
 final case class Tokens(tokens: immutable.Seq[Token], total:Option[Long] = None)
 final case class TokenCreateReq(id:String, symbol: String, name:String, 
                                 cat:Option[List[String]] = None, icon:Option[String]=None, decimals:Option[Int], 
-                                contracts: Option[Map[String,String]] = None)
+                                contracts: Option[Map[String,String]] = None,
+                                locks:Option[Seq[TokenLocks]] = None)
 final case class TokenUpdateReq(id:Option[String] = None, symbol: Option[String] = None, name:Option[String] = None, 
                                 cat:Option[List[String]] = None, icon:Option[String]=None, decimals:Option[Int] = None, 
-                                contracts: Option[Map[String,String]] = None)
+                                contracts: Option[Map[String,String]] = None,
+                                locks:Option[Seq[TokenLocks]] = None)
 final case class TokenRandomReq()
 final case class TokenActionRes(status: String,id:Option[String])
 final case class TokenRes(token: Option[Token])
@@ -27,8 +30,8 @@ object TokenProto extends JsonCommon {
 
   implicit val jf_Tokens = jsonFormat2(Tokens)
   implicit val jf_TokenRes = jsonFormat1(TokenRes)
-  implicit val jf_CreateReq = jsonFormat7(TokenCreateReq)
-  implicit val jf_UpdateReq = jsonFormat7(TokenUpdateReq)
+  implicit val jf_CreateReq = jsonFormat8(TokenCreateReq)
+  implicit val jf_UpdateReq = jsonFormat8(TokenUpdateReq)
   implicit val jf_ActionRes = jsonFormat2(TokenActionRes)
   
   implicit val jf_RadnomReq = jsonFormat0(TokenRandomReq)
