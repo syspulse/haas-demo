@@ -53,7 +53,7 @@ curl -i http://localhost/api/v1/{service}/health
 Public:
 
 ```
-curl -i http://api.hacken.cloud/api/v1/auth/health
+curl -i http://api.demo.hacken.cloud/api/v1/auth/health
 ```
 
 
@@ -72,19 +72,19 @@ docker-compose restart
 Every Service exposes API as Swagger (and UI)
 
 ```
-curl -i http://api.hacken.cloud/api/v1/{service}/doc/swagger.json | jq .
+curl -i http://api.demo.hacken.cloud/api/v1/{service}/doc/swagger.json | jq .
 ```
 
 Examples:
 
 ```
-curl -i http://api.hacken.cloud/api/v1/user/doc/swagger.json | jq .
+curl -i http://api.demo.hacken.cloud/api/v1/user/doc/swagger.json | jq .
 ```
 
 Swagger UI:
 
 ```
-http://api.hacken.cloud/api/v1/auth/swagger
+http://api.demo.hacken.cloud/api/v1/auth/swagger
 ```
 
 

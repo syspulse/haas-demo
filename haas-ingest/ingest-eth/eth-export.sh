@@ -3,7 +3,7 @@
 CWD=`echo $(dirname $(readlink -f $0))`
 
 #ETH_RPC=${ETH_RPC:-http://api.infura.io}
-#ETH_RPC=${ETH_RPC:-http://geth2.hacken.cloud:8545}
+#ETH_RPC=${ETH_RPC:-http://geth2.demo.hacken.cloud:8545}
 ETH_RPC=${ETH_RPC:-http://geth2.hacken.dev:8545}
 
 START_BLOCK=${1:-latest}

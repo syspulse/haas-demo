@@ -7,4 +7,9 @@ FROM jupyter/sparkmagic
 # Install more useful libs
 RUN pip install boto3 matplotlib seaborn
 
+USER $NB_USER
+COPY example_config.json /home/$NB_USER/.sparkmagic/config.json
+USER root
+RUN chown $NB_USER /home/$NB_USER/.sparkmagic/config.json
+
 CMD ["start-notebook.sh", "--NotebookApp.base_url='sparkmagic'", "--NotebookApp.iopub_data_rate_limit=1000000000"]

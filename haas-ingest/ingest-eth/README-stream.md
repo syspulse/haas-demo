@@ -54,5 +54,5 @@ ENTITY="block,transaction,log,token_transfer" ./eth-stream.sh
 Stream with docker:
 
 ```
-ETH_RPC=http://geth2.hacken.cloud:8545 DOCKER=aws ENTITY=log ./eth-stream.sh
+ETH_RPC=http://geth2.demo.hacken.cloud:8545 DOCKER=aws ENTITY=log ./eth-stream.sh
 ```

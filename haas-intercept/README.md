@@ -26,7 +26,7 @@ ETH_RPC=http://geth:8545 ./eth-stream-intercept-block.sh intercept --alarms='scr
 
 Stable Coins (USDT,USDC) Transfers:
 ```
-ETH_RPC=http://geth2.hacken.cloud:8545 ./eth-stream-intercept-token.sh intercept --alarms='script-token-3.js=token=stdout://
+ETH_RPC=http://geth2.demo.hacken.cloud:8545 ./eth-stream-intercept-token.sh intercept --alarms='script-token-3.js=token=stdout://
 ```
 
 Run Tx intercept with Alarms
@@ -64,14 +64,14 @@ OPT=-Dgod ./run-intercept.sh server --feed.tx=feed/tx-4000.log --feed.block=feed
 Run Server with Event Logs from EthereumETL ignoring all other feeds
 
 ```
-OPT=-Dgod ETH_RPC=http://geth2.hacken.cloud:8545 ./eth-stream-intercept-event.sh server --feed.event=stdin:// --feed.block=null:// --feed.tx=null:// --feed.token=null://
+OPT=-Dgod ETH_RPC=http://geth2.demo.hacken.cloud:8545 ./eth-stream-intercept-event.sh server --feed.event=stdin:// --feed.block=null:// --feed.tx=null:// --feed.token=null://
 ```
 
 
 ## Multichain
 
 ```
-OPT=-Dgod ETH_RPC=http://geth.hacken.cloud:8545 DOCKER=none FEED_ETHEREUM_TX=stdin:// ./eth-stream-intercept-tx.sh server --bid=ethereum,zksync
+OPT=-Dgod ETH_RPC=http://geth.demo.hacken.cloud:8545 DOCKER=none FEED_ETHEREUM_TX=stdin:// ./eth-stream-intercept-tx.sh server --bid=ethereum,zksync
 ```
 
 ```

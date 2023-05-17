@@ -6,7 +6,7 @@ source web3-provider-keys.sh
 
 case "$WEB3" in
   "haas")
-    ETH_RPC=http://geth.hacken.cloud:8545
+    ETH_RPC=http://geth.demo.hacken.cloud:8545
     ;;
   "infura")
     ETH_RPC=https://mainnet.infura.io/v3/$INFURA_KEY

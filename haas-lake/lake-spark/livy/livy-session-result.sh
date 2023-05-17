@@ -3,7 +3,7 @@
 R=${1:-}
 NAME=${2:-HAAS-SESSION}
 
-SERVICE_URI=${SERVICE_URI:-http://emr.hacken.cloud:8998}
+SERVICE_URI=${SERVICE_URI:-http://emr.demo.hacken.cloud:8998}
 
 if [ "$R" != "" ]; then
    curl -X GET -H "Content-Type:application/json" -d "$DATA_2" ${SERVICE_URI}/sessions/${NAME}/statements/$R

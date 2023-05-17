@@ -1,7 +1,7 @@
 #!/bin/bash
 
 NAME=${1:-HAAS-SESSION}
-SERVICE_URI=${SERVICE_URI:-http://emr.hacken.cloud:8998}
+SERVICE_URI=${SERVICE_URI:-http://emr.demo.hacken.cloud:8998}
 
 # params can be read with Python:
 # par1 = spark.conf.get("spark.job.param1")

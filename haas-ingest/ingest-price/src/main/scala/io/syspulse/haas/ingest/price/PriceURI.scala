@@ -27,7 +27,7 @@ case class PriceURI(uri:String,apiSuffix:String="") {
         Some(CoinGeckoURI(uri,"/simple/price/"+apiSuffix).uri)
 
       case "chainlink" :: _ => 
-        Some(build("http://","geth2.hacken.cloud:8545","",apiSuffix))
+        Some(build("http://","geth2.demo.hacken.cloud:8545","",apiSuffix))
             
       case _ => None
     }

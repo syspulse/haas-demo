@@ -3,7 +3,7 @@
 F=${1:-test-0.py}
 NAME=${2:-HAAS-SESSION}
 
-SERVICE_URI=${SERVICE_URI:-http://emr.hacken.cloud:8998}
+SERVICE_URI=${SERVICE_URI:-http://emr.demo.hacken.cloud:8998}
 
 CODE=`cat $F | jq -Rsa .`
 

@@ -2,7 +2,7 @@
 
 ID=${1:-}
 
-SERVICE_URI=${SERVICE_URI:-http://emr.hacken.cloud:8998}
+SERVICE_URI=${SERVICE_URI:-http://emr.demo.hacken.cloud:8998}
 
 >&2 echo "SERVICE_URI: ${SERVICE_URI}"
 

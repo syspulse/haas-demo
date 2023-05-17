@@ -3,9 +3,9 @@
 PY=${1:-}
 NAME=${2:-HAAS-JOB}
 
-SERVICE_URI=${SERVICE_URI:-http://emr.hacken.cloud:8998}
+SERVICE_URI=${SERVICE_URI:-http://emr.demo.hacken.cloud:8998}
 
-scp -i key $PY hadoop@emr.hacken.cloud:/tmp/
+scp -i key $PY hadoop@emr.demo.hacken.cloud:/tmp/
 
 >&2 echo "SERVICE_URI: ${SERVICE_URI}"
 >&2 echo "Python: ${PY}"

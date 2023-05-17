@@ -43,7 +43,7 @@
 Connect to EMR Master:
 
 ```
-ssh -i ../../keys/haas-key hadoop@emr.hacken.cloud
+ssh -i ../../keys/haas-key hadoop@emr.demo.hacken.cloud
 ```
 
 

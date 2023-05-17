@@ -3,7 +3,7 @@
 # OUTPUT: kafka/localhost:9092
 
 #ETH_RPC=${ETH_RPC:-http://geth:8545}
-ETH_RPC=${ETH_RPC:-http://geth.hacken.cloud:8545}
+ETH_RPC=${ETH_RPC:-http://geth.demo.hacken.cloud:8545}
 
 #START_BLOCK=${1:-14747950}
 OUTPUT=${1}

@@ -35,7 +35,7 @@ https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd
 Contract: [0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419](https://etherscan.io/address/0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419)
 
 ```
-export ETH_RPC_URL=http://geth.hacken.cloud:8545
+export ETH_RPC_URL=http://geth.demo.hacken.cloud:8545
 ```
 
 1. Get last price

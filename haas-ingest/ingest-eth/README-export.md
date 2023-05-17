@@ -127,9 +127,9 @@ Files will have `\r\n`, processing requires delimiter:
 ## Export to S3
 
 ```
-ETH_RPC=http://geth2.hacken.cloud:8545 DOCKER=aws ./S3-export-blocks.sh 10861674 10861674
+ETH_RPC=http://geth2.demo.hacken.cloud:8545 DOCKER=aws ./S3-export-blocks.sh 10861674 10861674
 ```
 
 ```
-ETH_RPC=http://geth2.hacken.cloud:8545 DOCKER=aws ./S3-export-logs.sh 10861674 10861674
+ETH_RPC=http://geth2.demo.hacken.cloud:8545 DOCKER=aws ./S3-export-logs.sh 10861674 10861674
 ```
