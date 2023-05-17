@@ -615,7 +615,9 @@ for file in s3_bucket.objects.filter(Prefix=input_path).limit(limit):
         print(file.key)
         body = file.get()['Body'].read()
         output.append(body)
-        output.append(b'\\n')
+        nl = 0x0a
+        nl = nl.to_bytes(1,"big")
+        output.append(nl)
 
 object = s3.Object(bucket, f'{output_path}/{output_file}')
 json = b"".join(output).decode("utf-8")
