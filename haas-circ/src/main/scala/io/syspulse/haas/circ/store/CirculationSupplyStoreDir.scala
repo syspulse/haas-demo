@@ -59,13 +59,17 @@ class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) ex
         data.split("\n").map(d => (f,d))        
       }
       .flatMap{ case (f,data) => {
-        parseCirculation(data).map{ case(tid,c) => TokenCirculating(tid,c)}
+        parseCirculation(data).map{ case(tid,c) => 
+          TokenCirculating(tid,c)
+        }        
       }}
       
-    log.debug(s"${circs}")
-    log.info(s"Circulations: ${circs.size}: ${circs.map(_.tid).distinct.mkString(",")}")
+    //log.debug(s"${circs}")
+    log.info(s"Circulations: ${circs.size}")
 
     circs.groupBy(_.tid).map{ case(tid,circ) => {
+      log.info(s"${tid}: ${circ.size}")
+          
       CirculationSupply(
         id = UUID.random,
         name = tid,

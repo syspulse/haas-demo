@@ -114,7 +114,8 @@ object TokenRegistry {
             _.map{ case(bid,addr) => 
               TokenBlockchain(bid.toLowerCase,addr.toLowerCase)
             }.toSeq
-          }
+          },
+          req.locks
         )
 
         replyTo ! t1

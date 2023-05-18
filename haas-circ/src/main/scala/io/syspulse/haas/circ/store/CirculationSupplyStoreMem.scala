@@ -25,7 +25,10 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
   
   var circs: Map[CirculationSupply.ID,CirculationSupply] = Map()
 
-  def clear() = Map()
+  def clear() = {
+    log.info(s"clear: ${circs.size}")
+    circs = Map()
+  }
 
   def all:Seq[CirculationSupply] = circs.values.toSeq
 
