@@ -14,6 +14,9 @@ HaaS Platform Demo
 - [haas-label](https://github.com/syspulse/skel/tree/main/skel-tag)                - Currently __skel-tag__ is used for labels
 - [haas-analytics](haas-analytics)      - Analytics Code snippets for Notebooks
 - [haas-abi](haas-abi)                  - ABI store
+- [haas-supply](haas-supply)            - Mulitchain Circulation Supply
+- [haas-holder](haas-holder)            - Holders Service
+- [haas-discovery](haas-discovery)      - Datasets discovery service
 
 ----
 ## Demo Architecture
