@@ -50,7 +50,15 @@ abstract class PipelineEthLog[E <: skel.Ingestable](feed:String,output:String,th
   
   override def parse(data:String):Seq[EthLog] = parseEventLog(data)
 
-  def convert(e:EthLog):Event = Event(e.block_timestamp * 1000L, e.block_number, e.address, e.data,e.transaction_hash,e.topics )
+  def convert(e:EthLog):Event = Event(
+    e.block_timestamp * 1000L, 
+    e.block_number, 
+    e.address, 
+    e.data,
+    e.transaction_hash,
+    e.topics,
+    e.log_index 
+  )
 
 }
 

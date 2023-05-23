@@ -14,7 +14,7 @@ EXTRA=${EXTRA}
 
 BUCKET_DIR=${BUCKET_DIR:-/data}
 
-DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.2}
+DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.4}
 
 DOCKER=${DOCKER:-aws}
 #DOCKER=${DOCKER:-none}

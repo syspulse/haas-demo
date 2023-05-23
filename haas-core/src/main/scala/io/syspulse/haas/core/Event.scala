@@ -8,7 +8,8 @@ case class Event(
   contract:String,
   data:String,
   hash:String,
-  topics:List[String] = List()
+  topics:List[String] = List(),
+  i:Int
   
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)

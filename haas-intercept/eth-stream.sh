@@ -12,6 +12,7 @@ OUTPUT=${2}
 ENTITY=${ENTITY:-transaction}
 
 #DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.2}
+#DOCKER=${DOCKER:-649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/ethereum-etl:2.1.2.4}
 DOCKER=${DOCKER:-none}
 DOCKER_STATE=${DOCKER_STATE:-state/}
 

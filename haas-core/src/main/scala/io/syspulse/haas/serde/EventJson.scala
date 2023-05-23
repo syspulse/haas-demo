@@ -11,5 +11,5 @@ import io.syspulse.haas.core.Event
 
 object EventJson extends DefaultJsonProtocol {
   
-  implicit val jf_event = jsonFormat6(Event.apply _)
+  implicit val jf_event = jsonFormat7(Event.apply _)
 }
