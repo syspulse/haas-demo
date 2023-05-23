@@ -162,6 +162,7 @@ trait EthDecoder[T] {
                     nonce.toLong,
                     OptionEmpty(max_fee_per_gas).map(BigInt(_)),
                     OptionEmpty(max_priority_fee_per_gas).map(BigInt(_)), 
+                    
                     OptionEmpty(transaction_type).map(_.toInt), 
 
                     receipt_cumulative_gas_used.toLong, 

@@ -3,10 +3,10 @@
 # OUTPUT: kafka/localhost:9092
 CWD=`echo $(dirname $(readlink -f $0))`
 
-#ETH_RPC=${ETH_RPC:-http://geth.demo.hacken.cloud:8545}
+ETH_RPC=${ETH_RPC:-http://geth.demo.hacken.cloud:8545}
 #ETH_RPC=${ETH_RPC:-http://geth.hacken.dev:8545}
 #ETH_RPC=${ETH_RPC:-https://zksync2-testnet.zksync.dev}
-ETH_RPC=${ETH_RPC:-https://optimism-mainnet.infura.io/v3/5619930ed1f84c27aca9231c2a72c279}
+#ETH_RPC=${ETH_RPC:-https://optimism-mainnet.infura.io/v3/5619930ed1f84c27aca9231c2a72c279}
 
 START_BLOCK=${1:-latest}
 OUTPUT=${2}
