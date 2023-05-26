@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest.eth.flow.etl
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -39,9 +39,10 @@ import io.syspulse.haas.serde.TokenTransferJson
 import io.syspulse.haas.serde.TokenTransferJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineEthTokenTransfer[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthTokenTransfer,TokenTransfer,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineETLTokenTransfer[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[EthTokenTransfer,TokenTransfer,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineETL[E] {
   
   def apiSuffix():String = s"/transfer"
 
@@ -56,12 +57,17 @@ abstract class PipelineEthTokenTransfer[E <: skel.Ingestable](feed:String,output
     tt.logIndex
   )
   
-  override def parse(data:String):Seq[EthTokenTransfer] = parseTokenTransfer(data)
+  def parse(data:String):Seq[EthTokenTransfer] = {
+    val d = parseTokenTransfer(data)
+    if(d.size!=0)
+      latestTs.set(d.last.blockTimestamp * 1000L)
+    d
+  }
 
 }
 
 class PipelineTokenTransfer(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineEthTokenTransfer[TokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  extends PipelineETLTokenTransfer[TokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
 
   def transform(tt: TokenTransfer): Seq[TokenTransfer] = Seq(tt)
 }

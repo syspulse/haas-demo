@@ -7,9 +7,10 @@ case class Event(
   block:Long,
   contract:String,
   data:String,
-  hash:String,
-  topics:List[String] = List(),
-  i:Int
+  hash:String,   // transaction hash !
+  topics:List[String] = List(), 
+  i:Int,         // log index
+  tix:Int        // transaction index in block
   
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)

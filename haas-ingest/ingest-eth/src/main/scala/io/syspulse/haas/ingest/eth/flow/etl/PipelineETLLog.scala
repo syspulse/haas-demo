@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest.eth.flow.etl
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -41,14 +41,19 @@ import io.syspulse.haas.serde.EventJson
 import io.syspulse.haas.serde.EventJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-
-abstract class PipelineEthLog[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthLog,Event,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineETLLog[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[EthLog,Event,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineETL[E] {
   
   def apiSuffix():String = s"/log"
   
-  override def parse(data:String):Seq[EthLog] = parseEventLog(data)
+  def parse(data:String):Seq[EthLog] = {
+    val d = parseEventLog(data)
+    if(d.size!=0)
+      latestTs.set(d.last.block_timestamp * 1000L)
+    d
+  }
 
   def convert(e:EthLog):Event = Event(
     e.block_timestamp * 1000L, 
@@ -57,13 +62,14 @@ abstract class PipelineEthLog[E <: skel.Ingestable](feed:String,output:String,th
     e.data,
     e.transaction_hash,
     e.topics,
-    e.log_index 
+    e.log_index,
+    e.transaction_index
   )
 
 }
 
 class PipelineLog(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineEthLog[Event](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  extends PipelineETLLog[Event](feed,output,throttle,delimiter,buffer,limit,size,filter) {
 
   def transform(e: Event): Seq[Event] = Seq(e)
 }

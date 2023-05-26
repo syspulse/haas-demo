@@ -43,7 +43,7 @@ import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
 
-import io.syspulse.haas.ingest.eth.flow.PipelineEthBlock
+import io.syspulse.haas.ingest.eth.flow.etl.PipelineEthBlock
 
 class PipelineEthInterceptBlock(feed:String,output:String,override val interceptor:InterceptorBlock)(implicit config:Config) 
   extends PipelineEthBlock[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 

@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest.eth.flow.etl
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -34,15 +34,20 @@ import io.syspulse.haas.serde.BlockJson
 import io.syspulse.haas.serde.BlockJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineEthBlock[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthBlock,Block,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+
+abstract class PipelineETLBlock[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[EthBlock,Block,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineETL[E]{
   
   def apiSuffix():String = s"/block"
 
-  def parse(data:String):Seq[EthBlock] = parseBlock(data)
+  def parse(data:String):Seq[EthBlock] = {
+    val d = parseBlock(data)
+    if(d.size!=0)
+      latestTs.set(d.last.timestamp * 1000L)
+    d
+  }
 
   def convert(block:EthBlock):Block = 
       Block(block.number,block.hash,block.parent_hash,block.nonce,block.sha3_uncles,block.logs_bloom,block.transactions_root,block.state_root,
@@ -57,7 +62,7 @@ abstract class PipelineEthBlock[E <: skel.Ingestable](feed:String,output:String,
 }
 
 class PipelineBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineEthBlock[Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  extends PipelineETLBlock[Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
 
   def transform(block: Block): Seq[Block] = {
     Seq(block)

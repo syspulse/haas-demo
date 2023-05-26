@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest.eth.flow.etl
 
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.skel.ingest.flow.Flows
@@ -40,44 +40,10 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String],reportFreq:Long = 100000)(implicit val fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
-  extends Pipeline[T,O,E](feed,output,throttle,delimiter,buffer) {
+trait PipelineETL[E] extends ETLDecoder[E] {
+
+  import EthEtlJson._
   
-  var latestTs:AtomicLong = new AtomicLong(0)
-
-  override def getRotator():Flows.Rotator = 
-    new Flows.RotatorTimestamp(() => {
-      latestTs.get()
-    })
-
-  override def getFileLimit():Long = limit
-  override def getFileSize():Long = size
-
-  def filter():Seq[String] = filter
-  def apiSuffix():String
-
-  def convert(t:T):O
-
-  //def transform(o: O) = Seq(o)
-
-  def process:Flow[T,O,_] = Flow[T].map(t => {
-    val o = convert(t)
-    //log.debug(s"${o}")
-    o
-  })
-
-  override def source() = {
-    feed.split("://").toList match {
-      case "eth" :: _ => super.source(EthURI(feed,apiSuffix()).uri)
-      case _ => super.source()
-    }
-  }
-
-  // override def processing:Flow[T,T,_] = Flow[T].map(v => {
-  //   if(countObj % reportFreq == 0)
-  //     log.info(s"processed: ${countInput},${countObj}")
-  //   v
-  // })
-
 }

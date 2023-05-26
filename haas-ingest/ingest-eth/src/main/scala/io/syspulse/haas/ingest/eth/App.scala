@@ -16,6 +16,7 @@ import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth.flow._
+import io.syspulse.haas.ingest.eth.flow.lake.PipelineTx
 
 object App extends skel.Server {
   
@@ -117,24 +118,39 @@ object App extends skel.Server {
     val (r,pp) = config.cmd match {
       case "ingest" => {
         val pp:Seq[PipelineEth[_,_,_]] = config.entity.flatMap( e => e match {
-          case "block" =>
-            Some(new PipelineBlock(orf(config.feedBlock,config.feed),orf(config.outputBlock,config.output),
+          case "block" | "block.etl" =>
+            Some(new etl.PipelineBlock(orf(config.feedBlock,config.feed),orf(config.outputBlock,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
-          case "tx" =>
-            Some(new PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+          case "tx" | "tx.etl" =>
+            Some(new etl.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           
-          case "transfer" | "token" =>
-            Some(new PipelineTokenTransfer(orf(config.feedTransfer,config.feed),orf(config.outputTransfer,config.output),
+          case "transfer" | "token" | "transfer.etl" | "token.etl" =>
+            Some(new etl.PipelineTokenTransfer(orf(config.feedTransfer,config.feed),orf(config.outputTransfer,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
-          case "log" | "event" => 
-            Some(new PipelineLog(orf(config.feedLog,config.feed),orf(config.outputLog,config.output),
+          case "log" | "event" | "log.etl" | "event.etl" => 
+            Some(new etl.PipelineLog(orf(config.feedLog,config.feed),orf(config.outputLog,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
+              
           case "mempool" => 
             Some(new PipelineMempool(orf(config.feedMempool,config.feed),orf(config.outputMempool,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+
+
+          case "block.lake" =>
+            Some(new lake.PipelineBlock(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          case "tx.lake" =>
+            Some(new lake.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          case "transfer.lake" | "token.lake" =>
+            Some(new lake.PipelineTokenTransfer(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          case "log.lake" | "even.lake" =>
+            Some(new lake.PipelineEvent(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
           case _ => 
@@ -147,21 +163,7 @@ object App extends skel.Server {
         val ppr = pp.map( _.run())
 
         (ppr.head,Some(pp.head))
-        
-        // val pp = config.entity match {
-        //   case "tx" =>
-        //     new PipelineTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)                    
-        //   case "block" =>
-        //     new PipelineBlock(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)          
-        //   // case "block-tx" =>
-        //   //   new PipelineEthBlockTx(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)            
-        //   case "transfer" =>
-        //     new PipelineTokenTransfer(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-        //   case "log" | "event" =>
-        //     new PipelineLog(config.feed,config.output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter)
-        //   case _ =>  Console.err.println(s"Uknown entity: '${config.entity}'"); sys.exit(1)
-        // } 
-        // (pp.run(),Some(pp))
+                
       }       
     }
     

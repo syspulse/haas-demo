@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest.eth.flow.lake
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -33,43 +33,26 @@ import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.EthEtlJson._
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineEthTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthTx,Tx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+abstract class PipelineLakeTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[Tx,Tx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineLake[E] {
   
   def apiSuffix():String = s"/tx"
 
-  override def parse(data:String):Seq[EthTx] = parseTx(data)
+  def parse(data:String):Seq[Tx] = {
+    val d = parseTx(data)
+    if(d.size!=0)
+      latestTs.set(d.last.ts)
+    d
+  }
 
-  def convert(tx:EthTx):Tx = Tx(
-    tx.block_timestamp * 1000L,
-    tx.transaction_index,
-    tx.hash,
-    tx.block_number,
-    tx.from_address,
-    tx.to_address,
-    tx.gas,
-    tx.gas_price,
-    tx.input,
-    tx.value,
-
-    tx.nonce,
-    tx.max_fee_per_gas,
-    tx.max_priority_fee_per_gas, 
-    tx.transaction_type, 
-    tx.receipt_cumulative_gas_used, 
-    tx.receipt_gas_used, 
-    tx.receipt_contract_address, 
-    tx.receipt_root, 
-    tx.receipt_status, 
-    tx.receipt_effective_gas_price
-  )
+  def convert(tx:Tx):Tx = tx
 
 }
 
 class PipelineTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineEthTx[Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+  extends PipelineLakeTx[Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
 
-  def transform(tx: Tx): Seq[Tx] = Seq(tx)    
+  def transform(tx: Tx): Seq[Tx] = Seq(tx)
 }
