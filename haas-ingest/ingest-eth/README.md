@@ -15,6 +15,11 @@ Ingest blocks from file:
 ./run-ingest-eth.sh ingest -e block -f feed/blocks-1.log -o stdout://
 ```
 
+Ingest blocks from stored S3 file on the Lake:
+```
+./run-ingest-eth.sh ingest -e block.lake -f /mnt/s3/feed/blocks-1.csv
+```
+
 Stream: geth -> ethereum-etl -> eth-ingest from last PoW block 15537393
 
 ```
