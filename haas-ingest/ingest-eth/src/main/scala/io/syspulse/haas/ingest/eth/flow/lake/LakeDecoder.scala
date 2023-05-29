@@ -137,7 +137,7 @@ trait LakeDecoder[T] extends EthDecoder[T,Block,Tx,TokenTransfer,Event] {
                     receipt_gas_used.toLong, 
                     OptionEmpty(receipt_contract_address), 
                     OptionEmpty(receipt_root), 
-                    receipt_status.toInt, 
+                    OptionEmpty(receipt_status).map(_.toInt),
                     OptionEmpty(receipt_effective_gas_price).map(BigInt(_))
                   ))
             

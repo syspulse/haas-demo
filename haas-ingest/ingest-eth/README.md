@@ -38,6 +38,11 @@ Stream from latest block
 ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx
 ```
 
+Clean stream:
+```
+ENTITY="transaction" ./eth-stream.sh 2>/dev/null | ./run-ingest-eth.sh -e tx
+```
+
 Stream blocks into S3 compatible mount (no append).
 
 Limit (`--limit=10`) is important when file is rolled over:

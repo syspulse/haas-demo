@@ -22,7 +22,7 @@ case class Tx(
   used: Long,             // gas used
   cntr: Option[String],  // contract
   root: Option[String],   // receipt root
-  sts: Int,               // status
+  sts: Option[Int],       // status
   p0: Option[BigInt]      // price Effective
 
   //timestamp:Option[Long]

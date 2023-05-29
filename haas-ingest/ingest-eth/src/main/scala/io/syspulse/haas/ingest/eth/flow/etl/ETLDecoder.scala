@@ -164,7 +164,7 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
                     receipt_gas_used.toLong, 
                     OptionEmpty(receipt_contract_address), 
                     OptionEmpty(receipt_root), 
-                    receipt_status.toInt, 
+                    OptionEmpty(receipt_status).map(_.toInt), 
                     OptionEmpty(receipt_effective_gas_price).map(BigInt(_))
                   ))
 
@@ -197,7 +197,7 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
                     0L, 
                     None, 
                     None, 
-                    0, 
+                    None, 
                     None
                   ))
                   

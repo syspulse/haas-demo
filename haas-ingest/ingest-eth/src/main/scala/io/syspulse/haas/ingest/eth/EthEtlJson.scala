@@ -57,7 +57,7 @@ case class EthTx(
   receipt_gas_used: Long, 
   receipt_contract_address: Option[String], 
   receipt_root: Option[String], 
-  receipt_status: Int, 
+  receipt_status: Option[Int], 
   receipt_effective_gas_price: Option[BigInt]
 
 )  extends Ingestable
