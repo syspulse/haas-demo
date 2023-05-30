@@ -8,7 +8,7 @@ import scala.io.Source
 import io.syspulse.haas.core._
 
 import io.syspulse.skel.util.Util
-import io.syspulse.haas.ingest.eth.flow.EthDecoder
+import io.syspulse.haas.ingest.eth.flow.etl.EthDecoder
 
 import io.syspulse.haas.ingest.eth.EthEtlJson
 

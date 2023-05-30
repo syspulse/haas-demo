@@ -1,4 +1,4 @@
-package io.syspulse.haas.intercept.flow.eth
+package io.syspulse.haas.intercept.flow.etl
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -29,8 +29,7 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.TokenTransfer
-import io.syspulse.haas.ingest.eth.flow.etl.PipelineEth
+import io.syspulse.haas.core.Event
 
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
@@ -43,11 +42,15 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorTx
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
-import io.syspulse.haas.ingest.eth.flow.etl.PipelineEthTokenTransfer
 
-class PipelineEthInterceptTokenTransfer(feed:String,output:String,override val interceptor:InterceptorTokenTransfer)(implicit config:Config) 
-  extends PipelineEthTokenTransfer[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
-  with PipelineEthIntercept[TokenTransfer] {
+import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.eth.flow.etl.PipelineETLLog
+import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
+import io.syspulse.haas.intercept.flow.eth.InterceptorEvent
+
+class PipelineETLInterceptEvent(feed:String,output:String,override val interceptor:InterceptorEvent)(implicit config:Config) 
+  extends PipelineETLLog[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
+  with PipelineEthIntercept[Event] {
 
 }
 

@@ -23,6 +23,8 @@ import io.syspulse.haas.intercept.store._
 import io.syspulse.haas.intercept.server._
 import io.syspulse.haas.core.Blockchain
 
+import io.syspulse.haas.intercept.flow.etl._
+
 case class ConfigBlockchain(
   bid:Blockchain.ID,
   feedTx:String = "stdin://",
@@ -239,19 +241,19 @@ object App extends skel.Server {
 
         val blockchainInterceptors = config.blockchains.values.map( b => {
           val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppTx = new PipelineEthInterceptTx(
+          val ppTx = new PipelineETLInterceptTx(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
           
           val ixBlock = new InterceptorBlock(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppBlock = new PipelineEthInterceptBlock(
+          val ppBlock = new PipelineETLInterceptBlock(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedBlock else config.feed, config.output,ixBlock)(config)
           
           val ixToken = new InterceptorTokenTransfer(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppToken = new PipelineEthInterceptTokenTransfer(
+          val ppToken = new PipelineETLInterceptTokenTransfer(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedToken else config.feed, config.output,ixToken)(config)
           
           val ixEvent = new InterceptorEvent(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppEvent = new PipelineEthInterceptEvent(
+          val ppEvent = new PipelineETLInterceptEvent(
             if(!b.bid.isEmpty) {
               if(config.blockchains(b.bid).feedEvent.isEmpty) 
                 config.blockchains(b.bid).feedLog 
@@ -260,7 +262,7 @@ object App extends skel.Server {
             } else config.feed, config.output, ixEvent)(config)
           
           val ixFunc = new InterceptorFunc(b.bid,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppFunc = new PipelineEthInterceptFunc(
+          val ppFunc = new PipelineETLInterceptFunc(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output, ixFunc)(config)
           
           val ixMempool = new InterceptorMempool(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
@@ -328,23 +330,23 @@ object App extends skel.Server {
 
         val pp = config.entity match {
           case "block" =>
-            new PipelineEthInterceptBlock(config.feed,config.output, 
+            new PipelineETLInterceptBlock(config.feed,config.output, 
                 new InterceptorBlock(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "tx" =>
-            new PipelineEthInterceptTx(config.feed,config.output, 
+            new PipelineETLInterceptTx(config.feed,config.output, 
                 new InterceptorTx(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "token" =>
-            new PipelineEthInterceptTokenTransfer(config.feed,config.output, 
+            new PipelineETLInterceptTokenTransfer(config.feed,config.output, 
                 new InterceptorTokenTransfer(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
           case "erc20" =>
             // not useful Interceptor, only for Testing
-            new PipelineEthInterceptTx(config.feed,config.output, 
+            new PipelineETLInterceptTx(config.feed,config.output, 
                 new InterceptorERC20(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "event" | "log" =>
-            new PipelineEthInterceptEvent(config.feed,config.output, 
+            new PipelineETLInterceptEvent(config.feed,config.output, 
                 new InterceptorEvent(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "func" =>
-            new PipelineEthInterceptFunc(config.feed,config.output, 
+            new PipelineETLInterceptFunc(config.feed,config.output, 
                 new InterceptorFunc(config.bid.head,abiStore,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)
           case "mempool" =>
             new PipelineEthInterceptMempool(config.feed,config.output, 

@@ -1,4 +1,4 @@
-package io.syspulse.haas.intercept.flow.eth
+package io.syspulse.haas.intercept.flow.etl
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -38,14 +38,16 @@ import io.syspulse.haas.intercept.Config
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
-import io.syspulse.haas.intercept.flow.eth.InterceptorTx
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
-import io.syspulse.haas.ingest.eth.flow.etl.PipelineEthTx
 
-class PipelineEthInterceptTx(feed:String,output:String,override val interceptor:InterceptorTx)(implicit config:Config) 
-  extends PipelineEthTx[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
+import io.syspulse.haas.intercept.flow.eth.InterceptorTx
+import io.syspulse.haas.ingest.eth.flow.etl.PipelineETLTx
+import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
+
+class PipelineETLInterceptTx(feed:String,output:String,override val interceptor:InterceptorTx)(implicit config:Config) 
+  extends PipelineETLTx[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
   with PipelineEthIntercept[Tx] {
 
 }
