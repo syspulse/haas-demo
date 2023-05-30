@@ -44,6 +44,7 @@ import io.syspulse.haas.intercept.InterceptionJson._
 
 import io.syspulse.haas.core.MempoolTx
 import io.syspulse.haas.ingest.eth.flow.PipelineEthMempool
+import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
 
 class PipelineEthInterceptMempool(feed:String,output:String,override val interceptor:InterceptorMempool)(implicit config:Config) 
   extends PipelineEthMempool[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
