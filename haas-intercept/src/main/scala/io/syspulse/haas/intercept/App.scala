@@ -335,7 +335,7 @@ object App extends skel.Server {
           case "tx" =>
             new PipelineETLInterceptTx(config.feed,config.output, 
                 new InterceptorTx(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
-          case "token" =>
+          case "token" | "transfer" =>
             new PipelineETLInterceptTokenTransfer(config.feed,config.output, 
                 new InterceptorTokenTransfer(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
           case "erc20" =>
