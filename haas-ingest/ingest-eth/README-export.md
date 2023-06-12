@@ -3,6 +3,8 @@
 RPC Providers:
 
 - [https://github.com/arddluma/awesome-list-rpc-nodes-providers]
+- [https://ethereumnodes.com/]
+- [https://chainlist.org/]
 
 # Ethereum 
 
