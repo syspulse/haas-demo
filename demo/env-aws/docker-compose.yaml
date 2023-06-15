@@ -180,6 +180,30 @@ services:
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
       SYSLOG_URI: kafka://broker-1.hacken.dev:9092
 
+  haas-holders:
+    privileged: true
+    image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-holders:latest
+    container_name: haas-holders
+    restart: always
+    ports:
+      - 8100:8080
+    volumes:
+      - "${PWD}/auth:/auth"
+    networks:
+      - demo
+    command: server
+    environment:
+      #JAVA_OPTS: -Dgod
+      S3_BUCKET: ${S3_BUCKET}
+      DATASTORE: dir:///mnt/s3/data/dev/ethereum/token
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCOUNT: ${AWS_ACCOUNT}
+      JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
+      SYSLOG_URI: kafka://broker-1.hacken.dev:9092
+      
   haas-intercept:
     image: 649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse/haas-intercept:latest
     container_name: haas-intercept
@@ -281,7 +305,7 @@ services:
       NOTIFY_URI: http://skel-notify:8080/api/v1/notify
       ENGINE: livy://http://emr.demo.hacken.cloud:8998
       JWT_ROLE_SERVICE: file:///auth/ACCESS_TOKEN_SERVICE
-
+  
   nginx:
     image: nginx
     container_name: nginx
@@ -297,6 +321,7 @@ services:
       - haas-abi
       - haas-price
       - skel-job
+      - haas-holders
       - sparkmagic
     restart: always
     volumes:

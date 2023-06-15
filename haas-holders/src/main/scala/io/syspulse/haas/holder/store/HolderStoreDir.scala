@@ -21,6 +21,7 @@ import io.syspulse.haas.holder.server.Holderss
 import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import io.syspulse.skel.util.Util
 
 object HoldersStoreDir {
   import scala.util.matching._
@@ -89,7 +90,7 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
       .filter(_.isSuccess)
       .map(_.get)
       .map{ case (f,token,ts) => {
-        log.info(s"Loading file: ${f}")
+        log.info(s"Loading file: ${f} (${ts} = ${Util.timestamp(ts,"yyyy-MM-dd'T'HH:mm:ssZ",java.time.ZoneId.of("UTC"))})")
           val data = os.read(f)
           (data,token,ts)
       }} 
