@@ -462,6 +462,7 @@ lazy val haas_intercept = (project in file("haas-intercept"))
       libSkelIngest,
       libSkelIngestFlow,
       libSkelDSL,
+      libSkelNotifyCore,
       libSkelNotify,
       libUpickleLib,
 

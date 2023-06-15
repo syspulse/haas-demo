@@ -16,6 +16,7 @@ import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
 import io.syspulse.skel.notify.NotifySeverity
 
+
 class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Interception]) {
   protected val log = Logger(s"${this.getClass()}")
 

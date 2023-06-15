@@ -42,13 +42,14 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
   }
 
   def lastByTokens(tokens:Seq[String],from:Int=0,size:Int=10):Seq[CirculationSupply] = {
-    tokens.flatMap( tid => {
+    val tt = all.map(c => c.tokenId).toSet.union(tokens.distinct.toSet).toSeq
+    tt.flatMap( tid => {
       lastByToken(tid) match {
         case Some(c) => Some(c)
         // generate emtpy supplies to have a default list
         case None => Some(CirculationSupply(id = UUID.fromByteArray(Array.fill(16){0},0),tokenId = tid, name="")) 
       }
-    }).drop(from).take(size)
+    }).sortBy(c => - c.history.size).drop(from).take(size)
   }
 
   def reload():Unit

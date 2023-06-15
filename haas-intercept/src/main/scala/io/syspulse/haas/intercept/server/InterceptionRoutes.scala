@@ -216,7 +216,7 @@ class InterceptionRoutes(registry: ActorRef[Command])(implicit context: ActorCon
   @PUT @Path("/{id}") @Consumes(Array(MediaType.APPLICATION_JSON))
   @Produces(Array(MediaType.APPLICATION_JSON))
   @Operation(tags = Array("intercept"),summary = "Update Interception",
-    requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionCreateReq])))),
+    requestBody = new RequestBody(content = Array(new Content(schema = new Schema(implementation = classOf[InterceptionUpdateReq])))),
     responses = Array(new ApiResponse(responseCode = "200", description = "Updated interception",content = Array(new Content(schema = new Schema(implementation = classOf[Interception])))))
   )
   def updateInterceptionRoute(id:Interception.ID) = put {

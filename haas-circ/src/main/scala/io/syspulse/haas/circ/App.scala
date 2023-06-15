@@ -34,7 +34,7 @@ case class Config(
       
   datastore:String = "dir://",
 
-  syslogUri:String = "kafka://localhost:9092",
+  syslogBus:String = "kafka://localhost:9092",
   syslogChannel:String = "sys.notify",
 
   cmd:String = "server",
@@ -62,7 +62,7 @@ object App extends skel.Server {
         
         ArgString('d', "datastore",s"datastore [mem://,dir://store] (def: ${d.datastore})"),
 
-        ArgString('_', "syslog.uri",s"Syslog uir (kafka:// and syslog://) (def: ${d.syslogUri})"),
+        ArgString('_', "syslog.uri",s"Syslog Bus (kafka:// and syslog://) (def: ${d.syslogBus})"),
         ArgString('_', "syslog.channel",s"Syslog OID (def: ${d.syslogChannel})"),
         
         ArgCmd("server","Server"),
@@ -80,7 +80,7 @@ object App extends skel.Server {
       tokensDefault = c.getListString("tokens.default",d.tokensDefault),
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
-      syslogUri = c.getString("syslog.uri").getOrElse(Configuration.withEnv(d.syslogUri)),
+      syslogBus = c.getString("syslog.uri").getOrElse(Configuration.withEnv(d.syslogBus)),
       syslogChannel = c.getSmartString("syslog.channel").getOrElse(d.syslogChannel),
 
       cmd = c.getCmd().getOrElse(d.cmd),

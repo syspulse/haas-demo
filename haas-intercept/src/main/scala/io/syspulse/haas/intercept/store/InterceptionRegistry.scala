@@ -121,7 +121,8 @@ object InterceptionRegistry {
             entity, 
             if(abiId.isBlank) None else Some(abiId),
             bid = Some(bid),
-            limit = c.limit.orElse(Some(config.history))
+            limit = c.limit.orElse(Some(config.history)),
+            status = c.status.getOrElse(Interception.STARTED)
           )
           
           log.info(s"${ix}")
@@ -206,8 +207,9 @@ object InterceptionRegistry {
         Behaviors.same
       
       case UpdateInterception(id,u,replyTo) =>
+        log.info(s"update: ${id}: ${u}")
         // very heavy and inefficient
-        for {
+        val ix2 = for {
           ix1 <- store.?(id)
           script <- scriptStore.?(ix1.scriptId)
           abiJson <- if(ix1.aid.isDefined) abiStore.?(ix1.aid.get).map( a => Some(a.json)) else Success(None)
@@ -227,6 +229,7 @@ object InterceptionRegistry {
           }
         } yield ix2
         
+        replyTo ! ix2
         Behaviors.same
 
       case CreateInterception(c, replyTo) =>

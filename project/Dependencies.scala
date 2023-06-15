@@ -195,6 +195,7 @@ object Dependencies {
     val libSkelIngestElastic ="io.syspulse"                     %% "ingest-elastic"                 % skelVersion
     val libSkelDSL =          "io.syspulse"                     %% "skel-dsl"                       % skelVersion
     val libSkelNotify =       "io.syspulse"                     %% "skel-notify"                    % skelVersion
+    val libSkelNotifyCore =   "io.syspulse"                     %% "notify-core"                    % skelVersion
     val libSkelCli =          "io.syspulse"                     %% "skel-cli"                       % skelVersion
     val libSkelSerde =        "io.syspulse"                     %% "skel-serde"                     % skelVersion
     

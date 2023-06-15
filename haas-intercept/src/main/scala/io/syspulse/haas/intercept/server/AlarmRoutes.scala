@@ -14,9 +14,8 @@ import scala.concurrent.ExecutionContext
 import io.syspulse.skel.service.ws.WsRoutes
 import io.syspulse.skel.service.ws.WebSocket
 import io.syspulse.skel.notify.server.WS
-import io.syspulse.skel.notify.server.WebSocketServer
 
-class AlarmSocketServer()(implicit ex:ExecutionContext,mat:ActorMaterializer) extends WebSocketServer() {
+class AlarmSocketServer()(implicit ex:ExecutionContext,mat:ActorMaterializer) extends WebSocket(idleTimeout = 1000L*60*60*24) {
   override def process(m:Message,a:ActorRef):Message = {
     val txt = m.asTextMessage.getStrictText
     
@@ -27,8 +26,7 @@ class AlarmSocketServer()(implicit ex:ExecutionContext,mat:ActorMaterializer) ex
 }
 
 class AlarmRoutes(uri:String)(implicit context: ActorContext[_]) extends WsRoutes(uri)(context) {
-  val wss:WebSocketServer = new AlarmSocketServer()
-  WS.+(wss)
-
+  val wss = new AlarmSocketServer()
+  
   override def ws:WebSocket = wss
 }
