@@ -49,6 +49,8 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
 
   val store = new HolderStoreMem()
 
+  def toKey(id:String) = id
+
   def all:Seq[Holders] = store.all
   def size:Long = store.size
 

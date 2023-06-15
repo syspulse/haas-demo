@@ -5,7 +5,11 @@ CWD=`echo $(dirname $(readlink -f $0))`
 YEARS=${YEARS:-2015 2016 2017 2018 2019 2020 2021 2022 2023}
 
 DIR=${1:-./}
-CIRC_FILE=${2:-"supply.json"}
+OUTPUT=${2:./output}
+
+SQUASH_FILE=${SQUASH_FILE}
+
+>&2 echo "Squash File: ${SQUASH_FILE}"
 
 for y in $YEARS; do 
     >&2 echo -ne "Looking for: ${DIR}/${y}..."
@@ -14,9 +18,9 @@ for y in $YEARS; do
     if [ "$r" == "0" ]; then
         >&2 echo "processing"
                 
-        #$CWD/supply-squash.sh ${DIR}/${y} ${DIR}/${CIRC_FILE}.${y}
-        #mv ${CIRC_FILE} ${CIRC_FILE}.$y
-        $CWD/supply-squash.sh ${DIR}/${y} ${CIRC_FILE}
+        #$CWD/squash.sh ${DIR}/${y} ${DIR}/${SQUASH_FILE}.${y}
+        #mv ${SQUASH_FILE} ${SQUASH_FILE}.$y
+        $CWD/squash.sh ${DIR}/${y} ${OUTPUT} ${SQUASH_FILE}
 
     else
         >&2 echo "NOT FOUND"
