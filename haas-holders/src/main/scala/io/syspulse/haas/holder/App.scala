@@ -24,12 +24,13 @@ case class Config(
   port:Int=8080,
   uri:String = "/api/v1/holders",
   
-  cgUri:String = "",  
-  limit:Long = 0L,
+  limit:Int = 25,
   freq: Long = 0L,
-  logFile:String = "",   
     
   datastore:String = "resources://", //"file://store",
+
+  syslogBus:String = "kafka://localhost:9092",
+  syslogChannel:String = "sys.notify",
 
   cmd:String = "server",
   params: Seq[String] = Seq(),
@@ -52,6 +53,8 @@ object App extends skel.Server {
         ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         ArgString('d', "datastore",s"datastore uri (def: ${d.datastore})"),
+
+        ArgInt('_',"limit",s"Limit holders bucket (def: ${d.limit})"),
         
         ArgCmd("server","Server"),
         ArgCmd("client","Client"),
@@ -66,6 +69,8 @@ object App extends skel.Server {
       
       datastore = c.getString("datastore").getOrElse(d.datastore),
 
+      limit = c.getInt("limit").getOrElse(d.limit),
+
       cmd = c.getCmd().getOrElse(d.cmd),
       params = c.getParams(),
     )
@@ -76,8 +81,8 @@ object App extends skel.Server {
       // case "mysql" | "db" => new HolderStoreDB(c,"mysql")
       // case "postgres" => new HolderStoreDB(c,"postgres")
       case "mem" :: _ => new HolderStoreMem
-      case "dir" :: dir :: Nil => new HolderStoreDir(dir)
-      case "dir" :: Nil => new HolderStoreDir()
+      case "dir" :: dir :: Nil => new HolderStoreDir(dir,limit=config.limit)
+      case "dir" :: Nil => new HolderStoreDir(limit=config.limit)
       case _ => {
         Console.err.println(s"Uknown datastore: '${config.datastore}'")
         sys.exit(1)

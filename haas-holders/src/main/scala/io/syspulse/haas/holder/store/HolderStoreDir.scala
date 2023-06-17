@@ -46,7 +46,7 @@ object HoldersStoreDir {
   }
 }
 
-class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) with HolderStore {
+class HolderStoreDir(dir:String = "store/",limit:Int=100) extends StoreDir[Holders,ID](dir) with HolderStore {
 
   val store = new HolderStoreMem()
 
@@ -68,7 +68,7 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
 
   override def load(dir:String,hint:String="") = {
     val storeDir = os.Path(dir,os.pwd)
-    log.info(s"Loading dir store: ${storeDir}")
+    log.info(s"Loading dir store: ${storeDir} (limit=$limit)")
 
     //val hh:Seq[Holders] = os
     val r = os    
@@ -89,20 +89,30 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
       )
       .filter(_.isSuccess)
       .map(_.get)
-      .map{ case (f,token,ts) => {
+      .foreach { case (f,token,ts) => {
         log.info(s"Loading file: ${f} (${ts} = ${Util.timestamp(ts,"yyyy-MM-dd'T'HH:mm:ssZ",java.time.ZoneId.of("UTC"))})")
-          val data = os.read(f)
-          (data,token,ts)
-      }} 
-      .map{ case (data,token,ts) => {
+        val data = os.read(f)
+        //(data,token,ts)
         val holders = parseHolders(data)
-        val h = Holders(ts,token,holders)
+        val h = Holders(ts,token,holders.take(limit))
             
         this.+(h)
-      }}
+
+        //Holders(ts,token,Seq())
+      }}      
+      // .map{ case (data,token,ts) => {
+        //val holders = parseHolders(data)
+        //val h = Holders(ts,token,holders.take(limit))
+            
+        //this.+(h)
+        
+      // }}
       
     //log.info(s"${all}")
-    log.info(s"Holders = ${this.size}")
+    store.holders.foreach{ hh =>
+      log.info(s"Holders: ${hh._1} = ${hh._2.size}")
+    }
+    
   }
 
   def parseHolders(lines:String):Seq[Holder] = {
@@ -111,7 +121,7 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
       try {
         data.split(",",-1).toList match {
           case addr :: balance :: Nil => 
-            Some(Holder(addr,BigInt(balance)))            
+            Some(Holder(addr,Util.toBigInt(balance)))            
           case _ => 
             None
         }
@@ -122,6 +132,7 @@ class HolderStoreDir(dir:String = "store/") extends StoreDir[Holders,ID](dir) wi
       }
     }).sorted.toSeq    
   }
+
 
   // preload
   load(dir)
