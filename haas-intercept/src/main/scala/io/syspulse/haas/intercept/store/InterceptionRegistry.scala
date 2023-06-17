@@ -223,7 +223,8 @@ object InterceptionRegistry {
                 bid = (if(u.bid.isDefined) u.bid else ix1.bid),
                 entity = (if(u.entity.isDefined) u.entity else Some(ix1.entity)),
                 abi = (if(u.abi.isDefined) u.abi else abiJson),
-                contract = u.contract)
+                contract = u.contract,
+                status = Some(ix1.status))
 
             create( req )
           }

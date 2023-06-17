@@ -8,7 +8,6 @@ import scala.io.Source
 import io.syspulse.haas.core._
 
 import io.syspulse.skel.util.Util
-import io.syspulse.haas.ingest.eth.flow.etl.EthDecoder
 
 import io.syspulse.haas.ingest.eth.EthEtlJson
 
@@ -23,6 +22,7 @@ import io.syspulse.skel.crypto.eth.abi.AbiStoreSignatures
 import io.syspulse.skel.crypto.eth.abi.SignatureStoreMem
 import io.syspulse.skel.crypto.eth.abi.FuncSignature
 import io.syspulse.skel.crypto.eth.abi.EventSignature
+import io.syspulse.haas.ingest.eth.flow.EthDecoder
 
 
 class Decoder[T](implicit val fmt:JsonFormat[T]) extends EthDecoder[T] {
