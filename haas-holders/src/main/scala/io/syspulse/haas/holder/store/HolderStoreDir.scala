@@ -90,25 +90,18 @@ class HolderStoreDir(dir:String = "store/",limit:Int=100) extends StoreDir[Holde
       .filter(_.isSuccess)
       .map(_.get)
       .foreach { case (f,token,ts) => {
+        // this must be foreach and return Unit to avoid OOM !
         log.info(s"Loading file: ${f} (${ts} = ${Util.timestamp(ts,"yyyy-MM-dd'T'HH:mm:ssZ",java.time.ZoneId.of("UTC"))})")
         val data = os.read(f)
         //(data,token,ts)
         val holders = parseHolders(data)
-        val h = Holders(ts,token,holders.take(limit))
+        val hh = holders.take(limit)
+        val h = Holders(ts,token,hh,total = holders.size)
             
         this.+(h)
-
-        //Holders(ts,token,Seq())
-      }}      
-      // .map{ case (data,token,ts) => {
-        //val holders = parseHolders(data)
-        //val h = Holders(ts,token,holders.take(limit))
-            
-        //this.+(h)
         
-      // }}
+      }}      
       
-    //log.info(s"${all}")
     store.holders.foreach{ hh =>
       log.info(s"Holders: ${hh._1} = ${hh._2.size}")
     }

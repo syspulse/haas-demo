@@ -17,7 +17,8 @@ case class Holder(addr:String,bal:BigInt) extends Ordered[Holder] {
 case class Holders(
   ts:Long,
   token:String,
-  holders:Seq[Holder] = Seq()
+  holders:Seq[Holder] = Seq(),
+  total:Int = 0
     
   ) extends Ingestable with Ordered[Holders] {
   override def getKey:Option[Any] = Some(token)

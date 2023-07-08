@@ -42,12 +42,17 @@ class HolderStoreMem extends HolderStore {
     holders.get(id) match {
       case Some(h) => 
         val hh = h.range(Holders(ts = ts0.getOrElse(0L),""),Holders(ts = ts1.getOrElse(Long.MaxValue),""))
+        // Holderss(
+        //   hh
+        //     .drop(from.getOrElse(0))
+        //     .take(size.getOrElse(10))
+        //     .map(h => h.copy(holders = h.holders.take(limit.getOrElse(10))))
+        //     .toSeq,
+        //   total=Some(hh.size)
+        // )
         Holderss(
-          //h.drop(from.getOrElse(0)).take(size.getOrElse(10)).toSeq,
           hh
-            .drop(from.getOrElse(0))
-            .take(size.getOrElse(10))
-            .map(h => h.copy(holders = h.holders.take(limit.getOrElse(10))))
+            .map(h => h.copy(holders = h.holders.drop(from.getOrElse(0)).take(size.getOrElse(10))))
             .toSeq,
           total=Some(hh.size)
         )

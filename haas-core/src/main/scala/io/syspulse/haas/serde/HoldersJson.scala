@@ -11,5 +11,5 @@ import io.syspulse.haas.core.{Holder,Holders}
 
 object HoldersJson extends DefaultJsonProtocol {
   implicit val jf_holder = jsonFormat2(Holder.apply _)
-  implicit val jf_holders = jsonFormat3(Holders.apply _)
+  implicit val jf_holders = jsonFormat4(Holders.apply _)
 }
