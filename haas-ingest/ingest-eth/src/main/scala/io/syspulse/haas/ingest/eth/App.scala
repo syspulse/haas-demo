@@ -118,6 +118,8 @@ object App extends skel.Server {
     val (r,pp) = config.cmd match {
       case "ingest" => {
         val pp:Seq[PipelineEth[_,_,_]] = config.entity.flatMap( e => e match {
+
+          // ethereum_etl 
           case "block" | "block.etl" =>
             Some(new etl.PipelineBlock(orf(config.feedBlock,config.feed),orf(config.outputBlock,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
@@ -139,7 +141,7 @@ object App extends skel.Server {
             Some(new PipelineMempool(orf(config.feedMempool,config.feed),orf(config.outputMempool,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
-
+          // Lake stored
           case "block.lake" =>
             Some(new lake.PipelineBlock(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
@@ -151,6 +153,14 @@ object App extends skel.Server {
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
           case "log.lake" | "even.lake" =>
             Some(new lake.PipelineEvent(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+
+          // RPC
+          case "block.rpc" =>
+            Some(new rpc.PipelineBlock(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
+              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+          case "tx.rpc" =>
+            Some(new rpc.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
               config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
 
           case _ => 
