@@ -36,8 +36,9 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineLakeEvent[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[Event,Event,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineLake[E] {
+abstract class PipelineLakeEvent[E <: skel.Ingestable](config:Config)
+                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[Event,Event,E](config) with PipelineLake[E] {
   
   def apiSuffix():String = s"/tx"
 
@@ -52,8 +53,8 @@ abstract class PipelineLakeEvent[E <: skel.Ingestable](feed:String,output:String
 
 }
 
-class PipelineEvent(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineLakeEvent[Event](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineEvent(config:Config) 
+  extends PipelineLakeEvent[Event](config) {
 
   def transform(tx: Event): Seq[Event] = Seq(tx)
 }

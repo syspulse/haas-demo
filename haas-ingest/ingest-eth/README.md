@@ -1,9 +1,9 @@
 # ingest-eth
 
-## Ingest Ethereum Tx and Blocks
 
+## Stream 
 
-### Stream 
+### From ethereum_etl
 
 Ingest transactions from file:
 ```
@@ -62,6 +62,15 @@ Stream from latest block into Hive
 ```
 ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx -o 'hive://output/{yyyy}/{MM}/{dd}/transactions'
 ```
+
+### From RPC Node
+
+__NOTE__: use empty delimiter !
+
+```
+./run-ingest-eth.sh -e tx.rpc -f http://geth1:8545 --delimiter=
+```
+
 
 ### Import
 

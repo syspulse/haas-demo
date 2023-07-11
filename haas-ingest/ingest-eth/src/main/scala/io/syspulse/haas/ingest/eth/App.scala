@@ -113,7 +113,12 @@ object App extends skel.Server {
 
     Console.err.println(s"Config: ${config}")
 
-    def orf(feed1:String,feed2:String) = if(feed1!="") feed1 else feed2    
+    def orf(config:Config,feed1:String,feed2:String,out1:String,out2:String) = {
+      val c0 = config
+      val c1 = if(feed1!="") c0.copy(feed = feed1) else c0.copy(feed = feed2)
+      val c2 = if(out1!="") c1.copy(output = out1) else c1.copy(output = out2)
+      c2
+    }
     
     val (r,pp) = config.cmd match {
       case "ingest" => {
@@ -121,47 +126,36 @@ object App extends skel.Server {
 
           // ethereum_etl 
           case "block" | "block.etl" =>
-            Some(new etl.PipelineBlock(orf(config.feedBlock,config.feed),orf(config.outputBlock,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new etl.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
           case "tx" | "tx.etl" =>
-            Some(new etl.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new etl.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
           
           case "transfer" | "token" | "transfer.etl" | "token.etl" =>
-            Some(new etl.PipelineTokenTransfer(orf(config.feedTransfer,config.feed),orf(config.outputTransfer,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new etl.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
 
           case "log" | "event" | "log.etl" | "event.etl" => 
-            Some(new etl.PipelineLog(orf(config.feedLog,config.feed),orf(config.outputLog,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new etl.PipelineLog(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
 
               
           case "mempool" => 
-            Some(new PipelineMempool(orf(config.feedMempool,config.feed),orf(config.outputMempool,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new PipelineMempool(orf(config,config.feedMempool,config.feed,config.outputMempool,config.output)))
 
           // Lake stored
           case "block.lake" =>
-            Some(new lake.PipelineBlock(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new lake.PipelineBlock(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
           case "tx.lake" =>
-            Some(new lake.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new lake.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
           case "transfer.lake" | "token.lake" =>
-            Some(new lake.PipelineTokenTransfer(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new lake.PipelineTokenTransfer(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
           case "log.lake" | "even.lake" =>
-            Some(new lake.PipelineEvent(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new lake.PipelineEvent(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
           // RPC
           case "block.rpc" =>
-            Some(new rpc.PipelineBlock(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new rpc.PipelineBlock(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
           case "tx.rpc" =>
-            Some(new rpc.PipelineTx(orf(config.feedTx,config.feed),orf(config.outputTx,config.output),
-              config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter))
+            Some(new rpc.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

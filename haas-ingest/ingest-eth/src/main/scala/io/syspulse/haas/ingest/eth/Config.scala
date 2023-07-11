@@ -29,7 +29,7 @@ case class Config(
   limit:Long = Long.MaxValue,
 
   freq: Long = 0L,
-  delimiter:String = "\n",
+  delimiter:String = "\n", // use "" for http call delimiter
   
   // created dir: /mnt/s3/data/dev/ethereum/raw/csv/transactions/2016/12/14
   // Exception in thread "main" akka.stream.scaladsl.Framing$FramingException: Read 1048858 bytes which is more than 1048576 without seeing a line terminator
@@ -44,6 +44,9 @@ case class Config(
   datastore:String = "dir://store",
 
   filter:Seq[String] = Seq(),
+
+  ingestCron:String = "12", // 12 seconds
+  throttleSource:Long = 1000L,
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),

@@ -35,8 +35,9 @@ import io.syspulse.haas.serde.TokenTransferJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineLakeTokenTransfer[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[TokenTransfer,TokenTransfer,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineLake[E] {
+abstract class PipelineLakeTokenTransfer[E <: skel.Ingestable](config:Config)
+                                                              (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[TokenTransfer,TokenTransfer,E](config) with PipelineLake[E] {
   
   def apiSuffix():String = s"/transfer"
 
@@ -51,8 +52,8 @@ abstract class PipelineLakeTokenTransfer[E <: skel.Ingestable](feed:String,outpu
 
 }
 
-class PipelineTokenTransfer(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineLakeTokenTransfer[TokenTransfer](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineTokenTransfer(config:Config) 
+  extends PipelineLakeTokenTransfer[TokenTransfer](config) {
 
   def transform(tx: TokenTransfer): Seq[TokenTransfer] = Seq(tx)
 }

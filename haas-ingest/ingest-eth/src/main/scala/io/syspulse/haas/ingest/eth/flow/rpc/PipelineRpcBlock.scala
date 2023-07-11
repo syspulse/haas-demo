@@ -35,10 +35,12 @@ import io.syspulse.haas.serde.BlockJson._
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.eth.Config
 
 
-abstract class PipelineRpcBlock[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[RpcBlock,Block,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineRPC[E]{
+abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
+                                                     (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[RpcBlock,Block,E](config) with PipelineRPC[E]{
   
   def apiSuffix():String = s"/block"
 
@@ -80,8 +82,8 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](feed:String,output:String,
   // }
 }
 
-class PipelineBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineRpcBlock[Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineBlock(config:Config) 
+  extends PipelineRpcBlock[Block](config) {
 
   def transform(block: Block): Seq[Block] = {
     Seq(block)

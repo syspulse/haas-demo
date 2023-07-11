@@ -35,8 +35,8 @@ import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineLakeTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[Tx,Tx,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineLake[E] {
+abstract class PipelineLakeTx[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[Tx,Tx,E](config) with PipelineLake[E] {
   
   def apiSuffix():String = s"/tx"
 
@@ -51,8 +51,8 @@ abstract class PipelineLakeTx[E <: skel.Ingestable](feed:String,output:String,th
 
 }
 
-class PipelineTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineLakeTx[Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineTx(config:Config) 
+  extends PipelineLakeTx[Tx](config) {
 
   def transform(tx: Tx): Seq[Tx] = Seq(tx)
 }

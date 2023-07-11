@@ -43,8 +43,8 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineETLLog[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthLog,Event,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineETL[E] {
+abstract class PipelineETLLog[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[EthLog,Event,E](config) with PipelineETL[E] {
   
   def apiSuffix():String = s"/log"
   
@@ -68,8 +68,8 @@ abstract class PipelineETLLog[E <: skel.Ingestable](feed:String,output:String,th
 
 }
 
-class PipelineLog(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineETLLog[Event](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineLog(config:Config) 
+  extends PipelineETLLog[Event](config) {
 
   def transform(e: Event): Seq[Event] = Seq(e)
 }

@@ -37,8 +37,8 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
 
-abstract class PipelineETLBlock[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthBlock,Block,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineETL[E]{
+abstract class PipelineETLBlock[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[EthBlock,Block,E](config) with PipelineETL[E]{
   
   def apiSuffix():String = s"/block"
 
@@ -61,8 +61,8 @@ abstract class PipelineETLBlock[E <: skel.Ingestable](feed:String,output:String,
   // }
 }
 
-class PipelineBlock(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineETLBlock[Block](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineBlock(config:Config) 
+  extends PipelineETLBlock[Block](config) {
 
   def transform(block: Block): Seq[Block] = {
     Seq(block)

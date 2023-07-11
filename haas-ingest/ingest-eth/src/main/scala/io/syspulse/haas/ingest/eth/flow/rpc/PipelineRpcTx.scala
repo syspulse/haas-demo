@@ -35,9 +35,11 @@ import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.eth.Config
 
-abstract class PipelineRpcTx[E <: skel.Ingestable](feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String])(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[RpcBlock,RpcBlock,E](feed,output,throttle,delimiter,buffer,limit,size,filter) with PipelineRPC[E] {
+abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
+                                                  (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[RpcBlock,RpcBlock,E](config) with PipelineRPC[E] {
   
   def apiSuffix():String = s"/tx"
 
@@ -50,12 +52,12 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](feed:String,output:String,thr
   }
 
   def convert(block:RpcBlock):RpcBlock = {
-    block    
+    block
   }
 }
 
-class PipelineTx(feed:String,output:String,throttle:Long,delimiter:String,buffer:Int,limit:Long,size:Long,filter:Seq[String]) 
-  extends PipelineRpcTx[Tx](feed,output,throttle,delimiter,buffer,limit,size,filter) {
+class PipelineTx(config:Config) 
+  extends PipelineRpcTx[Tx](config) {
 
   def transform(block: RpcBlock): Seq[Tx] = {
     val ts = toLong(block.result.timestamp)
