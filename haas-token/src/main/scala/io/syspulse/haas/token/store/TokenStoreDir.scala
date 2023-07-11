@@ -29,6 +29,8 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
 
   val store = new TokenStoreMem()
 
+  def toKey(id:String):ID = id
+
   def all:Seq[Token] = store.all
   def size:Long = store.size
   
