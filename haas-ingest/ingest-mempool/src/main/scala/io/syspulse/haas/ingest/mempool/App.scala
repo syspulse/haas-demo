@@ -104,8 +104,8 @@ object App {
     config.cmd match {
       case "ingest" => {
         val pp = config.entity match {
-          case "txpool" | "txpool.full" => new PipelineEvmTxPool(config.feed,config.output,false)(config)
-          case "txpool.delta" | "txpool.diff" => new PipelineEvmTxPool(config.feed,config.output,true)(config)
+          case "txpool" | "txpool.full" => new PipelineRpcTxPool(config.feed,config.output,false)(config)
+          case "txpool.delta" | "txpool.diff" => new PipelineRpcTxPool(config.feed,config.output,true)(config)
           // internal format
           case "mempool.tx" => new PipelineMempool(config.feed,config.output)(config)
         }

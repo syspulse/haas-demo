@@ -40,7 +40,7 @@ import io.syspulse.haas.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._
 import io.syspulse.haas.evm.EvmTxRaw
 
-class PipelineEvmTxPool(feed:String,output:String,delta:Boolean)(implicit config:Config) 
+class PipelineRpcTxPool(feed:String,output:String,delta:Boolean)(implicit config:Config) 
   extends Pipeline[EvmTx,EvmTx,EvmTx](feed:String,output:String,config.throttle,config.delimiter,config.buffer,chunk = 0){
   
   protected val log = Logger(s"${this}")
