@@ -358,6 +358,9 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
 
       libSkelCrypto,
       libEthAbi,
+
+      libRequests, // can be replaced with akka-http
+
       libScalaTest % "test"
     ),
      

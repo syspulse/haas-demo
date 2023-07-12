@@ -29,10 +29,11 @@ case class Config(
   limit:Long = Long.MaxValue,
 
   freq: Long = 0L,
-  delimiter:String = "\n", // use "" for http call delimiter
+  delimiter:String = "\n", // use "" for http call
   
   // created dir: /mnt/s3/data/dev/ethereum/raw/csv/transactions/2016/12/14
   // Exception in thread "main" akka.stream.scaladsl.Framing$FramingException: Read 1048858 bytes which is more than 1048576 without seeing a line terminator
+  // It does not affect: akka.http.parsing.max-chunk-size = 1m
   buffer:Int = 5 * 1024*1024, 
 
   throttle:Long = 0L,
@@ -46,7 +47,10 @@ case class Config(
   filter:Seq[String] = Seq(),
 
   ingestCron:String = "12", // 12 seconds
-  throttleSource:Long = 1000L,
+  throttleSource:Long = 3000L, // this is only for batched HTTP and for errors
+
+  block:String = "latest", // which block to use (only for http:// source)
+  blockEnd:String = "",    // empty is infinite
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),

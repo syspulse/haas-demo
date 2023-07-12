@@ -36,6 +36,7 @@ import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
+import io.syspulse.haas.ingest.eth.flow.LastBlock
 
 abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
@@ -52,7 +53,9 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
   }
 
   def convert(block:RpcBlock):RpcBlock = {
-    block
+    //lastBlock = lastBlock.map(b => b.copy(block = toLong(block.result.number) ))
+    LastBlock.commit(toLong(block.result.number))
+    block    
   }
 }
 

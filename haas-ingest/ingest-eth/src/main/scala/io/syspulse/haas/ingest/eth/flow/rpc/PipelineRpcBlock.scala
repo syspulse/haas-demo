@@ -36,6 +36,7 @@ import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
+import io.syspulse.haas.ingest.eth.flow.LastBlock
 
 
 abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
@@ -51,8 +52,8 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
     d
   }
 
-  def convert(block:RpcBlock):Block = 
-      Block(
+  def convert(block:RpcBlock):Block = {
+      val blk = Block(
         toLong(block.result.number),
         block.result.hash,
         block.result.parentHash,
@@ -76,6 +77,12 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
         block.result.transactions.size,
         block.result.baseFeePerGas.map(d => toLong(d))
       )
+
+      //lastBlock = lastBlock.map(b => b.copy(block = blk.i ))
+      LastBlock.commit(blk.i)
+      
+      blk
+  }
 
   // def transform(block: Block): Seq[Block] = {
   //   Seq(block)

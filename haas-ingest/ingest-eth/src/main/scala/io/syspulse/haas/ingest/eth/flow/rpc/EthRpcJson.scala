@@ -43,7 +43,7 @@ case class RpcTx(
   r: String,
   s: String,
   v: String,
-  chainId: String,
+  chainId: Option[String],
   `type`: String,
 
   timestamp:Option[Long] = None // NOT FROM RPC !!! used internally for streaming Block timestamp 
