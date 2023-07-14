@@ -36,12 +36,13 @@ import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
-import io.syspulse.haas.ingest.eth.flow.LastBlock
+
+import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
 
 
 abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[RpcBlock,Block,E](config) with PipelineRPC[E]{
+  PipelineRPC[RpcBlock,Block,E](config) {
   
   def apiSuffix():String = s"/block"
 
@@ -78,7 +79,6 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
         block.result.baseFeePerGas.map(d => toLong(d))
       )
 
-      //lastBlock = lastBlock.map(b => b.copy(block = blk.i ))
       LastBlock.commit(blk.i)
       
       blk
