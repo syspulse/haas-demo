@@ -54,14 +54,14 @@ trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog]
         Seq(block)
       } else {
         log.error(s"failed to parse: '${data}'")
-        throw new Exception(s"failed to parse: '${data}'")
+        throw new RetryException(s"failed to parse: '${data}'")        
         Seq()
       }        
     } catch {
       case e:Exception => 
         //log.error(s"failed to parse: '${data}'",e)
         log.error(s"failed to parse: '${data}'")
-        throw new Exception(s"failed to parse: '${data}'")
+        throw new RetryException(s"failed to parse: '${data}'")
         Seq()
     }
   }

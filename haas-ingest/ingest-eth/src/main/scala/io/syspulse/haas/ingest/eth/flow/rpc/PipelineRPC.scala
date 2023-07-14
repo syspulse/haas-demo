@@ -44,10 +44,20 @@ import io.syspulse.haas.ingest.eth
 
 import io.syspulse.haas.ingest.eth.Config
 import akka.actor.typed.ActorSystem
+import akka.stream.RestartSettings
+import scala.util.control.NoStackTrace
+
+class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 
 abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
   extends PipelineEth[T,O,E](config)(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
+
+  override val retrySettings:Option[RestartSettings] = Some(RestartSettings(
+    minBackoff = FiniteDuration(3000,TimeUnit.MILLISECONDS),
+    maxBackoff = FiniteDuration(10000,TimeUnit.MILLISECONDS),
+    randomFactor = 0.2
+  ))
 
   import EthRpcJson._
     
@@ -103,22 +113,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
         }
 
         log.info(s"blocks: ${LastBlock}")
-
-        lazy val reqs = LazyList.from(LastBlock.current().toInt,1).takeWhile(_ <= LastBlock.last()).map { block => 
-          val id = System.currentTimeMillis() / 1000L
-          val blockHex = "0x%x".format(block)
-          val json = s"""{
-                "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                "params":["${blockHex}",true],
-                "id":${block}
-              }""".trim.replaceAll("\\s+","")
-          
-          log.info(s"block=${block}: req='${json}'")
-            
-          HttpRequest( method = HttpMethods.POST, uri = feed,
-              entity = HttpEntity(ContentTypes.`application/json`,json)
-          ).withHeaders(Accept(MediaTypes.`application/json`))
-        }
+        
             
         //log.info(s"reqs=${reqs}")
 
@@ -128,15 +123,43 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
         .map(h => {
           log.info(s"Cron --> ${h}")
           h
+
+          lazy val reqs = LazyList.from(LastBlock.current().toInt,1).takeWhile(_ <= LastBlock.last()).map { block => 
+              val id = System.currentTimeMillis() / 1000L
+              val blockHex = "0x%x".format(block)
+              val json = s"""{
+                    "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                    "params":["${blockHex}",true],
+                    "id":${block}
+                  }""".trim.replaceAll("\\s+","")
+              
+              log.info(s"block=${block}: req='${json}'")
+                
+              HttpRequest( method = HttpMethods.POST, uri = feed,
+                  entity = HttpEntity(ContentTypes.`application/json`,json)
+              ).withHeaders(Accept(MediaTypes.`application/json`))
+          }
+          reqs
         })
-        .via(
-          Flows.fromHttpListAsFlow(reqs, 
-            par = 1, 
-            frameDelimiter = config.delimiter,
-            frameSize = config.buffer, 
-            throttle = config.throttleSource)
-        )
-        sourceHttp
+        .mapConcat(reqs => {
+          reqs
+        })
+        .flatMapConcat(req => {
+          log.info(s"--> ${req}")
+          //Flows.fromHttpFuture(req)(as)
+          Flows.fromHttpRestartable(req, config.delimiter, config.buffer)
+        })          
+        // .via(          
+        //   Flows.fromHttpListAsFlow(reqs, 
+        //     par = 1, 
+        //     frameDelimiter = config.delimiter,
+        //     frameSize = config.buffer, 
+        //     throttle = config.throttleSource)
+        //   // .recover {
+        //   //   case _: RetryException => ByteString("")//Source.empty
+        //   // }          
+        // )
+        sourceHttp          
       }
             
       case _ => super.source(feed)
