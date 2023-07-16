@@ -133,8 +133,23 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       LastBlock.commit(2,"0x222")
       
       val r3 = LastBlock.isReorg(2,"0x222_2")
-      info(s"r3=${r3}")
       r3 should === (List(Block(2,"0x222")))
+    }
+
+    "reorg (deep=1) with lag == 2" in {
+      LastBlock.reset()
+      
+      LastBlock.set(1,1,100,lag = 2) 
+      LastBlock.next() should === (1)
+      LastBlock.current() should === (1)
+
+      LastBlock.commit(1,"0x111")      
+      LastBlock.commit(2,"0x222")
+      
+      val r3 = LastBlock.isReorg(2,"0x222_2")
+      val r4 = LastBlock.reorg(r3)
+      r3 should === (List(Block(2,"0x222")))
+      r4 should === (List(Block(1,"0x111")))
     }
 
     "find reorg (deep=2) with lag == 2" in {
@@ -149,8 +164,29 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       LastBlock.commit(3,"0x333")      
       
       val r3 = LastBlock.isReorg(2,"0x222_2")
-      info(s"r3=${r3}")
       r3 should === (List(Block(3,"0x333"),Block(2,"0x222")))
+    }
+
+    "reorg (deep=2) with lag == 2" in {
+      LastBlock.reset()
+      
+      LastBlock.set(1,1,100,lag = 2) 
+      LastBlock.next() should === (1)
+      LastBlock.current() should === (1)
+
+      LastBlock.commit(1,"0x111")
+      LastBlock.commit(2,"0x222")
+      LastBlock.commit(3,"0x333")      
+      
+      val r3 = LastBlock.isReorg(2,"0x222_2")
+      val r4 = LastBlock.reorg(r3)
+      r3 should === (List(Block(3,"0x333"),Block(2,"0x222")))
+      r4 should === (List(Block(1,"0x111")))
+
+      LastBlock.commit(2,"0x222_2")
+      LastBlock.next() should === (3)
+      LastBlock.current() should === (2)
+      LastBlock.last() should === (List(Block(2,"0x222_2"),Block(1,"0x111")))
     }
   }
   

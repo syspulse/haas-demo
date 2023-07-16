@@ -124,7 +124,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           log.info(s"Cron --> ${h}")
           h
 
-          lazy val reqs = LazyList.from(LastBlock.current().toInt,1).takeWhile(_ <= LastBlock.last()).map { block => 
+          lazy val reqs = LazyList.from(LastBlock.current().toInt,1).takeWhile(_ <= LastBlock.end()).map { block => 
               val id = System.currentTimeMillis() / 1000L
               val blockHex = "0x%x".format(block)
               val json = s"""{

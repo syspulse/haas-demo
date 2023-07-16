@@ -70,12 +70,26 @@ object LastBlock {
     reorgs
   }
 
+  def reorg(blocks:List[Block]):List[Block] = {
+    lastBlock.synchronized {      
+      lastBlock match {
+        case Some(lb) =>
+          // infrequent operation, so safe to "toSet"
+          println(s"last=${lb.last}: blocks=${blocks}")
+          lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
+          lastBlock.get.last
+        case None => 
+          List.empty
+      }
+    }    
+  }
+
   def commit(block:Long,blockHash:String) = {
     lastBlock.synchronized {
       log.info(s"COMMIT: (${block},${blockHash})")
       lastBlock = lastBlock.map(lb => {        
         val last = 
-          if(lb.last.size > lb.lag) 
+          if(lb.last.size > lb.lag)
             lb.last.take(lb.lag)
           else
             lb.last
@@ -110,7 +124,7 @@ object LastBlock {
     }
   }
 
-  def last() = lastBlock.synchronized {
+  def end() = lastBlock.synchronized {
     lastBlock match {
       case Some(lb) => lb.blockEnd
       case None => -1
@@ -122,6 +136,13 @@ object LastBlock {
     lastBlock match {
       case Some(lb) => lb.last.size
       case None => 0
+    }
+  }
+
+  def last() = lastBlock.synchronized {
+    lastBlock match {
+      case Some(lb) => lb.last
+      case None => List.empty
     }
   }
 
