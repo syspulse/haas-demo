@@ -79,7 +79,7 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
         block.result.baseFeePerGas.map(d => toLong(d))
       )
 
-      LastBlock.commit(blk.i)
+      LastBlock.commit(blk.i,blk.hash)
       
       blk
   }

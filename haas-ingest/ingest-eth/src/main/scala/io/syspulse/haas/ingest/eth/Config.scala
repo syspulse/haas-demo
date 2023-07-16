@@ -52,6 +52,8 @@ case class Config(
   block:String = "latest", // which block to use (only for http:// source)
   blockEnd:String = "",    // empty is infinite
 
+  blockLag:Int = 0, // lag
+
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
   sinks:Seq[String] = Seq()

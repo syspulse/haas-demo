@@ -67,6 +67,7 @@ object App extends skel.Server {
         ArgLong('_', "throttle.source",s"Throttle source (e.g. http, (def: ${d.throttleSource}))"),
         ArgString('_', "block",s"Ingest from this block (def: ${d.block})"),
         ArgString('_', "block.end",s"Ingest until this block (def: ${d.blockEnd})"),
+        ArgInt('l', "lag",s"Ingest lag (def: ${d.blockLag})"),
         
         ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
@@ -115,6 +116,7 @@ object App extends skel.Server {
       ingestCron = c.getString("ingest.cron").getOrElse(d.ingestCron),
       block = c.getString("block").getOrElse(d.block),
       blockEnd = c.getString("block.end").getOrElse(d.blockEnd),
+      blockLag = c.getInt("lag").getOrElse(d.blockLag),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       

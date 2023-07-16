@@ -106,7 +106,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               dec.toInt
           }
 
-          LastBlock.set(blockStart,blockStart,blockEnd,stateFile)
+          LastBlock.set(next = blockStart, blockStart, blockEnd, stateFile, config.blockLag)
           
         } else {
           

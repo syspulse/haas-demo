@@ -7,7 +7,17 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
-case class LastBlock(block:Long, blockStart:Long, blockEnd:Long, stateStore:Option[String])
+case class Block(num:Long,hash:String)
+
+case class LastBlock(
+  next:Long,       // next EXPECTED block !
+  blockStart:Long, 
+  blockEnd:Long, 
+  stateStore:Option[String], 
+  lag:Int = 0, 
+  last:List[Block] = List(), // hashes of last blocks to detect reorg
+  blockReorg:Option[Long] = None
+)
 
 object LastBlock {
   private val log = Logger(s"LastBlock")
@@ -17,27 +27,78 @@ object LastBlock {
 
   override def toString() = s"${lastBlock}"
 
-  def commit(block:Long) = {
+  // expects STRICTLY sequential blocks !
+  def isReorg(block:Long,blockHash:String):Option[Block] = {
+    val reorgBlock = lastBlock.synchronized {      
+      lastBlock match {
+        case Some(lb) =>
+          
+          println(s"============> ${block}: ${lastBlock}")
+          if(lb.last.size == 0)
+            return None
+
+          // check for the same block repeated: if current==last and hashes are the same it is not reorg
+          if(lb.next-1 == block && lb.last.head.hash == blockHash) 
+            return None
+
+          if(block > lb.next) {
+            log.error(s"Lost blocks: next=${lb.next}, new=${block}: Reduce RCP query interval")
+            return None
+          }
+
+          // if next block, no re-org
+          if(block == lb.next)
+            return None
+                    
+          // find reorg-ed block
+          val reorg = lb.last.find(b => (b.num == block && b.hash != blockHash) )
+          log.info(s"reorg block: next=${lb.next}, new=${block}: ${reorg}")
+          reorg
+          
+        case None => 
+          None
+      }
+    }
+
+    reorgBlock
+  }
+
+  def commit(block:Long,blockHash:String) = {
     lastBlock.synchronized {
-      log.info(s"COMMIT: ${block}")
-      lastBlock = lastBlock.map(lb => lb.copy(block = block + 1))
+      log.info(s"COMMIT: (${block},${blockHash})")
+      lastBlock = lastBlock.map(lb => {        
+        val last = 
+          if(lb.last.size > lb.lag + 1) 
+            lb.last.take(lb.lag)
+          else
+            lb.last
+
+        lb.copy(next = block + 1, last = last.+:(Block(block,blockHash)))
+      })
     }
   }
 
   def isDefined = lastBlock.isDefined
 
-  def set(block:Long,blockStart:Long,blockEnd:Long,stateFile:Option[String]) = {
+  def set(next:Long,blockStart:Long,blockEnd:Long = Long.MaxValue,stateFile:Option[String] = None, lag:Int = 0) = {
     lastBlock = lastBlock.synchronized {
       lastBlock match {
         case Some(_) => lastBlock
-        case None => Some(LastBlock(block,blockStart,blockEnd,stateFile))    
+        case None => Some(LastBlock(next,blockStart,blockEnd,stateFile, lag = lag))    
       }
     }    
   }
 
+  def next() = lastBlock.synchronized {
+    lastBlock match {
+      case Some(lb) => lb.next
+      case None => -1
+    }
+  }
+
   def current() = lastBlock.synchronized {
     lastBlock match {
-      case Some(lb) => lb.block
+      case Some(lb) => if(lb.next == lb.blockStart) lb.next else lb.next - 1
       case None => -1
     }
   }
@@ -48,5 +109,7 @@ object LastBlock {
       case None => -1
     }
   }
+
+  def reset() = lastBlock = None
 }
 
