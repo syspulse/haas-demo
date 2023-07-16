@@ -9,7 +9,7 @@ import com.typesafe.scalalogging.Logger
 
 case class Block(num:Long,hash:String)
 
-case class LastBlock(
+case class LastBlockState(
   next:Long,       // next EXPECTED block !
   blockStart:Long, 
   blockEnd:Long, 
@@ -19,21 +19,23 @@ case class LastBlock(
   blockReorg:Option[Long] = None
 )
 
-object LastBlock {
-  private val log = Logger(s"LastBlock")
-
+object LastBlock {  
   @volatile
-  private var lastBlock: Option[LastBlock] = None
+  private var lastBlock: Option[LastBlockState] = None 
+}
 
-  override def toString() = s"${lastBlock}"
+class LastBlock {
+  private val log = Logger(s"LastBlock")
+  
+  override def toString() = s"${LastBlock.lastBlock}"
 
   // expects STRICTLY sequential blocks !
   def isReorg(block:Long,blockHash:String):List[Block] = {
-    val reorgs = lastBlock.synchronized {      
-      lastBlock match {
+    val reorgs = LastBlock.lastBlock.synchronized {      
+      LastBlock.lastBlock match {
         case Some(lb) =>
           
-          // println(s"============> ${block}: ${lastBlock}")
+          // println(s"============> ${block}: ${LastBlock.lastBlock}")
           if(lb.last.size == 0)
             return List.empty
 
@@ -71,13 +73,13 @@ object LastBlock {
   }
 
   def reorg(blocks:List[Block]):List[Block] = {
-    lastBlock.synchronized {      
-      lastBlock match {
+    LastBlock.lastBlock.synchronized {      
+      LastBlock.lastBlock match {
         case Some(lb) =>
           // infrequent operation, so safe to "toSet"
           println(s"last=${lb.last}: blocks=${blocks}")
-          lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
-          lastBlock.get.last
+          LastBlock.lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
+          LastBlock.lastBlock.get.last
         case None => 
           List.empty
       }
@@ -85,9 +87,9 @@ object LastBlock {
   }
 
   def commit(block:Long,blockHash:String) = {
-    lastBlock.synchronized {
+    LastBlock.lastBlock.synchronized {
       log.info(s"COMMIT: (${block},${blockHash})")
-      lastBlock = lastBlock.map(lb => {        
+      LastBlock.lastBlock = LastBlock.lastBlock.map(lb => {        
         val last = 
           if(lb.last.size > lb.lag)
             lb.last.take(lb.lag)
@@ -99,53 +101,53 @@ object LastBlock {
     }
   }
 
-  def isDefined = lastBlock.isDefined
+  def isDefined = LastBlock.lastBlock.isDefined
 
   def set(next:Long,blockStart:Long,blockEnd:Long = Long.MaxValue,stateFile:Option[String] = None, lag:Int = 0) = {
-    lastBlock = lastBlock.synchronized {
-      lastBlock match {
-        case Some(_) => lastBlock
-        case None => Some(LastBlock(next,blockStart,blockEnd,stateFile, lag = lag))    
+    LastBlock.lastBlock = LastBlock.lastBlock.synchronized {
+      LastBlock.lastBlock match {
+        case Some(_) => LastBlock.lastBlock
+        case None => Some(LastBlockState(next,blockStart,blockEnd,stateFile, lag = lag))    
       }
     }    
   }
 
-  def next() = lastBlock.synchronized {
-    lastBlock match {
+  def next() = LastBlock.lastBlock.synchronized {
+    LastBlock.lastBlock match {
       case Some(lb) => lb.next
       case None => -1
     }
   }
 
-  def current() = lastBlock.synchronized {
-    lastBlock match {
+  def current() = LastBlock.lastBlock.synchronized {
+    LastBlock.lastBlock match {
       case Some(lb) => if(lb.next == lb.blockStart) lb.next else lb.next - 1
       case None => -1
     }
   }
 
-  def end() = lastBlock.synchronized {
-    lastBlock match {
+  def end() = LastBlock.lastBlock.synchronized {
+    LastBlock.lastBlock match {
       case Some(lb) => lb.blockEnd
       case None => -1
     }
   }
 
   // size can be lag + 1 maximum
-  def size() = lastBlock.synchronized {
-    lastBlock match {
+  def size() = LastBlock.lastBlock.synchronized {
+    LastBlock.lastBlock match {
       case Some(lb) => lb.last.size
       case None => 0
     }
   }
 
-  def last() = lastBlock.synchronized {
-    lastBlock match {
+  def last() = LastBlock.lastBlock.synchronized {
+    LastBlock.lastBlock match {
       case Some(lb) => lb.last
       case None => List.empty
     }
   }
 
-  def reset() = lastBlock = None
+  def reset() = LastBlock.lastBlock = None
 }
 

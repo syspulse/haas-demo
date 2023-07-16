@@ -60,11 +60,13 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
   ))
 
   import EthRpcJson._
+
+  val lastBlock = new LastBlock()
     
   override def source(feed:String) = {
     feed.split("://").toList match {
       case "http" :: _ | "https" :: _ => {
-        val lastBlock = if( ! LastBlock.isDefined) {
+        if( ! lastBlock.isDefined) {
           val (blockStr,stateFile) = 
             (config.block.split("://").toList match {
               case "file" :: file :: Nil => // state file
@@ -106,7 +108,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               dec.toInt
           }
 
-          LastBlock.set(next = blockStart, blockStart, blockEnd, stateFile, config.blockLag)
+          lastBlock.set(next = blockStart, blockStart, blockEnd, stateFile, config.blockLag)
           
         } else {
           
@@ -124,7 +126,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           log.info(s"Cron --> ${h}")
           h
 
-          lazy val reqs = LazyList.from(LastBlock.current().toInt,1).takeWhile(_ <= LastBlock.end()).map { block => 
+          lazy val reqs = LazyList.from(lastBlock.current().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
               val id = System.currentTimeMillis() / 1000L
               val blockHex = "0x%x".format(block)
               val json = s"""{
