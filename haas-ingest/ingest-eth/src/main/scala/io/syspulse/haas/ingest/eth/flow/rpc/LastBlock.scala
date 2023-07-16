@@ -28,39 +28,46 @@ object LastBlock {
   override def toString() = s"${lastBlock}"
 
   // expects STRICTLY sequential blocks !
-  def isReorg(block:Long,blockHash:String):Option[Block] = {
-    val reorgBlock = lastBlock.synchronized {      
+  def isReorg(block:Long,blockHash:String):List[Block] = {
+    val reorgs = lastBlock.synchronized {      
       lastBlock match {
         case Some(lb) =>
           
-          println(s"============> ${block}: ${lastBlock}")
+          // println(s"============> ${block}: ${lastBlock}")
           if(lb.last.size == 0)
-            return None
+            return List.empty
 
           // check for the same block repeated: if current==last and hashes are the same it is not reorg
           if(lb.next-1 == block && lb.last.head.hash == blockHash) 
-            return None
+            return List.empty
 
           if(block > lb.next) {
             log.error(s"Lost blocks: next=${lb.next}, new=${block}: Reduce RCP query interval")
-            return None
+            return List.empty
           }
 
           // if next block, no re-org
           if(block == lb.next)
-            return None
+            return List.empty
                     
           // find reorg-ed block
-          val reorg = lb.last.find(b => (b.num == block && b.hash != blockHash) )
-          log.info(s"reorg block: next=${lb.next}, new=${block}: ${reorg}")
-          reorg
+          val blockIndex = lb.last.zipWithIndex.find{ case(b,i) =>
+            b.num == block && b.hash != blockHash            
+          }
+          val reorgs = blockIndex match {
+            case Some(bi) => lb.last.take(bi._2 + 1)
+            case None => List()
+          }
+          
+          log.info(s"reorg block: next=${lb.next}, new=${block}: reorgs=${reorgs}")
+          reorgs
           
         case None => 
-          None
+          List.empty
       }
     }
 
-    reorgBlock
+    reorgs
   }
 
   def commit(block:Long,blockHash:String) = {
@@ -68,7 +75,7 @@ object LastBlock {
       log.info(s"COMMIT: (${block},${blockHash})")
       lastBlock = lastBlock.map(lb => {        
         val last = 
-          if(lb.last.size > lb.lag + 1) 
+          if(lb.last.size > lb.lag) 
             lb.last.take(lb.lag)
           else
             lb.last
@@ -107,6 +114,14 @@ object LastBlock {
     lastBlock match {
       case Some(lb) => lb.blockEnd
       case None => -1
+    }
+  }
+
+  // size can be lag + 1 maximum
+  def size() = lastBlock.synchronized {
+    lastBlock match {
+      case Some(lb) => lb.last.size
+      case None => 0
     }
   }
 
