@@ -54,7 +54,7 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
   }
 
   def convert(block:RpcBlock):RpcBlock = {
-    lastBlock.commit(toLong(block.result.number),block.result.hash)
+    lastBlock.commit(toLong(block.result.number),block.result.hash,toLong(block.result.timestamp),block.result.transactions.size)
     block    
   }
 }

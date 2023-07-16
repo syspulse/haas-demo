@@ -7,7 +7,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
-case class Block(num:Long,hash:String)
+case class Block(num:Long,hash:String,ts:Long = 0L,txCound:Long = 0)
 
 case class LastBlockState(
   next:Long,       // next EXPECTED block !
@@ -86,7 +86,7 @@ class LastBlock {
     }    
   }
 
-  def commit(block:Long,blockHash:String) = {
+  def commit(block:Long,blockHash:String,ts:Long = 0L, txCount:Long = 0) = {
     LastBlock.lastBlock.synchronized {
       log.info(s"COMMIT: (${block},${blockHash})")
       LastBlock.lastBlock = LastBlock.lastBlock.map(lb => {        
@@ -96,7 +96,7 @@ class LastBlock {
           else
             lb.last
 
-        lb.copy(next = block + 1, last = last.+:(Block(block,blockHash)))
+        lb.copy(next = block + 1, last = last.+:(Block(block,blockHash,ts,txCount)))
       })
     }
   }

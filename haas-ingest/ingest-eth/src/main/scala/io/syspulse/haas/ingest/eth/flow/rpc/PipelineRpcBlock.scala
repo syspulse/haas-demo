@@ -47,41 +47,53 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
   def apiSuffix():String = s"/block"
 
   def parse(data:String):Seq[RpcBlock] = {
-    val d = parseBlock(data)
-    if(d.size!=0)
-      latestTs.set(toLong(d.last.result.timestamp) * 1000L)
-    d
+    val bb = parseBlock(data)    
+    if(bb.size!=0) {
+      val b = bb.last.result
+      latestTs.set(toLong(b.timestamp) * 1000L)
+      
+      // check reorg
+      val reorgs = lastBlock.isReorg(toLong(b.number),b.hash)
+      if(reorgs.size >0) {
+        // apply reorg
+        log.warn(s"Blockchain Reorg ======> : ${reorgs}")
+        lastBlock.reorg(reorgs)
+      }
+    }
+
+    bb
   }
 
   def convert(block:RpcBlock):Block = {
-      val blk = Block(
-        toLong(block.result.number),
-        block.result.hash,
-        block.result.parentHash,
-        block.result.nonce,
-        block.result.sha3Uncles,        
-        block.result.logsBloom,
-        block.result.transactionsRoot,
-        block.result.stateRoot,        
-        block.result.receiptsRoot,
-        block.result.miner,
-        
-        toBigInt(block.result.difficulty),
-        toBigInt(block.result.totalDifficulty),
-        toLong(block.result.size),
-
-        block.result.extraData, 
-            
-        toLong(block.result.gasLimit), 
-        toLong(block.result.gasUsed), 
-        toLong(block.result.timestamp) * 1000L, 
-        block.result.transactions.size,
-        block.result.baseFeePerGas.map(d => toLong(d))
-      )
-
-      lastBlock.commit(blk.i,blk.hash)
+    
+    val blk = Block(
+      toLong(block.result.number),
+      block.result.hash,
+      block.result.parentHash,
+      block.result.nonce,
+      block.result.sha3Uncles,        
+      block.result.logsBloom,
+      block.result.transactionsRoot,
+      block.result.stateRoot,        
+      block.result.receiptsRoot,
+      block.result.miner,
       
-      blk
+      toBigInt(block.result.difficulty),
+      toBigInt(block.result.totalDifficulty),
+      toLong(block.result.size),
+
+      block.result.extraData, 
+          
+      toLong(block.result.gasLimit), 
+      toLong(block.result.gasUsed), 
+      toLong(block.result.timestamp) * 1000L, 
+      block.result.transactions.size,
+      block.result.baseFeePerGas.map(d => toLong(d))
+    )
+
+    lastBlock.commit(blk.i,blk.hash,blk.ts,blk.cnt)
+    
+    blk
   }
 
   // def transform(block: Block): Seq[Block] = {
