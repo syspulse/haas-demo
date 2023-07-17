@@ -113,7 +113,7 @@ case class RpcResult(
 
 case class RpcBlock(  
   jsonrpc:String,  
-  result:RpcResult,
+  result:Option[RpcResult],
   id: Any
 )  extends Ingestable
 

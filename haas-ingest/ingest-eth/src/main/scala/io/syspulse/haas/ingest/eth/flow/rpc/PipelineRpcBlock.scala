@@ -49,7 +49,7 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
   def parse(data:String):Seq[RpcBlock] = {
     val bb = parseBlock(data)    
     if(bb.size!=0) {
-      val b = bb.last.result
+      val b = bb.last.result.get
       latestTs.set(toLong(b.timestamp) * 1000L)
       
       // check reorg
@@ -65,30 +65,30 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
   }
 
   def convert(block:RpcBlock):Block = {
-    
+    val b = block.result.get
     val blk = Block(
-      toLong(block.result.number),
-      block.result.hash,
-      block.result.parentHash,
-      block.result.nonce,
-      block.result.sha3Uncles,        
-      block.result.logsBloom,
-      block.result.transactionsRoot,
-      block.result.stateRoot,        
-      block.result.receiptsRoot,
-      block.result.miner,
+      toLong(b.number),
+      b.hash,
+      b.parentHash,
+      b.nonce,
+      b.sha3Uncles,        
+      b.logsBloom,
+      b.transactionsRoot,
+      b.stateRoot,        
+      b.receiptsRoot,
+      b.miner,
       
-      toBigInt(block.result.difficulty),
-      toBigInt(block.result.totalDifficulty),
-      toLong(block.result.size),
+      toBigInt(b.difficulty),
+      toBigInt(b.totalDifficulty),
+      toLong(b.size),
 
-      block.result.extraData, 
+      b.extraData, 
           
-      toLong(block.result.gasLimit), 
-      toLong(block.result.gasUsed), 
-      toLong(block.result.timestamp) * 1000L, 
-      block.result.transactions.size,
-      block.result.baseFeePerGas.map(d => toLong(d))
+      toLong(b.gasLimit), 
+      toLong(b.gasUsed), 
+      toLong(b.timestamp) * 1000L, 
+      b.transactions.size,
+      b.baseFeePerGas.map(d => toLong(d))
     )
 
     lastBlock.commit(blk.i,blk.hash,blk.ts,blk.cnt)

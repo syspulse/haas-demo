@@ -76,29 +76,28 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             })
 
           val blockStart = blockStr.strip match {
-              case "latest" =>
-                val rsp = requests.post(feed,
-                  headers = Seq(("Content-Type","application/json")),
-                  data = s"""{
-                    "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                    "params":["latest",false],
-                    "id":0
-                  }""".trim.replaceAll("\\s+","")
-                )
-                if(rsp.statusCode != 200) {
-                  log.error(s"failed to get latest block: ${rsp}")
-                  0
-                } else {
-                  val latest = ujson.read(rsp.text()).obj("result").obj("number").str
-                  java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toInt
-                }
-              case hex if hex.startsWith("0x") =>
-                java.lang.Long.parseLong(hex,16).toInt
-              case dec =>
-                dec.toInt
-            }
+            case "latest" =>
+              val rsp = requests.post(feed,
+                headers = Seq(("Content-Type","application/json")),
+                data = s"""{
+                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                  "params":["latest",false],
+                  "id":0
+                }""".trim.replaceAll("\\s+","")
+              )
+              if(rsp.statusCode != 200) {
+                log.error(s"failed to get latest block: ${rsp}")
+                0
+              } else {
+                val latest = ujson.read(rsp.text()).obj("result").obj("number").str
+                java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toInt
+              }
+            case hex if hex.startsWith("0x") =>
+              java.lang.Long.parseLong(hex,16).toInt
+            case dec =>
+              dec.toInt
+          }
           
-
           val blockEnd = config.blockEnd match {
             case "" => Int.MaxValue
             case "latest" => blockStart
@@ -114,9 +113,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           
         }
 
-        log.info(s"blocks: ${LastBlock}")
-        
-            
+        log.info(s"blocks: ${LastBlock}")                    
         //log.info(s"reqs=${reqs}")
 
         val sourceHttp = Source.tick(FiniteDuration(10,TimeUnit.MILLISECONDS), 
@@ -127,19 +124,19 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           h
 
           lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
-              val id = System.currentTimeMillis() / 1000L
-              val blockHex = "0x%x".format(block)
-              val json = s"""{
-                    "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                    "params":["${blockHex}",true],
-                    "id":${block}
-                  }""".trim.replaceAll("\\s+","")
+            val id = System.currentTimeMillis() / 1000L
+            val blockHex = "0x%x".format(block)
+            val json = s"""{
+                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                  "params":["${blockHex}",true],
+                  "id":${block}
+                }""".trim.replaceAll("\\s+","")
+            
+            log.info(s"block=${block}: req='${json}'")
               
-              log.info(s"block=${block}: req='${json}'")
-                
-              HttpRequest( method = HttpMethods.POST, uri = feed,
-                  entity = HttpEntity(ContentTypes.`application/json`,json)
-              ).withHeaders(Accept(MediaTypes.`application/json`))
+            HttpRequest( method = HttpMethods.POST, uri = feed,
+              entity = HttpEntity(ContentTypes.`application/json`,json)
+            ).withHeaders(Accept(MediaTypes.`application/json`))
           }
           reqs
         })

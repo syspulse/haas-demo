@@ -45,45 +45,59 @@ trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog]
 
   def parseBlock(data:String):Seq[RpcBlock] = {
     if(data.isEmpty()) return Seq()
+    
+    // only JSON is supported
+    if(data.stripLeading().startsWith("{")) {
+      
+      val block = try {
+        data.parseJson.convertTo[RpcBlock]
+      } catch {
+        case e:Exception => 
+          //log.error(s"failed to parse: '${data}'",e)
+          log.error(s"failed to parse: '${data}'")
+          throw new RetryException(s"failed to parse: '${data}'")          
+      }
 
-    try {
-      // only JSON is supported
-      if(data.stripLeading().startsWith("{")) {
-        val block = data.parseJson.convertTo[RpcBlock]
-                
-        Seq(block)
-      } else {
-        log.error(s"failed to parse: '${data}'")
-        throw new RetryException(s"failed to parse: '${data}'")        
-        Seq()
-      }        
-    } catch {
-      case e:Exception => 
-        //log.error(s"failed to parse: '${data}'",e)
-        log.error(s"failed to parse: '${data}'")
-        throw new RetryException(s"failed to parse: '${data}'")
-        Seq()
-    }
+      if(! block.result.isDefined) {
+        log.info(s"block not found: '${data}'")          
+        throw new RetryException(s"block not found: '${data.strip}'")         
+      } 
+      
+      Seq(block)
+      
+    } else {
+      log.error(s"failed to parse: '${data}'")
+      throw new RetryException(s"failed to parse: '${data}'")        
+      //Seq.empty
+    }        
+    
   }
 
   def parseTx(data:String):Seq[RpcTx] = {
     if(data.isEmpty()) return Seq()
-
-    try {
+    
       // Only Json from Block is supported
-      if(data.stripLeading().startsWith("{")) {
-        val block = data.parseJson.convertTo[RpcBlock]
-                
-        block.result.transactions
-      } else {
-        log.error(s"failed to parse: '${data}'")
-        Seq()          
+    if(data.stripLeading().startsWith("{")) {
+      val block = try {
+        data.parseJson.convertTo[RpcBlock]
+      } catch {
+        case e:Exception => 
+          log.error(s"failed to parse: '${data}'",e)
+          throw new RetryException(s"failed to parse: '${data}'")          
       }
-    } catch {
-      case e:Exception => 
-        log.error(s"failed to parse: '${data}'",e)
-        Seq()
-    }
+
+      if(! block.result.isDefined) {
+        log.info(s"block not found: '${data}'")          
+        throw new RetryException(s"block not found: '${data.strip}'")
+      } 
+              
+      block.result.get.transactions
+
+    } else {
+      log.error(s"failed to parse: '${data}'")
+      throw new RetryException(s"failed to parse: '${data}'")        
+      //Seq.empty
+    }    
   }
   
   def parseTokenTransfer(data:String):Seq[RpcTokenTransfer] = {

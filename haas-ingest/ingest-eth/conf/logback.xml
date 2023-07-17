@@ -27,6 +27,9 @@
     <appender-ref ref="NOCOLOR" />
   </appender>
 
+  <!-- DISABLE akka restart logger (on non-existant block it should restart) -->
+  <logger name="akka.stream.scaladsl.RestartWithBackoffSource" level="error"/>
+
   <root level="info">
     <!-- <appender-ref ref="NOCOLOR" /> -->
   </root>

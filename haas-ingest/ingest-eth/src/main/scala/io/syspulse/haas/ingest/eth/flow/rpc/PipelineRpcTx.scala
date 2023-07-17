@@ -46,15 +46,18 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
   def apiSuffix():String = s"/tx"
 
   def parse(data:String):Seq[RpcBlock] = {
-    val block = parseBlock(data)
-    if(block.size!=0)
-      latestTs.set(toLong(block.last.result.timestamp) * 1000L)
+    val bb = parseBlock(data)
+    if(bb.size!=0) {
+      val b = bb.last.result.get
+      latestTs.set(toLong(b.timestamp) * 1000L)
+    }
     
-    block
+    bb
   }
 
   def convert(block:RpcBlock):RpcBlock = {
-    lastBlock.commit(toLong(block.result.number),block.result.hash,toLong(block.result.timestamp),block.result.transactions.size)
+    val b = block.result.get
+    lastBlock.commit(toLong(b.number),b.hash,toLong(b.timestamp),b.transactions.size)
     block    
   }
 }
@@ -63,10 +66,12 @@ class PipelineTx(config:Config)
   extends PipelineRpcTx[Tx](config) {
 
   def transform(block: RpcBlock): Seq[Tx] = {
-    val ts = toLong(block.result.timestamp)
-    val block_number = toLong(block.result.number)
+    val b = block.result.get
 
-    block.result.transactions.map{ tx => {
+    val ts = toLong(b.timestamp)
+    val block_number = toLong(b.number)
+
+    b.transactions.map{ tx => {
       val transaction_index = toLong(tx.transactionIndex).toInt
       Tx(
         ts * 1000L,
