@@ -15,7 +15,7 @@ MAIN=${2}
 shift
 shift
 
-ARGS="$@"
+ARGS=$@
 
 APP_HOME=${APP_HOME:-`pwd`}
 

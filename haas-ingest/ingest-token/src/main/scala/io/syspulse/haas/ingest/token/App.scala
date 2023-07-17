@@ -68,9 +68,10 @@ object App {
         
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity> and/or -t <tokens,>)"),
         
-        ArgParam("<params>","")
+        ArgParam("<params>",""),
+        ArgLogging()
       ).withExit(1)
-    ))
+    )).withLogging()
 
     val config = Config(      
       feed = c.getString("feed").getOrElse(d.feed),
