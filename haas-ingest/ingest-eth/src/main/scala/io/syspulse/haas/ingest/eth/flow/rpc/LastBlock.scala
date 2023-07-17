@@ -14,9 +14,11 @@ case class LastBlockState(
   blockStart:Long, 
   blockEnd:Long, 
   stateStore:Option[String], 
-  lag:Int = 0, 
+  lag:Int = 0,               // lag means how many blocks wait until moving to the next block
+                             // this is also a depth of last history to check for reorg 
   last:List[Block] = List(), // hashes of last blocks to detect reorg
-  blockReorg:Option[Long] = None
+  blockReorg:Option[Long] = None,
+  var lagging:Int = 0         // current lag counter (from lag to 0). On lagging == 0 next is incremented
 )
 
 object LastBlock {  
@@ -29,7 +31,6 @@ class LastBlock {
   
   override def toString() = s"${LastBlock.lastBlock}"
 
-  // expects STRICTLY sequential blocks !
   def isReorg(block:Long,blockHash:String):List[Block] = {
     val reorgs = LastBlock.lastBlock.synchronized {      
       LastBlock.lastBlock match {
@@ -40,19 +41,20 @@ class LastBlock {
             return List.empty
 
           // check for the same block repeated: if current==last and hashes are the same it is not reorg
-          if(lb.next-1 == block && lb.last.head.hash == blockHash) 
+          if(lb.last.head.num == block && lb.last.head.hash == blockHash) 
             return List.empty
 
           if(block > lb.next) {
-            log.error(s"Lost blocks: next=${lb.next}, new=${block}: Reduce RCP query interval")
+            log.warn(s"non-sequential blocks: next=${lb.next}, new=${block}: Reduce RCP query interval")
             return List.empty
           }
 
           // if next block, no re-org
-          if(block == lb.next)
-            return List.empty
+          // if(lb.next == block)
+          //   return List.empty
                     
           // find reorg-ed block
+          // Due to lag repeats this list may return List() for repeats !
           val blockIndex = lb.last.zipWithIndex.find{ case(b,i) =>
             b.num == block && b.hash != blockHash            
           }
@@ -73,11 +75,14 @@ class LastBlock {
   }
 
   def reorg(blocks:List[Block]):List[Block] = {
+    if(blocks.size == 0) 
+      return List.empty
+
     LastBlock.lastBlock.synchronized {      
       LastBlock.lastBlock match {
         case Some(lb) =>
           // infrequent operation, so safe to "toSet"
-          println(s"last=${lb.last}: blocks=${blocks}")
+          log.warn(s"reorg: last=${lb.last}: blocks=${blocks}")
           LastBlock.lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
           LastBlock.lastBlock.get.last
         case None => 
@@ -86,19 +91,44 @@ class LastBlock {
     }    
   }
 
-  def commit(block:Long,blockHash:String,ts:Long = 0L, txCount:Long = 0) = {
-    LastBlock.lastBlock.synchronized {
-      log.info(s"COMMIT: (${block},${blockHash})")
-      LastBlock.lastBlock = LastBlock.lastBlock.map(lb => {        
-        val last = 
-          if(lb.last.size > lb.lag)
-            lb.last.take(lb.lag)
-          else
-            lb.last
+  // returns true if alreay committed and moves the counter 
+  // ATTENTION: does not check for Reorg !
+  def commit(block:Long,blockHash:String,ts:Long = 0L, txCount:Long = 0):Boolean = {
+    LastBlock.lastBlock.synchronized {      
+      LastBlock.lastBlock.map(lb => {
+        
+        val committedBlock = lb.last.headOption match {
+          case Some(b) => b.num
+          case None => -1
+        }
 
-        lb.copy(next = block + 1, last = last.+:(Block(block,blockHash,ts,txCount)))
+        if(committedBlock != block) {
+          log.info(s"COMMIT: (${block},${blockHash})")
+          val last = 
+            if(lb.last.size > lb.lag)
+              lb.last.take(lb.lag)
+            else
+              lb.last
+
+          LastBlock.lastBlock = Some(lb.copy(
+            next = block + (if(lb.lag == 0) 1 else 0), 
+            last = last.+:(Block(block,blockHash,ts,txCount)),
+            lagging = lb.lag
+          ))
+          false
+
+        } else {          
+          log.info(s"COMMIT: already = ${block}")
+
+          LastBlock.lastBlock = Some(lb.copy(
+            next = block + (if(lb.lagging == 1) 1 else 0),
+            lagging = lb.lagging - 1
+          ))
+          true
+        }
+                
       })
-    }
+    }.getOrElse(false)
   }
 
   def isDefined = LastBlock.lastBlock.isDefined
@@ -119,9 +149,9 @@ class LastBlock {
     }
   }
 
-  def current() = LastBlock.lastBlock.synchronized {
+  def committed() = LastBlock.lastBlock.synchronized {
     LastBlock.lastBlock match {
-      case Some(lb) => if(lb.next == lb.blockStart) lb.next else lb.next - 1
+      case Some(lb) => lb.last.headOption.map(_.num).getOrElse(-1)
       case None => -1
     }
   }

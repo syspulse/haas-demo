@@ -54,8 +54,8 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
   extends PipelineEth[T,O,E](config)(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
 
   override val retrySettings:Option[RestartSettings] = Some(RestartSettings(
-    minBackoff = FiniteDuration(3000,TimeUnit.MILLISECONDS),
-    maxBackoff = FiniteDuration(10000,TimeUnit.MILLISECONDS),
+    minBackoff = FiniteDuration(1000,TimeUnit.MILLISECONDS),
+    maxBackoff = FiniteDuration(1000,TimeUnit.MILLISECONDS),
     randomFactor = 0.2
   ))
 
@@ -123,26 +123,28 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           log.info(s"Cron --> ${h}")
           h
 
-          lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
+          lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).flatMap { block => 
             val id = System.currentTimeMillis() / 1000L
             val blockHex = "0x%x".format(block)
             val json = s"""{
-                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                  "params":["${blockHex}",true],
-                  "id":${block}
-                }""".trim.replaceAll("\\s+","")
+                "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                "params":["${blockHex}",true],
+                "id":${block}
+              }""".trim.replaceAll("\\s+","")
             
             log.info(s"block=${block}: req='${json}'")
               
-            HttpRequest( method = HttpMethods.POST, uri = feed,
-              entity = HttpEntity(ContentTypes.`application/json`,json)
-            ).withHeaders(Accept(MediaTypes.`application/json`))
+            for( i <- 0 to config.blockLag) yield
+              HttpRequest( method = HttpMethods.POST, uri = feed,
+                entity = HttpEntity(ContentTypes.`application/json`,json)
+              ).withHeaders(Accept(MediaTypes.`application/json`))
           }
           reqs
         })
         .mapConcat(reqs => {
           reqs
         })
+        .throttle(1,FiniteDuration(config.throttle,TimeUnit.MILLISECONDS))
         .flatMapConcat(req => {
           log.info(s"--> ${req}")
           //Flows.fromHttpFuture(req)(as)
