@@ -52,15 +52,16 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
       val b = bb.last.result.get
       latestTs.set(toLong(b.timestamp) * 1000L)
       
+      val blockNum = toLong(b.number)
       // check reorg
-      val reorgs = lastBlock.isReorg(toLong(b.number),b.hash)
-      if(reorgs.size >0) {
+      val reorgs = lastBlock.isReorg(blockNum,b.hash)
+      if(reorgs.size > 0) {
         // apply reorg
-        log.warn(s"Blockchain Reorg: [${toLong(b.number)},${b.hash},${Util.toZoneDateTime(b.timestamp)}] ======> : size=${reorgs.size}: ${reorgs}")
+        log.warn(s"Blockchain Reorg: [${blockNum}/${b.hash},${b.transactions.size},${Util.tsToString(toLong(b.timestamp) * 1000L)}] ======> : depth=${reorgs.size}: ${reorgs}")
         lastBlock.reorg(reorgs)
       }
 
-      val already = lastBlock.commit(toLong(b.number),b.hash,toLong(b.timestamp),b.transactions.size)
+      val already = lastBlock.commit(blockNum,b.hash,toLong(b.timestamp),b.transactions.size)
       if(already) {
         throw new RetryException(s"block already committed: '${toLong(b.number)}'")
       }

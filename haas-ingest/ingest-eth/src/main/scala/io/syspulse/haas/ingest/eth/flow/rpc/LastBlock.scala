@@ -36,7 +36,7 @@ class LastBlock {
       LastBlock.lastBlock match {
         case Some(lb) =>
           
-          // println(s"============> ${block}: ${LastBlock.lastBlock}")
+          // println(s"============> ${block} (${blockHash}): ${LastBlock.lastBlock}")
           if(lb.last.size == 0)
             return List.empty
 
@@ -63,7 +63,10 @@ class LastBlock {
             case None => List()
           }
           
-          log.info(s"reorg block: next=${lb.next}, new=${block}: reorgs=${reorgs}")
+          if(blockIndex.isDefined) {
+            log.warn(s"reorg block: ${block}/${blockHash}: next=${lb.next}, reorgs=${reorgs}")
+          }
+
           reorgs
           
         case None => 
@@ -82,7 +85,7 @@ class LastBlock {
       LastBlock.lastBlock match {
         case Some(lb) =>
           // infrequent operation, so safe to "toSet"
-          log.info(s"reorg: last=${lb.last}: blocks=${blocks}")
+          log.info(s"reorg: reorg=(blocks=${blocks},last=${lb.last})")
           LastBlock.lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
           LastBlock.lastBlock.get.last
         case None => 
@@ -104,7 +107,7 @@ class LastBlock {
 
         if(committedBlock != block) {
           
-          log.info(s"COMMIT: (${block},${blockHash})")
+          log.info(s"COMMIT: ${block}/${blockHash}")
           val last = 
             if(lb.last.size > lb.lag)
               lb.last.take(lb.lag)
@@ -121,7 +124,7 @@ class LastBlock {
           false
 
         } else {          
-          log.info(s"COMMIT: already = ${block}")
+          log.info(s"COMMIT: already: ${block}/${blockHash}")
 
           LastBlock.lastBlock = Some(lb.copy(
             // next = block + (if(lb.lagging == 1) 1 else 0),

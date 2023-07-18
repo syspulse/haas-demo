@@ -147,7 +147,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
         .flatMapConcat(req => {
           log.info(s"--> ${req}")
           
-          Flows.fromHttpRestartable(req, config.delimiter, config.buffer)
+          Flows.fromHttpRestartable(req, config.delimiter, config.buffer, retrySettings.get)
         })          
         sourceHttp          
       }

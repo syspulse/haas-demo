@@ -141,11 +141,11 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       lastBlock.committed() should === (-1)
 
       lastBlock.commit(1,"0x111")      
-      lastBlock.next() should === (1)
+      lastBlock.next() should === (2)
       lastBlock.committed() should === (1)
 
       lastBlock.commit(1,"0x111")      
-      lastBlock.next() should === (1)
+      lastBlock.next() should === (2)
       lastBlock.committed() should === (1)
       
     }
@@ -206,7 +206,7 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       lastBlock.next() should === (1)
       lastBlock.committed() should === (-1)
 
-      lastBlock.commit(1,"0x111")      
+      lastBlock.commit(1,"0x111")
       lastBlock.commit(2,"0x222")
       
       val r3 = lastBlock.isReorg(2,"0x222_2")
@@ -214,7 +214,7 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       r3 should === (List(Block(2,"0x222")))
       r4 should === (List(Block(1,"0x111")))
 
-      lastBlock.next() should === (2)
+      lastBlock.next() should === (3)
     }
 
     "find reorg (deep=2) with lag == 2" in {
@@ -251,7 +251,7 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       r4 should === (List(Block(1,"0x111")))
 
       lastBlock.commit(2,"0x222_2")
-      lastBlock.next() should === (2)
+      lastBlock.next() should === (3)
       lastBlock.committed() should === (2)
       lastBlock.last() should === (List(Block(2,"0x222_2"),Block(1,"0x111")))
     }
@@ -270,7 +270,40 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       lastBlock2.last() should === (List(Block(2,"0x222"),Block(1,"0x111")))
     }
       
-    
+    "beacon reorg flow (deep=1) with lag == 2" in {
+      val lastBlock = new LastBlock()
+      lastBlock.reset()
+      
+      lastBlock.set(1,1,100,lag = 2) 
+      lastBlock.next() should === (1)
+      lastBlock.committed() should === (-1)
+
+      lastBlock.isReorg(1,"0x111") should === (List())
+      lastBlock.commit(1,"0x111")
+      lastBlock.isReorg(1,"0x111") should === (List())
+      lastBlock.commit(1,"0x111")
+      lastBlock.isReorg(1,"0x111") should === (List())
+      lastBlock.commit(1,"0x111")
+      
+      lastBlock.isReorg(2,"0x222") should === (List())
+      lastBlock.commit(2,"0x222")
+      lastBlock.isReorg(2,"0x222") should === (List())
+      lastBlock.commit(2,"0x222")
+      lastBlock.isReorg(2,"0x222") should === (List())
+      lastBlock.commit(2,"0x222")
+      
+      val r3 = lastBlock.isReorg(2,"0x222_2")
+      r3 should === (List(Block(2,"0x222")))
+      val r4 = lastBlock.reorg(r3)      
+      r4 should === (List(Block(1,"0x111")))
+      lastBlock.commit(2,"0x222_2")
+
+      lastBlock.next() should === (3)
+
+      lastBlock.isReorg(2,"0x222_2") should === (List())
+      lastBlock.commit(2,"0x222_2")
+
+    }   
   }
   
 }
