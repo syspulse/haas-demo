@@ -82,7 +82,7 @@ class LastBlock {
       LastBlock.lastBlock match {
         case Some(lb) =>
           // infrequent operation, so safe to "toSet"
-          log.warn(s"reorg: last=${lb.last}: blocks=${blocks}")
+          log.info(s"reorg: last=${lb.last}: blocks=${blocks}")
           LastBlock.lastBlock = Some(lb.copy(last = lb.last.toSet.&~(blocks.toSet).toList))
           LastBlock.lastBlock.get.last
         case None => 
@@ -103,6 +103,7 @@ class LastBlock {
         }
 
         if(committedBlock != block) {
+          
           log.info(s"COMMIT: (${block},${blockHash})")
           val last = 
             if(lb.last.size > lb.lag)
@@ -111,18 +112,20 @@ class LastBlock {
               lb.last
 
           LastBlock.lastBlock = Some(lb.copy(
-            next = block + (if(lb.lag == 0) 1 else 0), 
+            //next = block + (if(lb.lagging > 0) 1 else 0), 
+            next = block + 1,
             last = last.+:(Block(block,blockHash,ts,txCount)),
-            lagging = lb.lag
+            lagging = 0
           ))
+
           false
 
         } else {          
           log.info(s"COMMIT: already = ${block}")
 
           LastBlock.lastBlock = Some(lb.copy(
-            next = block + (if(lb.lagging == 1) 1 else 0),
-            lagging = lb.lagging - 1
+            // next = block + (if(lb.lagging == 1) 1 else 0),
+            lagging = lb.lagging + 1
           ))
           true
         }

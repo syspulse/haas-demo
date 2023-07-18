@@ -123,9 +123,9 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           log.info(s"Cron --> ${h}")
           h
 
-          lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).flatMap { block => 
+          lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
             val id = System.currentTimeMillis() / 1000L
-            val blockHex = "0x%x".format(block)
+            val blockHex = "latest"//"0x%x".format(block)
             val json = s"""{
                 "jsonrpc":"2.0","method":"eth_getBlockByNumber",
                 "params":["${blockHex}",true],
@@ -134,8 +134,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             
             log.info(s"block=${block}: req='${json}'")
               
-            for( i <- 0 to config.blockLag) yield
-              HttpRequest( method = HttpMethods.POST, uri = feed,
+            HttpRequest( method = HttpMethods.POST, uri = feed,
                 entity = HttpEntity(ContentTypes.`application/json`,json)
               ).withHeaders(Accept(MediaTypes.`application/json`))
           }
@@ -147,19 +146,9 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
         .throttle(1,FiniteDuration(config.throttle,TimeUnit.MILLISECONDS))
         .flatMapConcat(req => {
           log.info(s"--> ${req}")
-          //Flows.fromHttpFuture(req)(as)
+          
           Flows.fromHttpRestartable(req, config.delimiter, config.buffer)
         })          
-        // .via(          
-        //   Flows.fromHttpListAsFlow(reqs, 
-        //     par = 1, 
-        //     frameDelimiter = config.delimiter,
-        //     frameSize = config.buffer, 
-        //     throttle = config.throttleSource)
-        //   // .recover {
-        //   //   case _: RetryException => ByteString("")//Source.empty
-        //   // }          
-        // )
         sourceHttp          
       }
             

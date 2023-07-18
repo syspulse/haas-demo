@@ -60,7 +60,7 @@ trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog]
 
       if(! block.result.isDefined) {
         log.info(s"block not found: '${data}'")          
-        throw new RetryException(s"block not found: '${data.strip}'")         
+        throw new RetryException(s"block not found: '${data.strip}'")
       } 
       
       Seq(block)

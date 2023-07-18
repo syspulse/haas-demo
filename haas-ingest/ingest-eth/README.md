@@ -107,6 +107,14 @@ __NOTE__: Use different Consumer Groups otherwise Kafka will load balance
 ./run-ingest-eth.sh intercept -e transaction -f kafka://localhost:9092/transactions/group-2 -o stdout:// -s file://scripts/script-1.js
 ```
 
+## Reorg (Blockchain re-organizations)
+
+NOTE: it is important to have `throttle` small enough to detect fast reorgs (more detection than etherscan)
+
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth1.demo.hacken.cloud:8545 --delimiter= --block=latest --logging=WARN --lag=2 --throttle=1000 >reorg-1.log
+```
+
 
 ## Intercept
 

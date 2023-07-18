@@ -81,6 +81,23 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       r1 should === (List.empty)
     }
 
+    "not find reorg on duplicate block repeat (lag=2)" in {
+      val lastBlock = new LastBlock()
+      lastBlock.reset()
+      
+      lastBlock.set(1,1,100,lag = 0)      
+      lastBlock.next() should === (1)
+      
+      lastBlock.commit(1,"0x111")
+      lastBlock.commit(1,"0x111")
+      lastBlock.commit(1,"0x111")
+
+      val r1 = lastBlock.isReorg(1,"0x111")
+
+      r1 should === (List.empty)
+      lastBlock.size() should === (1)
+    }
+
     "not find reorg on normal block sequence with lag == 0" in {
       val lastBlock = new LastBlock()
       lastBlock.reset()
@@ -128,7 +145,7 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       lastBlock.committed() should === (1)
 
       lastBlock.commit(1,"0x111")      
-      lastBlock.next() should === (2)
+      lastBlock.next() should === (1)
       lastBlock.committed() should === (1)
       
     }
@@ -162,6 +179,23 @@ class LastBlockSpec extends AnyWordSpec with Matchers {
       
       val r3 = lastBlock.isReorg(2,"0x222_2")
       r3 should === (List(Block(2,"0x222")))
+    }
+
+    "find reorg (deep=1) with lag == 2 and throttle=1000" in {
+      val lastBlock = new LastBlock()
+      lastBlock.reset()
+      
+      lastBlock.set(1,1,100,lag = 2) 
+      lastBlock.next() should === (1)
+      lastBlock.committed() should === (-1)
+
+      lastBlock.commit(1,"0x111")   
+      lastBlock.commit(1,"0x111")
+      lastBlock.commit(1,"0x111")
+      lastBlock.commit(1,"0x111")
+      
+      val r3 = lastBlock.isReorg(1,"0x111_2")
+      r3 should === (List(Block(1,"0x111")))
     }
 
     "reorg (deep=1) with lag == 2" in {
