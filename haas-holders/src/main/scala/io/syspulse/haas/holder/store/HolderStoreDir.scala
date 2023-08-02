@@ -26,7 +26,8 @@ import io.syspulse.skel.util.Util
 object HoldersStoreDir {
   import scala.util.matching._
 
-  val FILE_NAME = "holders.csv"
+  val FILE_NAME_1 = "holders.csv"
+  val FILE_NAME_2 = "holders.json"
 
   val dirRegexp = """.*\/0x([0-9a-fA-F]+)\/holders\/(\d{4})\/(\d{2})\/(\d{2})\/.*""".r
   //val zdf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss_SSSZ")
@@ -41,7 +42,8 @@ object HoldersStoreDir {
       case dirRegexp(addr,yyyy,mm,dd) =>
         Success((s"0x${addr.toLowerCase}",toTimestamp(yyyy,mm,dd)))
       case _ => 
-        Failure(new Exception(s"could not parse: ${f}"))
+        //Failure(new Exception(s"could not parse: ${f}"))
+        Success((s"0x0",0L))
     }    
   }
 }
@@ -76,7 +78,7 @@ class HolderStoreDir(dir:String = "store/",limit:Int=100) extends StoreDir[Holde
       .filter(_.toIO.isFile())
       .filter( f => {
         log.debug(s"${f}: ${f.toIO.getName}")
-        f.toIO.getName == HoldersStoreDir.FILE_NAME
+        f.toIO.getName == HoldersStoreDir.FILE_NAME_1 || f.toIO.getName == HoldersStoreDir.FILE_NAME_2
       })
       .map( f => 
         HoldersStoreDir.parsePath(f.toString()) match {
@@ -93,39 +95,79 @@ class HolderStoreDir(dir:String = "store/",limit:Int=100) extends StoreDir[Holde
         // this must be foreach and return Unit to avoid OOM !
         log.info(s"Loading file: ${f} (${ts} = ${Util.timestamp(ts,"yyyy-MM-dd'T'HH:mm:ssZ",java.time.ZoneId.of("UTC"))})")
         val data = os.read(f)
-        //(data,token,ts)
-        val holders = parseHolders(data)
-        val hh = holders.take(limit)
-        val h = Holders(ts,token,hh,total = holders.size)
-            
-        this.+(h)
+        
+        val holders = parseHolders(data,token,ts,limit)
+        
+        // val hh = holders.take(limit)
+        // val h = Holders(ts,token,hh,total = holders.size)
+        // this.+(h)
+
+        holders.foreach{ h => this.+(h)}        
         
       }}      
       
     store.holders.foreach{ hh =>
-      log.info(s"Holders: ${hh._1} = ${hh._2.size}")
+      log.info(s"Holders: ${hh._1}: ${hh._2.size}: total = ${hh._2.foldLeft(0L)((i,h) => i + h.holders.size)}")
     }
     
   }
 
-  def parseHolders(lines:String):Seq[Holder] = {
-    // ignore possible header
-    lines.split("[\r\n]").filter(!_.trim.isEmpty()).filter(!_.startsWith("address,")).flatMap(data => {      
-      try {
-        data.split(",",-1).toList match {
-          case addr :: balance :: Nil => 
-            Some(Holder(addr,Util.toBigInt(balance)))            
-          case _ => 
-            None
-        }
-      } catch {
-        case e:Exception => 
-          log.error(s"could not parse data: ${data}",e); 
-          None
-      }
-    }).sorted.toSeq    
+  def parseHolders(lines:String,token:String,ts:Long,limit:Int):Seq[Holders] = {
+    ts match {
+      case 0L => parseHoldersJSON(lines,token,ts,limit)
+      case _ => parseHoldersCSV(lines,token,ts,limit)
+    }
   }
 
+  def parseHoldersCSV(lines:String,token:String,ts:Long,limit:Int):Seq[Holders] = {
+    // ignore possible header
+    val hh = lines
+      .split("[\r\n]")
+      .filter(!_.trim.isEmpty())
+      .filter(!_.startsWith("address,"))
+      .flatMap(data => { 
+        try {
+          data.split(",",-1).toList match {
+            case addr :: balance :: Nil => 
+              Seq(Holder(addr,Util.toBigInt(balance)))
+            case _ => 
+              Seq()
+          }
+        } catch {
+          case e:Exception => 
+            log.error(s"could not parse data: ${data}",e); 
+            Seq()
+        }
+      }).sorted.toSeq
+    
+    Seq(Holders(ts,token,hh,total = hh.size))
+  }
+
+  def parseHoldersJSON(lines:String,token:String,ts:Long,limit:Int):Seq[Holders] = {
+    // ignore possible header
+    lines
+      .split("[\r\n]")
+      .filter(!_.trim.isEmpty())
+      .filter(_.startsWith("{"))
+      .flatMap(data => {        
+        // assume Json file
+        try {
+          import io.syspulse.haas.holder.store.HoldersFormatJson._
+          val j = data.parseJson.convertTo[io.syspulse.haas.holder.store.Holders]
+
+          val hh = j.holders.map( h => {
+            Holder(h._1,h._2)
+          }).sorted.toSeq
+
+          log.info(s"holders: ${j.ts}: ${j.token}")
+          Some(Holders(j.ts,j.token,hh,total = hh.size))
+        } catch {
+          case e:Exception => 
+            log.error(s"could not parse data: ${data}",e); 
+            Seq()
+        }
+      }).toIndexedSeq
+  }
 
   // preload
   load(dir)

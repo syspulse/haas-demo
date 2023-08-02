@@ -24,6 +24,16 @@ RPC Providers:
      = 10966873 = Sep-30-2020 11:59:45 PM +UTC (2020/09/15)
 ```
 
+## Recover incorrect re-org ingested data:
+
+```
+ls /mnt/s3/data/dev/ethereum/raw/csv/transactions/2022/10/
+12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31
+/mnt/s3/data/dev/ethereum/raw/csv/transfers/2022/10/12
+```
+head -1 transfer-00.csv 
+1665532811000,15728307
+
 __Year__
 
 ```
@@ -42,6 +52,7 @@ __2023__
 
 Mar = 16730072 - 16950602
 Apr = 16950603 - 
+Jun = .....    - 17595509 (Jun-30-2023 11:59:59 PM +UTC)
 
 ----
 
