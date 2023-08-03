@@ -24,6 +24,7 @@ import io.syspulse.skel.ingest.flow.Pipeline
 
 import spray.json._
 import DefaultJsonProtocol._
+
 import io.syspulse.skel.serde.Parq._
 import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaResolver}
 
@@ -62,8 +63,7 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
   }
 }
 
-class PipelineTx(config:Config) 
-  extends PipelineRpcTx[Tx](config) {
+class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
 
   def transform(block: RpcBlock): Seq[Tx] = {
     val b = block.result.get
@@ -71,7 +71,42 @@ class PipelineTx(config:Config)
     val ts = toLong(b.timestamp)
     val block_number = toLong(b.number)
 
-    b.transactions.map{ tx => {
+    val json = 
+    "[" + b.transactions.map( t => 
+      s"""{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["${t.hash}"],"id":0}"""
+     ).mkString(",") +
+    "]"
+    .trim.replaceAll("\\s+","")
+
+    log.info(s"transaction: ${b.transactions.size}")
+      
+    val receiptsRsp = requests.post(config.feed,data = json,headers = Map("content-type" -> "application/json"))
+    val receipts:Map[String,RpcReceipt] = receiptsRsp.statusCode match {
+      case 200 =>
+        // need to import it here for List[]
+        import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
+
+        val batchRsp = receiptsRsp.data.toString
+
+        val batchReceipts = batchRsp.parseJson.convertTo[List[RpcReceiptResultBatch]]
+
+        val rr:Seq[RpcReceipt] = batchReceipts.flatMap { r => 
+          
+          if(r.result.isDefined) {
+            Some(r.result.get)
+          } else {
+            log.warn(s"could not get receipts: ${r}")
+            None
+          }
+        }
+
+        rr.map( r => r.transactionHash -> r).toMap
+      case _ => 
+        log.warn(s"could not get receipts: ${receiptsRsp}")
+        Map()
+    }
+
+    b.transactions.map{ tx:RpcTx => {
       val transaction_index = toLong(tx.transactionIndex).toInt
       Tx(
         ts * 1000L,
@@ -89,17 +124,17 @@ class PipelineTx(config:Config)
         toBigInt(tx.value),
         toLong(tx.nonce),
         
-        None,//tx.max_fee_per_gas,
-        None,//tx.max_priority_fee_per_gas, 
+        tx.maxFeePerGas.map(toBigInt(_)), //tx.max_fee_per_gas,
+        tx.maxPriorityFeePerGas.map(toBigInt(_)), //tx.max_priority_fee_per_gas, 
 
         toOptionLong(tx.`type`).map(_.toInt), 
 
-        0L,//tx.receipt_cumulative_gas_used, 
-        0L,//tx.receipt_gas_used, 
-        None,//tx.receipt_contract_address, 
-        None,//tx.receipt_root, 
-        None,//tx.receipt_status, 
-        None//tx.receipt_effective_gas_price
+        receipts.get(tx.hash).map(r => toLong(r.cumulativeGasUsed)).getOrElse(0L), //0L,//tx.receipt_cumulative_gas_used, 
+        receipts.get(tx.hash).map(r => toLong(r.gasUsed)).getOrElse(0L), //0L,//tx.receipt_gas_used, 
+        receipts.get(tx.hash).map(_.contractAddress).flatten, //tx.receipt_contract_address, 
+        Some(b.receiptsRoot), //tx.receipt_root, 
+        receipts.get(tx.hash).map(r => toLong(r.status).toInt), //tx.receipt_status, 
+        receipts.get(tx.hash).map(r => toBigInt(r.effectiveGasPrice)) //tx.receipt_effective_gas_price
       )
     }}.toSeq
   }

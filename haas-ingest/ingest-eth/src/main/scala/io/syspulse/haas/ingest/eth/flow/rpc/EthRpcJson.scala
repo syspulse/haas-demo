@@ -28,6 +28,28 @@ import spray.json.{DefaultJsonProtocol,NullOptions}
 //   "type": "0x0"
 // }
 
+// {
+//   "blockHash": "0x1415d63b704ff35e6f6056121fc8bd6aeb0672682c47409413b11720f4001252",
+//   "blockNumber": "0x10b7448",
+//   "from": "0x5eed8ce3cd7ade7e7ec1cd79b95f36aac01ba433",
+//   "gas": "0x14f1f",
+//   "gasPrice": "0x3b5af8bac",
+//   "maxFeePerGas": "0x518723801",
+//   "maxPriorityFeePerGas": "0x5f5e100",
+//   "hash": "0x912f229938f94d89e159551e38027383f84b744e20bc3d90183d341adf456668",
+//   "input": "0xa9059cbb0000000000000000000000000abb6984f174e4f5cef156c3dc2b3bb823f553160000000000000000000000000000000000000000000000001bc16d674ec80000",
+//   "nonce": "0x47",
+//   "to": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+//   "transactionIndex": "0x68",
+//   "value": "0x0",
+//   "type": "0x2",
+//   "accessList": [],
+//   "chainId": "0x1",
+//   "v": "0x1",
+//   "r": "0x55b0b6793407f82f821f13d53e75343513f5e0b43d248bbbfb4f4176331f2599",
+//   "s": "0x12e08dd095d38474c020d34e3c29b34137426e7824a050dab42d37df2ba0ede1"
+// }
+
 case class RpcTx(
   hash:String,
   nonce:String,
@@ -45,6 +67,10 @@ case class RpcTx(
   v: String,
   chainId: Option[String],
   `type`: String,
+
+  maxFeePerGas: Option[String] = None,
+  maxPriorityFeePerGas: Option[String] = None,
+  //accessList:Option[List[String]] = None,
 
   timestamp:Option[Long] = None // NOT FROM RPC !!! used internally for streaming Block timestamp 
 )  extends Ingestable
@@ -84,7 +110,7 @@ case class RpcUncle(
 //   },
 //   "id": 1
 // }
-case class RpcResult(  
+case class RpcBlockResult(  
   hash:String,  
   parentHash:String,
   sha3Uncles:String,
@@ -113,22 +139,63 @@ case class RpcResult(
 
 case class RpcBlock(  
   jsonrpc:String,  
-  result:Option[RpcResult],
+  result:Option[RpcBlockResult],
   id: Any
 )  extends Ingestable
 
 
-case class RpcLog(data:String)
+case class RpcLog(
+  address:String,
+  topics:Seq[String],
+  data:String,
+  blockNumber:String,
+  transactionHash:String,
+  transactionIndex:String,
+  blockHash:String,
+  logIndex:String,
+  removed:Boolean
+)
+
+
+case class RpcReceipt(
+  blockHash: String,
+  blockNumber: String,
+  contractAddress: Option[String],
+  cumulativeGasUsed: String,
+  effectiveGasPrice: String,
+  from: String,
+  gasUsed: String,
+  logs: Seq[RpcLog],
+
+  logsBloom: String,
+  status: String,
+
+  to: Option[String],
+  transactionHash: String,
+  transactionIndex: String,
+  `type`: String,
+
+  timestamp:Option[Long] = None // NOT FROM RPC !!! used internally for streaming Block timestamp 
+)
+
+case class RpcReceiptResultBatch(  
+  jsonrpc:String,  
+  result:Option[RpcReceipt],
+  id: Any
+)  extends Ingestable
+
+
 case class RpcTokenTransfer(data:String)
 
-
-object EthRpcJson extends JsonCommon with NullOptions {
-  import DefaultJsonProtocol._
-  implicit val jf_rpc_tx = jsonFormat17(RpcTx)
+object EthRpcJson extends JsonCommon {
+  
+  implicit val jf_rpc_tx = jsonFormat19(RpcTx)
   implicit val jf_rpc_uncle = jsonFormat1(RpcUncle)
-  implicit val jf_rpc_res = jsonFormat22(RpcResult)
+  implicit val jf_rpc_res = jsonFormat22(RpcBlockResult)
   implicit val jf_rpc_bl = jsonFormat3(RpcBlock)
 
   implicit val jf_rpc_tt = jsonFormat1(RpcTokenTransfer)
-  implicit val jf_rpc_log = jsonFormat1(RpcLog)
+  implicit val jf_rpc_log = jsonFormat9(RpcLog)
+  implicit val jf_rpc_rec = jsonFormat15(RpcReceipt)  
+  implicit val jf_rpc_rec_res = jsonFormat3(RpcReceiptResultBatch)  
 }
