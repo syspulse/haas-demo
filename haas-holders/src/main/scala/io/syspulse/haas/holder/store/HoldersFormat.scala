@@ -11,12 +11,13 @@ import io.syspulse.skel.service.JsonCommon
 // Json Datalake format
 case class Holders(  
   token:String,
-  ts:Long,
+  ts:Long,  
   holders:Seq[(String,BigInt)] = Seq(),
+  total:Option[Long] = None
 )
 
 
 object HoldersFormatJson extends JsonCommon {  
-  implicit val jf_HoldersJson = jsonFormat3(Holders)
+  implicit val jf_HoldersJson = jsonFormat4(Holders)
 }
 
