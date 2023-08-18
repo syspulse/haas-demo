@@ -53,8 +53,8 @@ trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog]
         data.parseJson.convertTo[RpcBlock]
       } catch {
         case e:Exception => 
-          //log.error(s"failed to parse: '${data}'",e)
-          log.error(s"failed to parse: '${data}'")
+          log.error(s"failed to parse: '${data}'",e)
+          //log.error(s"failed to parse: '${data}'")
           throw new RetryException(s"failed to parse: '${data}'")          
       }
 

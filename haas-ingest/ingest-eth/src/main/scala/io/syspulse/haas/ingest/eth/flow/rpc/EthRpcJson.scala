@@ -66,7 +66,7 @@ case class RpcTx(
   s: String,
   v: String,
   chainId: Option[String],
-  `type`: String,
+  `type`: Option[String],
 
   maxFeePerGas: Option[String] = None,
   maxPriorityFeePerGas: Option[String] = None,
@@ -162,7 +162,7 @@ case class RpcReceipt(
   blockNumber: String,
   contractAddress: Option[String],
   cumulativeGasUsed: String,
-  effectiveGasPrice: String,
+  effectiveGasPrice: Option[String],
   from: String,
   gasUsed: String,
   logs: Seq[RpcLog],
@@ -173,7 +173,7 @@ case class RpcReceipt(
   to: Option[String],
   transactionHash: String,
   transactionIndex: String,
-  `type`: String,
+  `type`: Option[String],
 
   timestamp:Option[Long] = None // NOT FROM RPC !!! used internally for streaming Block timestamp 
 )

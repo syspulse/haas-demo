@@ -127,14 +127,14 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
         tx.maxFeePerGas.map(toBigInt(_)), //tx.max_fee_per_gas,
         tx.maxPriorityFeePerGas.map(toBigInt(_)), //tx.max_priority_fee_per_gas, 
 
-        toOptionLong(tx.`type`).map(_.toInt), 
+        tx.`type`.map(r => toLong(r).toInt),
 
         receipts.get(tx.hash).map(r => toLong(r.cumulativeGasUsed)).getOrElse(0L), //0L,//tx.receipt_cumulative_gas_used, 
         receipts.get(tx.hash).map(r => toLong(r.gasUsed)).getOrElse(0L), //0L,//tx.receipt_gas_used, 
         receipts.get(tx.hash).map(_.contractAddress).flatten, //tx.receipt_contract_address, 
         Some(b.receiptsRoot), //tx.receipt_root, 
         receipts.get(tx.hash).map(r => toLong(r.status).toInt), //tx.receipt_status, 
-        receipts.get(tx.hash).map(r => toBigInt(r.effectiveGasPrice)) //tx.receipt_effective_gas_price
+        receipts.get(tx.hash).map(_.effectiveGasPrice.map(r => toBigInt(r))).flatten //tx.receipt_effective_gas_price
       )
     }}.toSeq
   }
