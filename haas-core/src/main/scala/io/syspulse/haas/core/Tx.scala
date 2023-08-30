@@ -20,9 +20,9 @@ case class Tx(
   typ:Option[Int],
   used2: Long,            // cumulative used
   used: Long,             // gas used
-  cntr: Option[String],  // contract
+  con: Option[String],  // contract
   root: Option[String],   // receipt root
-  sts: Option[Int],       // status
+  sta: Option[Int],       // status
   p0: Option[BigInt]      // price Effective
 
   //timestamp:Option[Long]

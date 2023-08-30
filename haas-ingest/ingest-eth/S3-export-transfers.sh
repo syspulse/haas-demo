@@ -1,7 +1,8 @@
 #!/bin/bash
 
-START=${1:-10861674}
+S3_BUCKET=${S3_BUCKET:-haas-dev-data}
 
+START=${1:-10861674}
 END=${2:-10861675}
 
 #./eth-export-transfers.sh $START $END | ./run-ingest-eth.sh -e transfer -o "fs3:///mnt/s3/data/dev/{yyyy}/{MM}/{dd}/token-{HH_mm_ss}.csv" --limit=10000

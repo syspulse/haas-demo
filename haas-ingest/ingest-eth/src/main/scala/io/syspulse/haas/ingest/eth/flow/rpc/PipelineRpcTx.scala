@@ -73,7 +73,7 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
 
     val json = 
     "[" + b.transactions.map( t => 
-      s"""{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["${t.hash}"],"id":0}"""
+      s"""{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["${t.hash}"],"id":"${t.hash}"}"""
      ).mkString(",") +
     "]"
     .trim.replaceAll("\\s+","")
@@ -88,21 +88,28 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
 
         val batchRsp = receiptsRsp.data.toString
 
-        val batchReceipts = batchRsp.parseJson.convertTo[List[RpcReceiptResultBatch]]
+        try {
+          val batchReceipts = batchRsp.parseJson.convertTo[List[RpcReceiptResultBatch]]
 
-        val rr:Seq[RpcReceipt] = batchReceipts.flatMap { r => 
-          
-          if(r.result.isDefined) {
-            Some(r.result.get)
-          } else {
-            log.warn(s"could not get receipts: ${r}")
-            None
+          val rr:Seq[RpcReceipt] = batchReceipts.flatMap { r => 
+            
+            if(r.result.isDefined) {
+              Some(r.result.get)
+            } else {
+              log.warn(s"could not get receipt: (tx=${r.id}): ${r}")
+              None
+            }
           }
-        }
 
-        rr.map( r => r.transactionHash -> r).toMap
+          rr.map( r => r.transactionHash -> r).toMap
+
+        } catch {
+          case e:Exception =>
+            log.error(s"could not parse receipts batch: ${receiptsRsp}",e)
+            Map()
+        }
       case _ => 
-        log.warn(s"could not get receipts: ${receiptsRsp}")
+        log.warn(s"could not get receipts batch: ${receiptsRsp}")
         Map()
     }
 

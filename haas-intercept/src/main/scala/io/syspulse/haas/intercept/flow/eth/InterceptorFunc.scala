@@ -77,7 +77,7 @@ class InterceptorFunc(bid:Blockchain.ID,abiStore:AbiStore,interceptionStore:Inte
       ("gas_used" -> tx.used),
       ("contract" -> tx.to.getOrElse("null")),
       ("receipt_root" -> tx.root.getOrElse("null")),
-      ("status" -> tx.sts),
+      ("status" -> tx.sta),
       ("price_effective" -> tx.p0),
 
     ) ++       

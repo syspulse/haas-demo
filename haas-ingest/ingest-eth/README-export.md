@@ -5,6 +5,7 @@ RPC Providers:
 - [https://github.com/arddluma/awesome-list-rpc-nodes-providers]
 - [https://ethereumnodes.com/]
 - [https://chainlist.org/]
+- [https://rpc.info/]
 
 # Ethereum 
 
@@ -53,6 +54,10 @@ __2023__
 Mar = 16730072 - 16950602
 Apr = 16950603 - 
 Jun = .....    - 17595509 (Jun-30-2023 11:59:59 PM +UTC)
+Jul = 17595510
+
+Collector: 18013004 -> 
+
 
 ----
 

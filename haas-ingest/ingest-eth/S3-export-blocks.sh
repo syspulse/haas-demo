@@ -1,5 +1,7 @@
 #!/bin/bash
 
+S3_BUCKET=${S3_BUCKET:-haas-dev-data}
+
 START=${1:-10861674}
 END=${2:-10861675}
 

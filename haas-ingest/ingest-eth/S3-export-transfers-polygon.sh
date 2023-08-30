@@ -3,6 +3,8 @@ CWD=`echo $(dirname $(readlink -f $0))`
 
 source $CWD/../../demo/env-aws/env-aws.sh
 
+S3_BUCKET=${S3_BUCKET:-haas-dev-data}
+
 START=${1:-0}
 END=${2:-1}
 

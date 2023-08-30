@@ -49,7 +49,18 @@ import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
 import io.syspulse.haas.intercept.flow.eth.InterceptorTokenTransfer
 
 class PipelineETLInterceptTokenTransfer(feed:String,output:String,override val interceptor:InterceptorTokenTransfer)(implicit config:Config) 
-  extends PipelineETLTokenTransfer[InterceptionAlarm](feed,output,config.throttle,config.delimiter,config.buffer,config.limit,config.size,config.filter) 
+  extends PipelineETLTokenTransfer[InterceptionAlarm](
+    io.syspulse.haas.ingest.eth.Config(
+      feed = config.feed,
+      output = config.output,
+      throttle = config.throttle,
+      delimiter = config.delimiter,
+      buffer = config.buffer,
+      limit = config.limit,
+      size = config.size,
+      filter = config.filter
+    )
+  ) 
   with PipelineEthIntercept[TokenTransfer] {
 
 }

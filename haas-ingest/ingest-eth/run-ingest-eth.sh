@@ -14,7 +14,7 @@ MAIN=io.syspulse.haas.ingest.eth.App
 DOCKER_DEF=${DOCKER_DEF:-}
 DOCKER_AWS=${DOCKER_AWS:-649502643044.dkr.ecr.eu-west-1.amazonaws.com}
 DOCKER_VER=${DOCKER_VER:-latest}
-S3_BUCKET=haas-data-dev
+S3_BUCKET=${S3_BUCKET:-haas-data-dev}
 
 BUCKET_DIR=${BUCKET_DIR:-/data}
 
