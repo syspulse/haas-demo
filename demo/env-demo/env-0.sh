@@ -24,3 +24,5 @@ export S3_BUCKET=haas-data-dev
 # =================================
 export KAFKA_BROKER=broker-1:9092
 export S3_MOUNT=/mnt/s4
+
+export ETH_RPC=http://geth:8545

@@ -67,7 +67,7 @@ services:
     networks:
       - demo
     command: "stream \
-              -p 'http://geth.demo.hacken.cloud:8545' \
+              -p ${ETH_RPC} \
               --output=kafka/broker-1:9092/ethereum.mainnet. \
               -l /s3/data/dev/ethereum/last_synced_block.txt \
               --period-seconds 12 \
