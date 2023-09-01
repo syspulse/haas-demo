@@ -2,26 +2,31 @@
 
 ## Setup
 
-0. Init
+0. Build 
+
+Project depends on skel-0.0.6
+
+
+1. Init
 
 ```
 ./setup-demo.sh
 ```
 
-1. Edit and Source environment
+2. Edit and Source environment
 
 ```
 source ./env-demo.sh
 ```
 
-2. Run
+3. Run
 
 ```
 docker-compose up -d
 docler-compose logs -f 
 ```
 
-3. Check API
+4. Check API
 
 ```
 curl -i http://localhost/api/v1/{service}/health
