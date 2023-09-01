@@ -44,4 +44,4 @@ curl -i http://localhost/api/v1/{service}/health
 
 Open in Browser and login
 
-[http://localhost]
+[http://localhost:3000]
