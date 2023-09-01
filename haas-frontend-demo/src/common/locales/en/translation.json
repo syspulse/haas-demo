@@ -1,0 +1,81 @@
+{
+  "general": {
+    "appSearchTokens": {
+      "placeholder": "Enter token name, ticker or contract address",
+      "validation": "Type at least 3 characters in order to see results",
+      "notFoundTitle": "No Results for",
+      "notFoundCaption": "We couldn't find anything matching your search. Try again with a different term.",
+      "somethingWentWrong": "Ups... something went wrong..."
+    },
+    "navigation": {
+      "collapse": "Collapse",
+      "circulating": "Circulation Supply",
+      "monitoring": "Transaction Monitoring",
+      "labels": "Labels",
+      "scripts": "Scripts",
+      "token": "Tokens",
+      "jupyter": "Jupyter",
+      "abi": "ABI",
+      "client": "API",
+      "job": "Job monitor",
+      "holders": "Holders"
+    },
+    "appProfile": {
+      "editProfile": "Edit profile",
+      "logOut": "Log out"
+    },
+    "utils": {
+      "copy": "Copy",
+      "copied": "Copied",
+      "failed": "Failed"
+    },
+    "messages": {
+      "error": "FETCH ERROR",
+      "warn": "Warning",
+      "somethingWentWrong": "Type Error: Failed to fetch",
+      "noWallet": "No crypto wallet found. Please install it.",
+      "noProvider": "SSO provider not connected!",
+      "noHistory": "No history for specified range, please change Start or End date"
+    }
+  },
+  "auth": {
+    "login": {
+      "header": {
+        "title": "Welcome to HaaS",
+        "caption": "Log in to get started"
+      },
+      "providers": {
+        "metamask": "Login with Metamask",
+        "google": "Login with Google",
+        "twitter": "Login with Twitter"
+      },
+      "loginWithEmail": {
+        "button": "Login with email"
+      },
+      "tos": "By logging in you accept our Privacy Policy and Terms of Use",
+      "loginDivider": "or"
+    },
+    "signUp": {
+      "title": "Finish your registration"
+    }
+  },
+  "circ": {
+    "discover": {
+      "table": {
+        "token": "Token",
+        "chain": "Chain",
+        "address": "Address",
+        "category": "Category",
+        "change": "Change",
+        "circulating": "Circulation Supply",
+        "holders": "Holders"
+      },
+      "errorLoading": "Error...",
+      "reloadButton": "Retry",
+      "discover": "Discover",
+      "tokens": "tokens"
+    },
+    "analysis": {}
+  },
+  "monitoring": {}
+}

@@ -1,0 +1,39 @@
+[data-theme="light"] {
+  --root-bg: var(--gray-100);
+  --root-text: var(--black-100);
+
+  --p-card-bg: var(--white);
+  --background-heder: var(--black-100);
+
+  --text-gray-500: var(--gray-500);
+  --text-gray-600: var(--gray-600);
+  --text-gray-800: var(--gray-800);
+  --text-gray-900: var(--gray-900);
+
+  --border-color-300: var(--gray-300);
+}
+
+[data-theme="dark"] {
+  --root-bg: var(--black-100);
+  --root-text: var(--gray-100);
+
+  --p-card-bg: var(--gray-900);
+  --background-heder: var(--gray-900);
+
+  --text-gray-500: var(--gray-200);
+  --text-gray-600: var(--gray-300);
+  --text-gray-800: var(--gray-200);
+  --text-gray-900: var(--gray-100);
+
+  --border-color-300: var(--gray-700);
+}
+
+.text {
+  @for $i from 1 through 9 {
+    &--gray-#{$i}00 {
+      color: var(--text-gray-#{$i}00);
+    }
+  }
+}
+
+

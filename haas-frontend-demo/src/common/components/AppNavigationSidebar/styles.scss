@@ -1,0 +1,77 @@
+.sidebarRoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: normal;
+  align-content: space-between;
+  background: var(--p-card-bg);
+  overflow: hidden;
+  transition: all 0.2s;
+  border-right: 2px solid var(--border-color-300);
+
+  ul {
+    display: block;
+    width: 240px;
+    li {
+      a {
+        display: flex;
+        align-items: center;
+        height: 48px;
+        width: 100%;
+        color: var(--text-secondary);
+        border-left: var(--4) solid transparent;
+        text-decoration: none;
+        position: relative;
+
+        &.active,
+        &:hover {
+          border-left-color: var(--accent-green);
+          background: var(--p-card-bg);
+          color: var(--root-text);
+        }
+
+        .icon {
+          display: flex;
+          align-items: center;
+          align-content: center;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          padding-right: var(--8);
+          width: 48px;
+          height: 90%;
+
+          i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-content: center;
+            flex-wrap: wrap;
+            width: var(--24);
+            height: var(--24);
+            font-size: var(--16);
+          }
+        }
+
+        .expand {
+          position: absolute;
+          right: 16px;
+        }
+      }
+
+      ul {
+        padding-left: 8px;
+        li {
+          a {
+            border-left: 0;
+
+            &.active,
+            &:hover {
+              background: var(--p-card-bg);
+              color: var(--accent-green);
+            }
+          }
+        }
+      }
+    }
+  }
+}

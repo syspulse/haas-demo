@@ -1,0 +1,92 @@
+{
+  "name": "haas-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@codemirror/lang-java": "^6.0.1",
+    "@codemirror/lang-javascript": "^6.1.1",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-markdown": "^6.1.0",
+    "@craco/craco": "^6.4.5",
+    "@reduxjs/toolkit": "^1.8.6",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@trivago/prettier-plugin-sort-imports": "^3.4.0",
+    "@types/d3-force": "^3.0.4",
+    "@types/jest": "^29.2.0",
+    "@types/node": "^18.11.7",
+    "@types/react": "^18.0.24",
+    "@types/react-dom": "^18.0.8",
+    "@uiw/codemirror-extensions-color": "^4.19.7",
+    "@uiw/react-codemirror": "^4.15.1",
+    "@uiw/react-markdown-preview": "^4.1.10",
+    "axios": "^1.2.0",
+    "btoa": "^1.2.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "chartjs-plugin-zoom": "^2.0.0",
+    "d3-force-cluster": "^0.1.2",
+    "ethers": "^5.7.2",
+    "gapi-script": "^1.2.0",
+    "i18next": "^22.0.4",
+    "jwt-decode": "^3.1.2",
+    "localforage": "^1.10.0",
+    "lottie-react": "^2.3.1",
+    "match-sorter": "^6.3.1",
+    "moment": "^2.29.4",
+    "prettier": "^2.7.1",
+    "primeflex": "^3.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.39.7",
+    "react-i18next": "^12.0.0",
+    "react-input-range": "^1.3.0",
+    "react-redux": "^8.0.4",
+    "react-router-dom": "^6.4.2",
+    "react-scripts": "5.0.1",
+    "redux-persist": "^6.0.0",
+    "simply-beautiful": "^0.2.14",
+    "sort-by": "^1.2.0",
+    "typescript": "^4.8.4",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "setup":"yarn && touch src/common/config/deploys.json && yarn build-version",
+    "start": "HTTPS=true && craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject",
+    "build-version": "node deploy-version.js",
+    "deploy": "yarn build-version && yarn build && yarn sync:s3 && yarn cf:invalidate",
+    "sync:s3": "aws s3 sync ./build s3://haas-frontend-deploy",
+    "cf:invalidate": "AWS_MAX_ATTEMPTS=10 aws cloudfront create-invalidation --distribution-id=E37ST5PY0LLXBW --paths='/*'"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.0",
+    "autoprefixer": "^10.4.12",
+    "chart.js": "^3.9.1",
+    "d3": "^7.7.0",
+    "postcss": "^8.4.18",
+    "primeicons": "^6.0.1",
+    "primereact": "^8.7.0",
+    "sass": "^1.55.0"
+  }
+}

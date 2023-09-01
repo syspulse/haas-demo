@@ -1,0 +1,98 @@
+.labelsRoot {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  .tagList {
+    display: flex;
+    gap: 4px;
+    position: relative;
+    max-width: 300px;
+    flex-flow: row wrap;
+    max-height: 100px;
+    overflow: auto;
+    margin: 8px;
+  }
+
+  .p-column-title {
+    text-transform: capitalize;
+  }
+
+  .p-inputtext {
+    width: 100%;
+  }
+
+  .labelsSearch {
+    padding: 16px 0;
+    max-width: 500px;
+  }
+
+  .labelAddress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    svg {
+      transform: translateY(2px);
+    }
+
+    .address {
+      width: 190px;
+      display: flex;
+    }
+  }
+
+  .col-id {
+    width: 20%;
+  }
+
+  button.p-row-editor-init.p-link {
+    display: none;
+  }
+
+  tbody.p-datatable-tbody tr:hover {
+    button.p-row-editor-init.p-link {
+      display: flex;
+    }
+  }
+  .labelsHeader {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .labelsHeaderOptions {
+    display: flex;
+    gap: 8px;
+  }
+
+  tr td .p-chips {
+    margin: 4px;
+  }
+}
+
+.deleteLabelsModal {
+  padding: 0 0 8px 0;
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 24px;
+  }
+
+  ul {
+    padding: 16px;
+    list-style-type: decimal;
+
+    li {
+      padding: 4px;
+    }
+  }
+}
+
+.category-col {
+  display: flex;
+  justify-content: flex-start;
+}

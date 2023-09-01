@@ -1,0 +1,80 @@
+{
+  "general": {
+    "appSearchTokens": {
+      "placeholder": "Введіть назву токена, тікер чи адресу контракту",
+      "validation": "Мінімальна довжина запиту 3 символи",
+      "notFoundTitle": "Немає результатів для",
+      "notFoundCaption": "Не можу знайти нічого, що задовольняє Ваш пошук. Спробуйте змінити запит.",
+      "somethingWentWrong": "От халепа... Щось пішло не так..."
+    },
+    "navigation": {
+      "collapse": "Згорнути",
+      "circulating": "Тиражне постачання",
+      "monitoring": "Монітор транзакцій",
+      "labels": "Лейбли",
+      "scripts": "Скріпти",
+      "token": "Токени",
+      "jupyter": "Jupyter",
+      "abi": "ABI",
+      "client": "API",
+      "job": "Job monitor",
+      "holders": "Холдери"
+    },
+    "appProfile": {
+      "editProfile": "Редагувати профіль",
+      "logOut": "Вийти"
+    },
+    "utils": {
+      "copy": "Копіювати",
+      "copied": "Зкопійовано",
+      "failed": "Невдача"
+    },
+    "messages": {
+      "error": "Помилка",
+      "warn": "Застереження",
+      "somethingWentWrong": "От халепа... Щось пішло не так...",
+      "noWallet": "Криптогаманця не знайдено, будь-ласка встановіть його",
+      "noProvider": "SSO provider not connected!"
+    }
+  },
+  "auth": {
+    "login": {
+      "header": {
+        "title": "Вітаю в HaaS",
+        "caption": "Ввійдіть для початку роботи"
+      },
+      "providers": {
+        "metamask": "Вхід з Metamask",
+        "google": "Вхід з Google",
+        "twitter": "Вхід з Twitter"
+      },
+      "loginWithEmail": {
+        "button": "Вхід по email"
+      },
+      "tos": "При вході Ви погоджуєтесь з усіми правилами використання платформи",
+      "loginDivider": "or"
+    },
+    "signUp": {
+      "title": "Закінчіть Вашу реєстрацію"
+    }
+  },
+  "circ": {
+    "discover": {
+      "table": {
+        "token": "Токен",
+        "chain": "Ланцюг",
+        "address": "Адреса",
+        "category": "Категорія",
+        "change": "Зміна",
+        "circulating": "Тиражне постачання",
+        "holders": "Тримачі"
+      },
+      "errorLoading": "Помилка...",
+      "reloadButton": "Ще разок",
+      "discover": "Вивчити",
+      "tokens": "токенів"
+    },
+    "analysis": {}
+  },
+  "monitoring": {}
+}

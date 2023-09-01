@@ -1,0 +1,159 @@
+.searchRoot {
+  position: relative;
+  flex: 1;
+
+  input {
+    width: 100%;
+    background: var(--background-dark-grey);
+    border-radius: var(--8);
+    border: transparent;
+    color: var(--white);
+    padding: 0 40px !important;
+    height: 40px;
+
+    &::placeholder {
+      color: var(--gray-500);
+    }
+  }
+
+  i {
+    color: var(--gray-500);
+  }
+
+  .searchForm {
+    position: relative;
+
+    .searchReset {
+      user-select: none;
+      cursor: pointer;
+      position: absolute;
+      right: var(--16);
+      top: 50%;
+
+      &:hover {
+        color: var(--white);
+      }
+    }
+
+    .piSearch {
+      left: var(--16);
+      transform: translateY(2px);
+    }
+  }
+}
+
+.searchEmptyState {
+  height: 152px;
+  width: 100%;
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 100%;
+    overflow: hidden;
+    background: var(--gray-200);
+
+    i {
+      color: var(--gray-700);
+      font-size: 24px;
+    }
+  }
+
+  .caption {
+    flex-basis: 100%;
+    text-align: center;
+    padding-top: 8px;
+
+    p {
+      max-width: 320px;
+      margin: auto;
+      padding-top: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+.searchValidation {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  color: var(--gray-700);
+}
+
+.searchResultsContainer {
+  margin: calc(var(--24) * -1);
+  overflow-x: hidden;
+
+  &--virtual {
+    height: 200px;
+  }
+}
+
+.searchResultsItem {
+  height: 70px;
+  padding: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--gray-100);
+  }
+
+  &.active {
+    background-color: var(--gray-200);
+  }
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    float: left;
+    margin-right: 12px;
+    border-radius: 25%;
+
+    img {
+      width: 80%;
+    }
+  }
+
+  p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+    white-space: nowrap;
+  }
+}
+
+.searchLoading {
+  height: 200px;
+  margin: calc(var(--24) * -1);
+}
+
+.searchResultsItem,
+.searchValidation,
+.searchEmptyState {
+  user-select: none;
+}
+
+.searchEmptyState,
+.searchEmptyState .icon,
+.searchResultsItem .icon,
+.searchRoot,
+.searchLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.searchOverlayPanel,
+.searchRoot {
+  max-width: 496px;
+  width: calc(100% - 48px);
+}
+
+.searchOverlayPanel {
+  min-height: 70px;
+}

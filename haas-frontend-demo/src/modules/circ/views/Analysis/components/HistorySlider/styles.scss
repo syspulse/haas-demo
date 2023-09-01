@@ -1,0 +1,223 @@
+.historySliderWrapper {
+  display: flex;
+  align-items: center;
+
+  i.pi {
+    cursor: pointer;
+  }
+
+  .historySlider {
+    width: 100%;
+    padding: 0 16px;
+    position: relative;
+    height: 50px;
+
+    * {
+      transition: all 0s;
+    }
+
+    .yearsRuler {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      width: calc(100% - 32px);
+      left: 16px;
+      bottom: 20px;
+      transform: translateY(2px);
+      padding: 0;
+      color: var(--gray-500);
+
+      div {
+        position: relative;
+        display: flex;
+        justify-content: center;
+
+        &:first-child {
+          justify-content: flex-start;
+        }
+
+        &:last-child {
+          justify-content: flex-end;
+        }
+
+        &:after {
+          content: "";
+          display: block;
+          height: 10px;
+          background: var(--gray-400);
+          width: 1px;
+          position: absolute;
+          top: 100%;
+        }
+
+        &:before {
+          content: "";
+          display: block;
+          height: 10px;
+          background: var(--gray-400);
+          width: 1px;
+          position: absolute;
+          top: -6px;
+        }
+      }
+    }
+
+    .selectRangeSlider {
+      width: 100%;
+
+      .input-range {
+        height: 60px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .input-range__track {
+        height: 50px;
+      }
+
+      .input-range__label-container {
+        display: none;
+      }
+
+      .input-range__slider {
+        background: var(--gray-800);
+        border: 0;
+        top: -20px;
+        height: 30px;
+        width: 8px;
+        bottom: 0;
+        margin: 0;
+        border-radius: 0;
+        left: 0;
+        transform: translateY(-20px);
+        opacity: 0.5;
+        border-radius: 2px;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      .input-range__slider-container {
+        &:first-of-type {
+          .input-range__slider {
+            left: -8px;
+          }
+        }
+      }
+
+      .input-range__track--active {
+        background: var(--primary-500);
+        opacity: 0.5;
+      }
+
+      .input-range__track--background {
+        top: 0;
+        background: transparent;
+        border: 1px solid var(--gray-200);
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+        margin: 0;
+        transform: scaleY(0.9) translateY(-1px);
+      }
+    }
+
+    .historyLabel {
+      position: absolute;
+      transform: translate(0, -31px);
+      &--start {
+        transform: translate(-80%, -31px);
+      }
+    }
+
+    .selectedDateSlider {
+      position: absolute;
+      width: calc(100% - 32px);
+      bottom: -8px;
+      left: 16px;
+      z-index: 2;
+
+      &:hover {
+        .input-range__track {
+          background: var(--gray-500);
+        }
+      }
+
+      .input-range__track {
+        background: var(--gray-300);
+      }
+
+      .input-range__slider {
+        width: 10px;
+        height: 10px;
+        border-radius: 0;
+        transform: rotate(45deg);
+        border: 0px;
+        background-color: var(--gray-800);
+        top: 4px;
+        position: relative;
+        opacity: 0.7;
+
+        &:after {
+          content: "";
+          display: block;
+          position: absolute;
+          background: var(--p-card-bg);
+          width: 10px;
+          height: 18px;
+          transform: rotate(45deg);
+          left: 3px;
+        }
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      .input-range__label-container {
+        display: none;
+      }
+    }
+  }
+
+  .input-range__label--min,
+  .input-range__label--max {
+    display: none;
+  }
+
+  .historySliderNav {
+    width: 18px;
+  }
+}
+
+.historyHeader {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--gray-900);
+  font-weight: 600;
+  padding-bottom: 20px;
+
+  .p-dropdown {
+    border: 1px solid var(--text-gray-800);
+
+    .p-dropdown-label {
+      color: var(--text-gray-800);
+      font-size: 14px;
+      padding: 6px 0 6px 6px;
+    }
+
+    .p-dropdown-trigger-icon {
+      font-size: 10px;
+    }
+
+    .p-dropdown-trigger {
+      width: 25px;
+      color: var(--text-gray-800);
+    }
+  }
+}

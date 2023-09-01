@@ -1,0 +1,357 @@
+.rootAnalysis {
+  width: 100%;
+  position: relative;
+
+  .header {
+    padding: var(--24) 0;
+
+    .headerContainer {
+      display: flex;
+      align-items: center;
+      align-content: center;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: var(--24);
+    }
+
+    .icon {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-300);
+      border-radius: 100%;
+      overflow: hidden;
+
+      img {
+        max-width: 100%;
+      }
+    }
+
+    .taggedCategories {
+      padding: 16px 16px 0;
+
+      .list {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 4px;
+      }
+    }
+  }
+
+  .holdersStatistic {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    gap: 40px;
+
+    .ratio {
+      flex: 1;
+    }
+  }
+}
+
+.grid {
+  .p-card {
+    box-shadow: 0 0 10px var(--root-bg);
+    border: 2px solid var(--root-bg);
+  }
+}
+
+.historyWidget {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 6px;
+
+  .p-calendar .p-inputtext,
+  .p-dropdown {
+    border: 0;
+    cursor: pointer;
+  }
+
+  .noHistory {
+    display: block;
+    width: 120px;
+    height: 50px;
+    padding: 5px;
+    color: var(--orange-600);
+  }
+}
+
+.grid .p-card {
+  &.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 0 10px rgb(0 0 0 / 30%);
+    border: 2px solid transparent;
+  }
+}
+
+.historySliderLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding-bottom: 10px;
+
+  .p-calendar .p-inputtext {
+    border: 0;
+    padding: 0;
+    width: 80px;
+    cursor: pointer;
+  }
+  .p-dropdown-trigger {
+    display: none;
+  }
+  .p-dropdown .p-dropdown-label {
+    color: var(--primary-600);
+    padding: 0 0 1px 0;
+    border-bottom: 1px solid var(--primary-500);
+    border-radius: 0;
+  }
+}
+
+.runJobRequest {
+  .historyHeader {
+    justify-content: left;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-600);
+    flex-basis: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    flex-basis: 100%;
+    align-items: flex-start;
+  }
+
+  .slider {
+    position: relative;
+    padding-bottom: 16px;
+  }
+
+  .tagAddresses {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .tagAddress {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .p-inputtext {
+      max-width: 424px;
+    }
+
+    .p-chips {
+      flex: 1;
+    }
+  }
+
+  .addAddress {
+    cursor: pointer;
+    &:hover {
+      color: var(--primary-600);
+    }
+
+    &.disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+.jobInProgressTable {
+  width: 100%;
+
+  thead {
+    text-align: left;
+  }
+
+  .highlight {
+    background: var(--gray-100);
+    font-weight: 500;
+  }
+
+  td,
+  th {
+    padding: 6px;
+  }
+
+  tr {
+    border-bottom: 1px solid var(--gray-100);
+
+    td:fist-child() {
+      max-width: 100px;
+    }
+  }
+
+  .flex {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .lvl2 {
+    padding-left: 24px;
+  }
+}
+
+.newJobBtn {
+  align-self: self-start;
+  cursor: pointer;
+  transform: translateY(10px);
+  background: transparent !important;
+  border: 1px solid var(--gray-600);
+}
+
+.csHoldersTable {
+  .tagsList {
+    display: flex;
+    gap: 4px;
+    min-height: 24px;
+    overflow-y: auto;
+    max-height: 100px;
+    position: relative;
+
+    .tagsControls {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: none;
+      gap: 4px;
+      align-items: center;
+      background: var(--p-card-bg);
+      opacity: 0.8;
+      padding: 0 4px;
+      .delete {
+        cursor: pointer;
+        &:hover {
+          color: var(--red-500);
+        }
+      }
+
+      .edit {
+        cursor: pointer;
+        &:hover {
+          color: var(--primary-500);
+        }
+      }
+    }
+
+    &:hover {
+      .tagsControls {
+        display: flex;
+      }
+    }
+  }
+}
+
+.analysisCategories,
+.analysisNetworks {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+
+  .doughnut {
+    max-width: 300px;
+    flex: 1;
+  }
+
+  .legend {
+    max-width: 600px;
+    display: flex;
+    flex-flow: row wrap;
+    gap: 16px;
+    align-items: flex-start;
+    align-content: flex-start;
+
+    .legendItem {
+      min-width: 150px;
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 22px;
+        color: var(--text-gray-800);
+
+        .marker {
+          width: 10px;
+          height: 10px;
+          border-radius: 100%;
+        }
+      }
+
+      .percentage {
+        display: flex;
+        gap: 8px;
+        color: var(--root-text);
+        font-weight: 600;
+        font-size: 20px;
+        margin: 4px 0;
+      }
+
+      .amount {
+        color: vat(--text-gray-500);
+        font-weight: 500;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.analysisNetworks {
+  flex-direction: row-reverse;
+
+  .legend {
+    justify-content: flex-end;
+    .legendItem {
+      .title,
+      .percentage,
+      .amount {
+        flex-direction: row-reverse;
+      }
+
+      .amount {
+        text-align: right;
+      }
+
+      .title .marker {
+        width: 24px;
+        height: 24px;
+
+        img {
+          max-width: 100%;
+          max-height: 100%;
+        }
+      }
+    }
+  }
+}
+
+.noCirc {
+  width: 100%;
+  text-align: center;
+
+  .title {
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+
+  .description {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+}

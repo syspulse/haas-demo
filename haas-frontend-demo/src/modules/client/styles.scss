@@ -1,0 +1,49 @@
+.clientRoot {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  .clientsList {
+    display: flex;
+    gap: 16px;
+    position: relative;
+
+    .p-card {
+      min-height: 100px;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .addClientButton {
+      position: absolute;
+      margin: auto;
+      right: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      max-height: 40px;
+      max-width: 50%;
+      text-align: center;
+      justify-content: center;
+    }
+  }
+
+  .clientItemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .nav {
+      display: flex;
+      gap: 4px;
+
+      i {
+        cursor: pointer;
+
+        &:hover {
+          color: var(--red-600);
+        }
+      }
+    }
+  }
+}

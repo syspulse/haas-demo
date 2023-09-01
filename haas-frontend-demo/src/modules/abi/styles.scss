@@ -1,0 +1,63 @@
+.abiRoot {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  .p-tabview .p-tabview-panels,
+  .p-tabview .p-tabview-nav,
+  .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    background: transparent;
+  }
+
+  .discoverTable .p-datatable-tbody tr td {
+    user-select: auto !important;
+  }
+
+  .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    box-shadow: 0 0 8px rgb(0 0 0 / 10%);
+  }
+
+  .p-tabview .p-tabview-panels {
+    padding: 24px 0;
+  }
+
+  .p-datatable-wrapper {
+    max-height: calc(100vh - 224px);
+  }
+
+  .p-datatable {
+    tr {
+      border-bottom: 1px solid var(--gray-300);
+    }
+  }
+
+  .searchInput {
+    margin-bottom: 24px;
+  }
+
+  .addressCol {
+    display: flex;
+    align-items: center;
+    cursor: text !important;
+    gap: 4px;
+
+    svg {
+      transform: translateY(2px);
+      cursor: pointer !important;
+    }
+  }
+
+  .previewAbi {
+    cursor: pointer !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--light-blue-500);
+
+    &:hover {
+      color: var(--primary-500);
+    }
+  }
+}

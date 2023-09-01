@@ -1,0 +1,88 @@
+.tokenContactForm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+
+  .p-dropdown,
+  .p-inputtext {
+    width: 50% !important;
+    flex: 1;
+  }
+}
+
+.multiselectCategory {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+
+  .p-multiselect,
+  .p-dropdown {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    align-items: center;
+    display: flex;
+    flex: 1;
+  }
+}
+
+.customCategoryForm {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--gray-200);
+
+  .p-inputtext,
+  .input {
+    width: 100%;
+  }
+
+  .p-button {
+    padding: 0 8px;
+    min-width: 60px;
+    flex: 1;
+  }
+}
+
+.monitorEditFormWrapper {
+  .pi {
+    color: var(--light-blue-500);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--light-blue-300);
+    }
+
+    &.pi-trash,
+    &.pi-chevron-down {
+      color: var(--gray-500);
+    }
+  }
+
+  .save {
+    &.disabled {
+      opacity: 0.5;
+      color: var(--gray-500);
+
+      &:hover {
+        color: var(--gray-500);
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+.contactsGroup {
+  width: 100%;
+
+  .chainLocks {
+    justify-content: flex-start;
+
+    table {
+      width: calc(100% - 37px);
+      font-size: 12px;
+      margin: 4px 0 8px 0;
+    }
+  }
+}

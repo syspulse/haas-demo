@@ -1,0 +1,143 @@
+.discoverTable .tokenIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.discoverTable {
+  .p-datatable-tbody tr {
+    &:hover {
+      background: var(--root-bg);
+    }
+
+    td {
+      height: 48px;
+      vertical-align: middle;
+      user-select: none;
+      cursor: pointer;
+    }
+  }
+
+  .tokenIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+    float: left;
+    margin-right: 8px;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  .tableCellChains {
+    max-width: 250px;
+    overflow: hidden;
+    display: flex;
+    gap: 4px;
+    flex-flow: row wrap;
+    padding: 12px 0;
+
+    img {
+      width: 16px;
+    }
+
+    .more {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 3px;
+      padding: 0 2px;
+      background-color: var(--p-card-bg);
+      border: 1px solid var(--text-gray-500);
+      color: var(--text-gray-500);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--light-blue-500);
+      }
+    }
+  }
+}
+
+.tableCellFlex {
+  display: flex;
+  align-items: center;
+  max-width: 200px;
+  gap: 4px;
+}
+
+.discoverTableFilers {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 24px;
+  padding-top: 16px;
+
+  .discoverTableFilerItem {
+    min-width: 250px;
+
+    &.hideCirc {
+      display: none;
+    }
+
+    label {
+      display: block;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .p-dropdown,
+    .p-input-icon-right {
+      width: 100%;
+      height: 40px;
+
+      .pi {
+        cursor: pointer;
+      }
+    }
+  }
+  .addToken,
+  .crudTokenCell {
+    display: none;
+  }
+}
+
+.discoverTableRoot {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+@media screen and (max-width: 1024px) {
+  .discoverTable {
+    .p-datatable-tbody tr {
+      border-bottom: 1px solid var(--gray-300);
+      td {
+        height: 48px;
+        vertical-align: middle;
+        user-select: none;
+        cursor: pointer;
+
+        .p-progressbar {
+          width: 100%;
+        }
+      }
+    }
+
+    .p-datatable-tbody > tr > td > .p-column-title {
+      width: 50%;
+      text-align: left;
+      padding-right: 12px;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td.p-align-right {
+      display: block;
+    }
+  }
+
+  .discoverTableFilers {
+    flex-flow: row wrap;
+  }
+}

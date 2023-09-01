@@ -1,0 +1,12 @@
+.appTablePagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  justify-content: space-between;
+  padding-top: var(--16);
+
+  .p-paginator {
+    padding-top: 0;
+  }
+}

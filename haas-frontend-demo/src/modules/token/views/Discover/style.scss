@@ -1,0 +1,131 @@
+.tokenRoot {
+  .addToken {
+    position: absolute;
+    right: 0;
+    bottom: 24px;
+    display: block;
+  }
+
+  .hideCirc {
+    display: block !important;
+  }
+
+  .p-datatable-table .crudTokenCell {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    min-width: 50px;
+  }
+
+  .p-datatable-table .crudTokenCell .pi {
+    display: none;
+  }
+
+  .p-datatable-table tr:hover .crudTokenCell .pi {
+    display: block;
+  }
+}
+.discoverTable .tokenIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.discoverTable {
+  .p-datatable-tbody tr {
+    &:hover {
+      background: var(--root-bg);
+    }
+
+    td {
+      height: 48px;
+      vertical-align: middle;
+      user-select: none;
+      cursor: pointer;
+    }
+  }
+
+  .tokenIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+    float: left;
+    margin-right: 8px;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}
+
+.tableCellFlex {
+  display: flex;
+  align-items: center;
+  max-width: 200px;
+  gap: 4px;
+}
+
+.discoverTableFilers {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 24px;
+  padding-top: 16px;
+  width: 100%;
+  position: relative;
+
+  .discoverTableFilerItem {
+    min-width: 250px;
+    label {
+      display: block;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .p-dropdown,
+    .p-inputtext {
+      width: 100%;
+      height: 40px;
+      border-radius: 8px;
+    }
+  }
+}
+
+.discoverTableRoot {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+@media screen and (max-width: 1024px) {
+  .discoverTable {
+    .p-datatable-tbody tr {
+      border-bottom: 1px solid var(--gray-300);
+      td {
+        height: 48px;
+        vertical-align: middle;
+        user-select: none;
+        cursor: pointer;
+
+        .p-progressbar {
+          width: 100%;
+        }
+      }
+    }
+
+    .p-datatable-tbody > tr > td > .p-column-title {
+      width: 50%;
+      text-align: left;
+      padding-right: 12px;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td.p-align-right {
+      display: block;
+    }
+  }
+
+  .discoverTableFilers {
+    flex-flow: row wrap;
+  }
+}

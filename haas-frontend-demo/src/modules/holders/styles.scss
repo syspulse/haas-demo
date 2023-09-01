@@ -1,0 +1,53 @@
+.header {
+  padding: var(--24) 0;
+
+  .headerContainer {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--24);
+  }
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-300);
+    border-radius: 100%;
+    overflow: hidden;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  .contactInfo {
+    padding-left: 90px;
+  }
+
+  .taggedCategories {
+    padding: 16px 16px 0;
+
+    .list {
+      display: flex;
+      flex-flow: row wrap;
+      gap: 4px;
+    }
+  }
+}
+
+.selectHoldersRange {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.holdersSelection {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}

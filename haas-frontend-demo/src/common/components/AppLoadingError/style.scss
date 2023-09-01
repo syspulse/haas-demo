@@ -1,0 +1,23 @@
+.loadingError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  height: 100%;
+  position: absolute;
+  flex-flow: row wrap;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 100%;
+  opacity: 0.9;
+  background: var(--p-card-bg);
+  color: var(--root-text);
+  border-radius: 8px;
+
+  p {
+    flex-basis: 100%;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+}

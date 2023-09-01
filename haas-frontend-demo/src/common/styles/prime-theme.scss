@@ -1,0 +1,235 @@
+.p-input-icon-left {
+  width: 100%;
+}
+
+.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
+  word-break: break-all;
+}
+
+.p-datatable-scrollable .p-datatable-wrapper {
+  border-radius: 5px;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--p-card-bg);
+  height: 42px;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  border-bottom: 0;
+}
+
+.p-overlaypanel .p-overlaypanel-content {
+  padding: var(--24);
+}
+
+.p-overlaypanel {
+  overflow: hidden;
+}
+.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td,
+.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 10px;
+}
+
+.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@keyframes p-progress-spinner-color {
+  100%,
+  0% {
+    stroke: var(--primary-900);
+  }
+  50% {
+    stroke: var(--primary-600);
+  }
+  66% {
+    stroke: var(--primary-400);
+  }
+  80%,
+  90% {
+    stroke: var(--primary-100);
+  }
+}
+
+.p-progress-spinner {
+  width: 50px;
+  height: 50px;
+  margin: auto;
+
+  svg circle {
+    stroke-width: var(--4);
+  }
+}
+
+.p-overlaypanel:after,
+.p-overlaypanel:before {
+  display: none;
+}
+
+.p-button-primary {
+  background-color: var(--accent-green);
+  border-color: var(--accent-green);
+  color: var(--white);
+  &:hover {
+    color: var(--white);
+    background-color: var(--accent-green-hover) !important;
+    border-color: var(--accent-green-hover) !important;
+  }
+}
+
+.p-button.p-button-secondary.p-button-outlined,
+.p-buttonset.p-button-secondary > .p-button.p-button-outlined,
+.p-splitbutton.p-button-secondary > .p-button.p-button-outlined,
+.p-fileupload-choose.p-button-secondary.p-button-outlined {
+  color: var(--gray-1100);
+}
+
+.p-button.p-button-secondary:enabled:focus,
+.p-button.p-button-secondary:not(button):not(a):not(.p-disabled):focus,
+.p-buttonset.p-button-secondary > .p-button:enabled:focus,
+.p-buttonset.p-button-secondary > .p-button:not(button):not(a):not(.p-disabled):focus,
+.p-splitbutton.p-button-secondary > .p-button:enabled:focus,
+.p-splitbutton.p-button-secondary > .p-button:not(button):not(a):not(.p-disabled):focus,
+.p-fileupload-choose.p-button-secondary:enabled:focus,
+.p-fileupload-choose.p-button-secondary:not(button):not(a):not(.p-disabled):focus,
+.p-inputtext:enabled:focus,
+.p-link:focus {
+  outline: 0 none;
+  outline-offset: 0;
+  box-shadow: none;
+}
+
+table td {
+  .p-tag {
+    min-width: 80px;
+  }
+}
+
+.p-tag {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: var(--4);
+}
+
+.p-progressbar {
+  background: #dadde3;
+
+  .p-progressbar-value {
+    background: #11a683;
+  }
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background-color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.mx-2 {
+  margin: 2px !important;
+}
+
+.p-button.p-overlay-badge {
+  overflow: visible;
+}
+
+.p-badge.p-badge-success {
+  background: var(--accent-green);
+}
+
+.p-tag {
+  .customIcon {
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    height: 20px;
+    width: 20px;
+    float: left;
+    margin-right: var(--4);
+    position: relative;
+
+    img {
+      width: 100%;
+      max-width: 100%;
+      margin: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+}
+
+.p-menu {
+  transform: translateY(var(--8));
+}
+
+.p-tag-icon,
+.p-tag-value,
+.p-tag-icon.pi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-tag-value {
+  white-space: nowrap;
+}
+
+.dropDownItemTemplate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  img,
+  svg {
+    max-width: 16px;
+    max-height: 16px;
+  }
+}
+
+.p-chips .p-chips-multiple-container {
+  padding: 2px;
+}
+.p-chips {
+  width: 100%;
+  font-size: 12px;
+
+  ul.p-inputtext.p-chips-multiple-container {
+    height: auto !important;
+    width: 100% !important;
+    overflow: auto;
+    max-height: 100px;
+  }
+}
+
+.p-chips .p-chips-multiple-container .p-chips-token {
+  padding: 2px 4px;
+  font-size: 12px;
+  margin: 2px;
+}
+
+.p-datatable-table {
+  .p-chips {
+    max-width: 300px;
+  }
+}
+
+.inputGroup {
+  .p-chips {
+    min-height: 40px;
+  }
+}
+
+.p-sidebar-right .p-sidebar {
+  width: 460px;
+  height: calc(100vh - 60px);
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+}
+
+.p-sidebar-mask {
+  align-items: flex-end;
+}

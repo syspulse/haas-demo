@@ -1,0 +1,77 @@
+.scriptsRoot {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  .scriptsList {
+    display: flex;
+    gap: 8px;
+    flex-flow: row wrap;
+    height: calc(100% - 50px);
+    overflow-y: auto;
+    padding-right: 24px;
+
+    .p-card {
+      min-width: 100%;
+      flex: 1;
+      position: relative;
+    }
+
+    .keyTitle {
+      color: var(--gray-500);
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      svg {
+        max-height: 24px;
+        max-width: 24px;
+      }
+    }
+
+    .valueTitle {
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .codeInput {
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .markdownPreview {
+      padding: 8px;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      background: var(--white);
+      max-height: 60vh;
+      overflow: auto;
+    }
+
+    .code {
+      position: relative;
+    }
+
+    .controls {
+      justify-content: flex-end;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      position: absolute;
+      right: 16px;
+
+      i {
+        cursor: pointer;
+
+        &:hover {
+          color: var(--light-blue-600)
+        }
+      }
+    }
+  }
+}
