@@ -1,12 +1,5 @@
 # Export
 
-RPC Providers:
-
-- [https://github.com/arddluma/awesome-list-rpc-nodes-providers]
-- [https://ethereumnodes.com/]
-- [https://chainlist.org/]
-- [https://rpc.info/]
-
 # Ethereum 
 
 ## Blocks
