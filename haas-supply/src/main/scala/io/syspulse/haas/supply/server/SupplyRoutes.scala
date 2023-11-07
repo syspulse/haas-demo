@@ -92,7 +92,7 @@ class SupplyRoutes(registry: ActorRef[Command],config:Config)(implicit context: 
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getSupply( Supply(id), 
-          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue-1).get)) { r =>
           
           metricGetCount.inc()
           
@@ -117,7 +117,7 @@ class SupplyRoutes(registry: ActorRef[Command],config:Config)(implicit context: 
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getSupplyByToken( tid, 
-          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue-1).get)) { r =>
           
           metricGetCount.inc()
           

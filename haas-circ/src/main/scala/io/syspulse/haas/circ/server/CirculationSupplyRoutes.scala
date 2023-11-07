@@ -93,7 +93,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getCirculationSupply( CirculationSupply(id), 
-          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue-1).get)) { r =>
           
           metricGetCount.inc()
           
@@ -118,7 +118,7 @@ class CirculationSupplyRoutes(registry: ActorRef[Command],config:Config)(implici
     rejectEmptyResponse {
       parameters("ts0".as[String].optional, "ts1".as[String].optional) { (ts0, ts1) =>
         onSuccess(getCirculationSupplyByToken( tid, 
-          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue).get)) { r =>
+          TimeUtil.wordToTs(ts0.getOrElse(""),0L).get, TimeUtil.wordToTs(ts1.getOrElse(""),Long.MaxValue-1).get)) { r =>
           
           metricGetCount.inc()
           

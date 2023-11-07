@@ -32,7 +32,7 @@ trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.I
     case None => Failure(new Exception(s"not found: ${id}"))
   }
 
-  def last(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue).lastOption
+  def last(id:CirculationSupply.ID):Option[CirculationSupply] = this.?(id,0L,Long.MaxValue-1).lastOption
   
   def all:Seq[CirculationSupply]
   def size:Long
