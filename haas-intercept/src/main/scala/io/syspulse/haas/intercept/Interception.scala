@@ -26,7 +26,7 @@ case class Interception(
   scriptId:Script.ID, 
   alarm:List[String] = List(),
   uid:Option[UUID] = None, 
-  entity:String = "tx",
+  entity:String = "transaction",
   aid:Option[AbiStore.ID] = None,
   ts0:Long = System.currentTimeMillis(),
   bid:Option[Blockchain.ID] = Some(Blockchain.ETHEREUM_MAINNET),

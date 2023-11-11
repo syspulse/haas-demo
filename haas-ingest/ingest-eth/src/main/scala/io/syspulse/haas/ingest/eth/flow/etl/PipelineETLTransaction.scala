@@ -29,31 +29,31 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Block
-import io.syspulse.haas.core.EventTx
-import io.syspulse.haas.core.Tx
-import io.syspulse.haas.serde.TxJson
-import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.core.Transaction
+import io.syspulse.haas.serde.TransactionJson
+import io.syspulse.haas.serde.TransactionJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineETLTx[E <: skel.Ingestable](config:Config)
+abstract class PipelineETLTransaction[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthTx,Tx,E](config) with PipelineETL[E] {
+  PipelineEth[EthTransaction,Transaction,E](config) with PipelineETL[E] {
   
-  def apiSuffix():String = s"/tx"
+  def apiSuffix():String = s"/transaction"
 
-  def parse(data:String):Seq[EthTx] = {
-    val d = parseTx(data)
+  def parse(data:String):Seq[EthTransaction] = {
+    val d = parseTransaction(data)
     if(d.size!=0)
-      latestTs.set(d.last.block.timestamp * 1000L)
+      latestTs.set(d.last.block_timestamp * 1000L)
     d
   }
 
-  def convert(tx:EthTx):Tx = Tx(
+  def convert(tx:EthTransaction):Transaction = Transaction(
+    tx.block_timestamp * 1000L,
     tx.transaction_index,
     tx.hash,
+    tx.block_number,
     tx.from_address,
     tx.to_address,
     tx.gas,
@@ -65,49 +65,18 @@ abstract class PipelineETLTx[E <: skel.Ingestable](config:Config)
     tx.max_fee_per_gas,
     tx.max_priority_fee_per_gas, 
     tx.transaction_type, 
-    tx.cumulative_gas_used, 
-    tx.gas_used, 
-    tx.contract_address, 
-    tx.root, 
-    tx.status, 
-    tx.effective_gas_price,
-
-    block = Block(
-      tx.block.number,
-      tx.block.hash,
-      
-      tx.block.parent_hash,
-      tx.block.nonce,
-      tx.block.sha3_uncles,
-      tx.block.logs_bloom,
-      tx.block.transactions_root,
-      tx.block.state_root,
-      tx.block.receipts_root,
-      tx.block.miner,
-      tx.block.difficulty,
-      tx.block.total_difficulty,
-      tx.block.size,
-      tx.block.extra_data, 
-      tx.block.gas_limit, 
-      tx.block.gas_used, 
-      tx.block.timestamp * 1000L, 
-
-      tx.block.transaction_count,
-      tx.block.base_fee_per_gas,
-    ),
-    
-    logs = tx.logs.map(e => EventTx(
-      e.index,
-      e.address, 
-      e.data,
-      e.topics,
-    ))
+    tx.receipt_cumulative_gas_used, 
+    tx.receipt_gas_used, 
+    tx.receipt_contract_address, 
+    tx.receipt_root, 
+    tx.receipt_status, 
+    tx.receipt_effective_gas_price
   )
 
 }
 
-class PipelineTx(config:Config) 
-  extends PipelineETLTx[Tx](config) {
+class PipelineTransaction(config:Config) 
+  extends PipelineETLTransaction[Transaction](config) {
 
-  def transform(tx: Tx): Seq[Tx] = Seq(tx)
+  def transform(tx: Transaction): Seq[Transaction] = Seq(tx)
 }

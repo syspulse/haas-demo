@@ -1,1 +1,0 @@
-if(event_sig != '') "Contract: " + contract + ",sig: " + event_sig; else null

@@ -81,7 +81,7 @@ object InterceptionRegistry {
           }
         }
         entity <- {
-          Success(c.entity.getOrElse("tx"))            
+          Success(c.entity.getOrElse("transaction"))            
         }
         bid <- {
           Success(c.bid.getOrElse(Blockchain.ETHEREUM_MAINNET).toLowerCase)

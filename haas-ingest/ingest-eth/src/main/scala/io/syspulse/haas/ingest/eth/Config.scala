@@ -11,16 +11,18 @@ case class Config(
   output:String = "",
 
   feedBlock:String = "",
-  feedTx:String = "",
+  feedTransaction:String = "",
   feedTransfer:String = "",
   feedLog:String = "",
   feedMempool:String = "",
+  feedTx:String = "",
 
   outputBlock:String = "",
-  outputTx:String = "",
+  outputTransaction:String = "",
   outputTransfer:String = "",
   outputLog:String = "",
   outputMempool:String = "",
+  outputTx:String = "",
   
   abi:String = "abi/",
   source:String="",
@@ -38,7 +40,7 @@ case class Config(
 
   throttle:Long = 1000L,
   
-  entity:Seq[String] = Seq("tx"),
+  entity:Seq[String] = Seq("transaction"),
   
   expr:String = "",
   

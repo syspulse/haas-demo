@@ -29,7 +29,7 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.Transaction
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
@@ -38,17 +38,15 @@ import io.syspulse.haas.intercept.Config
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
-import io.syspulse.haas.intercept.flow.eth.InterceptorTx
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
 
+import io.syspulse.haas.intercept.flow.eth.InterceptorTransaction
 import io.syspulse.haas.ingest.eth.flow.etl.PipelineETLTransaction
 import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
-import io.syspulse.haas.intercept.flow.eth.InterceptorFunc
-import io.syspulse.haas.core.Transaction
 
-class PipelineETLInterceptFunc(feed:String,output:String,override val interceptor:InterceptorFunc)(implicit config:Config) 
+class PipelineETLInterceptTransaction(feed:String,output:String,override val interceptor:InterceptorTransaction)(implicit config:Config) 
   extends PipelineETLTransaction[InterceptionAlarm](
     io.syspulse.haas.ingest.eth.Config(
       feed = config.feed,

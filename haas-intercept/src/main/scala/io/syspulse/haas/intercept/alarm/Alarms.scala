@@ -48,15 +48,19 @@ class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Intercept
         queueById.foreach{ case(iid,iaa) => {
           
           val allTo = iaa.map(_.alarm).flatten.distinct.toList
-          val allNotify = Notification.parseUri(allTo)._1
 
-          val txt = iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
-          
-          val ix = interceptions.get(iid)
-          val msg = txt
-          val title = s"${ix.map(ix => ix.name).getOrElse("")}: ${ix.map(_.history.size)} (${iid})"
+          // don't send alarms for none://          
+          if(! (allTo.size == 1 && allTo.head == "none://")) {
+            val allNotify = Notification.parseUri(allTo)._1
 
-          Notification.broadcast(allNotify.receviers, title, msg, Some(NotifySeverity.INFO), Some("user.intercept"))
+            val txt = iaa.foldLeft("")((s,ia) => s + s"${ia.toJson}\n" )
+            
+            val ix = interceptions.get(iid)
+            val msg = txt
+            val title = s"${ix.map(ix => ix.name).getOrElse("")}: ${ix.map(_.history.size)} (${iid})"
+
+            Notification.broadcast(allNotify.receviers, title, msg, Some(NotifySeverity.INFO), Some("user.intercept"))
+          }
         }}
         // clear the queue
         queue = Queue()

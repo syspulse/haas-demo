@@ -24,10 +24,10 @@ import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
 import io.syspulse.haas.ingest.eth.EthURI
 
 import io.syspulse.haas.ingest.eth.EthEtlJson
-import io.syspulse.haas.ingest.eth.{EthBlock,EthTx,EthTokenTransfer,EthLog}
+import io.syspulse.haas.ingest.eth.{EthBlock,EthTransaction,EthTokenTransfer,EthLog,EthTx}
 import io.syspulse.haas.ingest.eth.flow.EthDecoder
 
-trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog] {
+trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTransaction,EthTokenTransfer,EthLog,EthTx] {
 
   protected val log = Logger(s"${this}")
 
@@ -96,13 +96,13 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
     }
   }
 
-  def parseTx(data:String):Seq[EthTx] = {
+  def parseTransaction(data:String):Seq[EthTransaction] = {
     if(data.isEmpty()) return Seq()
 
     try {
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
-        val tx = data.parseJson.convertTo[EthTx]
+        val tx = data.parseJson.convertTo[EthTransaction]
         
         val ts = tx.block_timestamp
         //latestTs.set(ts * 1000L)
@@ -142,7 +142,7 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
                  val ts = block_timestamp.toLong
                  //latestTs.set(ts * 1000L)
 
-                 Seq(EthTx(
+                 Seq(EthTransaction(
                     ts,
                     transaction_index.toInt,
                     hash,
@@ -176,7 +176,7 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
                  val ts = block_timestamp.toLong
                  //latestTs.set(ts * 1000L)
 
-                 Seq(EthTx(
+                 Seq(EthTransaction(
                     ts,
                     transaction_index.toInt,
                     hash,
@@ -214,6 +214,32 @@ trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTx,EthTokenTransfer,EthLog]
         Seq()
     }
   }
+
+  def parseTx(data:String):Seq[EthTx] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val tx = data.parseJson.convertTo[EthTx]
+        
+        val ts = tx.block.timestamp
+        //latestTs.set(ts * 1000L)
+        
+        Seq(tx)
+      } else {
+        // CSV is not supported !
+        log.error(s"CSV is not supported for Tx: '${data}'")
+        Seq()
+      }
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
+  }
+
+  
   
   def parseTokenTransfer(data:String):Seq[EthTokenTransfer] = {
     if(data.isEmpty()) return Seq()

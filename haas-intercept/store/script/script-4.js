@@ -1,1 +1,0 @@
-if(input != "0x") " Contract: " + to_address + ": input=" + input +": "; else null

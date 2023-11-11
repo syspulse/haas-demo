@@ -16,7 +16,6 @@ import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth.flow._
-import io.syspulse.haas.ingest.eth.flow.lake.PipelineTx
 
 object App extends skel.Server {
   
@@ -88,10 +87,11 @@ object App extends skel.Server {
       entity = c.getListString("entity",d.entity),
       
       feedBlock = c.getString("feed.block").getOrElse(d.feedBlock),
-      feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
+      feedTransaction = c.getString("feed.transction").getOrElse(d.feedTransaction),
       feedTransfer = c.getString("feed.transfer").getOrElse(d.feedTransfer),
       feedLog = c.getString("feed.log").getOrElse(d.feedLog),
       feedMempool = c.getString("feed.mempool").getOrElse(d.feedMempool),
+      feedTx = c.getString("feed.tx").getOrElse(d.feedTx),
 
       outputBlock = c.getString("output.block").getOrElse(d.outputBlock),
       outputTx = c.getString("output.tx").getOrElse(d.outputTx),
@@ -141,8 +141,8 @@ object App extends skel.Server {
           case "block" | "block.etl" =>
             Some(new etl.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
-          case "tx" | "tx.etl" =>
-            Some(new etl.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+          case "transaction" | "transaction.etl" =>
+            Some(new etl.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTx,config.output)))
           
           case "transfer" | "token" | "transfer.etl" | "token.etl" =>
             Some(new etl.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
@@ -154,21 +154,28 @@ object App extends skel.Server {
           case "mempool" => 
             Some(new PipelineMempool(orf(config,config.feedMempool,config.feed,config.outputMempool,config.output)))
 
+          case "tx" | "tx.etl" =>
+            Some(new etl.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+
           // Lake stored
           case "block.lake" =>
-            Some(new lake.PipelineBlock(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+            Some(new lake.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.lake" =>
+            Some(new lake.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+          case "transfer.lake" | "token.lake" =>
+            Some(new lake.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
+          case "log.lake" | "even.lake" =>
+            Some(new lake.PipelineEvent(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
           case "tx.lake" =>
             Some(new lake.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
-          case "transfer.lake" | "token.lake" =>
-            Some(new lake.PipelineTokenTransfer(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
-          case "log.lake" | "even.lake" =>
-            Some(new lake.PipelineEvent(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
           // RPC
           case "block.rpc" =>
-            Some(new rpc.PipelineBlock(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
-          case "tx.rpc" =>
-            Some(new rpc.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+            Some(new rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          
+          // Transaction and Tx return the same !!
+          case "transaction.rpc" | "tx.rpc" =>
+            Some(new rpc.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

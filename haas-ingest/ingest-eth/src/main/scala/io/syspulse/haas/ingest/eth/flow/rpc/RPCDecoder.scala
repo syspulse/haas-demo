@@ -28,7 +28,7 @@ import io.syspulse.haas.ingest.eth.rpc.EthRpcJson
 
 import io.syspulse.haas.ingest.eth.flow.EthDecoder
 
-trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog] {
+trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog,RpcTx] {
 
   protected val log = Logger(s"${this}")
 
@@ -72,6 +72,8 @@ trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog]
     }        
     
   }
+
+  def parseTransaction(data:String):Seq[RpcTx] = parseTx(data) 
 
   def parseTx(data:String):Seq[RpcTx] = {
     if(data.isEmpty()) return Seq()

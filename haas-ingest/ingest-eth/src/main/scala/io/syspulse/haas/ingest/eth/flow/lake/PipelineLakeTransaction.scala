@@ -29,30 +29,30 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
-import io.syspulse.haas.core.Tx
-import io.syspulse.haas.serde.TxJson
-import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.core.Transaction
+import io.syspulse.haas.serde.TransactionJson
+import io.syspulse.haas.serde.TransactionJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
-abstract class PipelineLakeTx[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[Tx,Tx,E](config) with PipelineLake[E] {
+abstract class PipelineLakeTransaction[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
+  PipelineEth[Transaction,Transaction,E](config) with PipelineLake[E] {
   
-  def apiSuffix():String = s"/tx"
+  def apiSuffix():String = s"/transaction"
 
-  def parse(data:String):Seq[Tx] = {
-    val d = parseTx(data)
+  def parse(data:String):Seq[Transaction] = {
+    val d = parseTransaction(data)
     if(d.size!=0)
-      latestTs.set(d.last.block.ts)
+      latestTs.set(d.last.ts)
     d
   }
 
-  def convert(tx:Tx):Tx = tx
+  def convert(tx:Transaction):Transaction = tx
 
 }
 
-class PipelineTx(config:Config) 
-  extends PipelineLakeTx[Tx](config) {
+class PipelineTransaction(config:Config) 
+  extends PipelineLakeTransaction[Transaction](config) {
 
-  def transform(tx: Tx): Seq[Tx] = Seq(tx)
+  def transform(tx: Transaction): Seq[Transaction] = Seq(tx)
 }

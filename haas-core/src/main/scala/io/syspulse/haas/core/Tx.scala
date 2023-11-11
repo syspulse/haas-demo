@@ -2,11 +2,12 @@ package io.syspulse.haas.core
 
 import io.syspulse.skel.Ingestable
 
+// Transaction with blockinfo
 case class Tx(
-  ts:Long,
+  // ts:Long,            // Timestamp is in block: Block
   i:Int,
   hash:String,
-  blk:Long,
+  // blk:Long,          // block is in block
   from:String,
   to:Option[String],
   gas:Long,
@@ -23,7 +24,10 @@ case class Tx(
   con: Option[String],  // contract
   root: Option[String],   // receipt root
   sta: Option[Int],       // status
-  p0: Option[BigInt]      // price Effective
+  p0: Option[BigInt],      // price Effective
+
+  block:Block,
+  logs: Seq[EventTx]
 
   //timestamp:Option[Long]
 ) extends Ingestable {

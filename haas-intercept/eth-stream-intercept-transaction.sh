@@ -2,6 +2,6 @@
 
 echo "ETH_RPC: $ETH_RPC"
 
-export ENTITY="tx"
+export ENTITY="transaction"
 
-./eth-stream.sh 2>/dev/null | ./run-intercept.sh intercept -e tx -f stdin:// $@
+./eth-stream.sh 2>/dev/null | ./run-intercept.sh intercept -e transaction -f stdin:// $@

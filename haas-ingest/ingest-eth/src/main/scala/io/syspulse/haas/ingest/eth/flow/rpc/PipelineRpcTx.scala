@@ -30,6 +30,7 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
+import io.syspulse.haas.core.Block
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
@@ -38,7 +39,7 @@ import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
 
-import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
+//import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
 
 abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
@@ -116,10 +117,10 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
     b.transactions.map{ tx:RpcTx => {
       val transaction_index = toLong(tx.transactionIndex).toInt
       Tx(
-        ts * 1000L,
+        // ts * 1000L,
         transaction_index,
         tx.hash,
-        block_number,
+        // block_number,
 
         tx.from,
         tx.to,
@@ -141,7 +142,34 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
         receipts.get(tx.hash).map(_.contractAddress).flatten, //tx.receipt_contract_address, 
         Some(b.receiptsRoot), //tx.receipt_root, 
         receipts.get(tx.hash).map(r => toLong(r.status).toInt), //tx.receipt_status, 
-        receipts.get(tx.hash).map(_.effectiveGasPrice.map(r => toBigInt(r))).flatten //tx.receipt_effective_gas_price
+        receipts.get(tx.hash).map(_.effectiveGasPrice.map(r => toBigInt(r))).flatten, //tx.receipt_effective_gas_price
+
+        block = Block(
+          toLong(b.number),
+          b.hash,
+          b.parentHash,
+          b.nonce,
+          b.sha3Uncles,        
+          b.logsBloom,
+          b.transactionsRoot,
+          b.stateRoot,        
+          b.receiptsRoot,
+          b.miner,
+          
+          toBigInt(b.difficulty),
+          toBigInt(b.totalDifficulty),
+          toLong(b.size),
+
+          b.extraData, 
+              
+          toLong(b.gasLimit), 
+          toLong(b.gasUsed), 
+          toLong(b.timestamp) * 1000L, 
+          b.transactions.size,
+          b.baseFeePerGas.map(d => toLong(d))
+        ),
+
+        logs = Seq()
       )
     }}.toSeq
   }

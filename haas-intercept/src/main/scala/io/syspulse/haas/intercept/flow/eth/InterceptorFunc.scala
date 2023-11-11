@@ -22,7 +22,7 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.Transaction
 
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
@@ -33,7 +33,7 @@ import scala.util.Failure
 import io.syspulse.haas.core.Blockchain
 
 class InterceptorFunc(bid:Blockchain.ID,abiStore:AbiStore,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends Interceptor[Tx](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
+  extends Interceptor[Transaction](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
     
   def entity():String = "function"
 
@@ -53,7 +53,7 @@ class InterceptorFunc(bid:Blockchain.ID,abiStore:AbiStore,interceptionStore:Inte
     }    
   }
   
-  override def decode(tx:Tx):Map[String,Any] = {
+  override def decode(tx:Transaction):Map[String,Any] = {
     // cannot process, because this is not a contract call
     if(tx.inp == "" || tx.inp == "0x" || ! tx.to.isDefined)
       return Map()

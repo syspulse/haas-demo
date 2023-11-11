@@ -7,7 +7,7 @@
 
 Ingest transactions from file:
 ```
-./run-ingest-eth.sh ingest -e tx -f feed/tx-1734.log -o stdout://
+./run-ingest-eth.sh ingest -e transaction -f feed/tx-1734.log -o stdout://
 ```
 
 Ingest blocks from file:
@@ -23,24 +23,24 @@ Ingest blocks from stored S3 file on the Lake:
 Stream: geth -> ethereum-etl -> eth-ingest from last PoW block 15537393
 
 ```
-ENTITY="transaction" ./eth-stream.sh 15537393 | ./run-ingest-eth.sh -e tx
+ENTITY="transaction" ./eth-stream.sh 15537393 | ./run-ingest-eth.sh -e transaction
 ```
 
 With EVM RPC:
 ```
-ETH_RPC=http://geth:8545 ENTITY="transaction" ./eth-stream.sh 15537393 | ./run-ingest-eth.sh -e tx
+ETH_RPC=http://geth:8545 ENTITY="transaction" ./eth-stream.sh 15537393 | ./run-ingest-eth.sh -e transaction
 ```
 
 
 Stream from latest block
 
 ```
-ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx
+ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e transaction
 ```
 
 Clean stream:
 ```
-ENTITY="transaction" ./eth-stream.sh 2>/dev/null | ./run-ingest-eth.sh -e tx
+ENTITY="transaction" ./eth-stream.sh 2>/dev/null | ./run-ingest-eth.sh -e transaction
 ```
 
 Stream blocks into S3 compatible mount (no append).
@@ -60,7 +60,7 @@ ENTITY=token_transfer ./eth-ingest.sh -e transfer -o fs3://output/transfer-{HH_m
 Stream from latest block into Hive
 
 ```
-ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e tx -o 'hive://output/{yyyy}/{MM}/{dd}/transactions'
+ENTITY="transaction" ./eth-stream.sh | ./run-ingest-eth.sh -e transaction -o 'hive://output/{yyyy}/{MM}/{dd}/transactions'
 ```
 
 ### From RPC Node
@@ -77,7 +77,7 @@ __NOTE__: use empty delimiter !
 Export transactions into directory structure for Hive/Spark processing:
 
 ```
-./eth-export-tx.sh 1000000 1000001 | ./run-ingest-eth.sh -e tx -o 'hive://output/{yyyy}/{MM}/{dd}/transactions
+./eth-export-transaction.sh 1000000 1000001 | ./run-ingest-eth.sh -e transaction -o 'hive://output/{yyyy}/{MM}/{dd}/transactions
 .log'
 ```
 

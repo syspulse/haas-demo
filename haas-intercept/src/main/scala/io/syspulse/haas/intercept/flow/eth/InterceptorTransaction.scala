@@ -21,7 +21,7 @@ import java.time.ZonedDateTime
 import scala.util.Try
 import scala.util.Success
 
-import io.syspulse.haas.core.Tx
+import io.syspulse.haas.core.Transaction
 
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
@@ -29,12 +29,12 @@ import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.core.Blockchain
 
-class InterceptorTx(bid:Blockchain.ID,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
-  extends Interceptor[Tx](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
+class InterceptorTransaction(bid:Blockchain.ID,interceptionStore:InterceptionStore,scriptStore:ScriptStore,alarmThrottle:Long,interceptions:Seq[Interception] = Seq()) 
+  extends Interceptor[Transaction](bid,interceptionStore,scriptStore,alarmThrottle,interceptions) {
     
-  def entity():String = "tx"
+  def entity():String = "transaction"
   
-  override def decode(tx:Tx):Map[String,Any] = {
+  override def decode(tx:Transaction):Map[String,Any] = {
     Map( 
       ("from_address" -> tx.from),
       ("to_address" -> tx.to.getOrElse("null")),
@@ -42,9 +42,9 @@ class InterceptorTx(bid:Blockchain.ID,interceptionStore:InterceptionStore,script
       ("gas" -> tx.gas),
       ("price" -> tx.p),
       ("input" -> tx.inp),
-      ("block_number" -> tx.block.i),
+      ("block_number" -> tx.blk),
       ("hash" -> tx.hash), //("transaction_hash" -> tx.hash),      
-      ("ts" -> tx.block.ts),
+      ("ts" -> tx.ts),
 
       ("nonce" -> tx.non),
       ("max_fee" -> tx.fee.getOrElse("null")),
@@ -57,8 +57,6 @@ class InterceptorTx(bid:Blockchain.ID,interceptionStore:InterceptionStore,script
       ("status" -> tx.sta),
       ("price_effective" -> tx.p0.getOrElse("null")),
 
-      ("block" -> tx.block),
-      ("logs" -> tx.logs),
     )
   }
  

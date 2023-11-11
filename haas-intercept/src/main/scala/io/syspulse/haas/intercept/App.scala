@@ -27,13 +27,14 @@ import io.syspulse.haas.intercept.flow.etl._
 
 case class ConfigBlockchain(
   bid:Blockchain.ID,
-  feedTx:String = "stdin://",
+  feedTransaction:String = "stdin://",
   feedBlock:String = "null://",
   feedToken:String = "null://",
   feedEvent:String = "null://",
   feedLog:String = "null://",
   feedFunc:String = "null://",
   feedMempool:String = "null://",
+  feedTx:String = "stdin://",
 )
 
 case class Config(  
@@ -45,13 +46,14 @@ case class Config(
   output:String = "",
   
   // defaults
-  feedTx:String = "stdin://",
+  feedTransaction:String = "stdin://",
   feedBlock:String = "null://",
   feedToken:String = "null://",
   feedEvent:String = "null://",
   feedLog:String = "null://",
   feedFunc:String = "null://",
   feedMempool:String = "null://",
+  feedTx:String = "stdin://",
 
   bid:Seq[String] = Seq("ethereum"),
   blockchains:Map[Blockchain.ID,ConfigBlockchain] = Map(),
@@ -75,7 +77,7 @@ case class Config(
   buffer:Int = 1024*1024,
   throttle:Long = 0L,
   
-  entity:String = "tx",
+  entity:String = "transaction",
   history:Int = 10,
   
   expr:String = "",
@@ -109,13 +111,14 @@ object App extends skel.Server {
 
         ArgString('_', "bid",s"Blockchains (def=${d.bid})"),
 
-        ArgString('_', "feed.{bid}.tx",s"Tx Feed"),
+        ArgString('_', "feed.{bid}.transaction",s"Transaction Feed"),
         ArgString('_', "feed.{bid}.block",s"Block Feed"),
         ArgString('_', "feed.{bid}.token",s"TokenTransfe Feed"),
         ArgString('_', "feed.{bid}.event",s"EventLog Feed"),
         ArgString('_', "feed.{bid}.log",s"EventLog Feed (synonim)"),
-        ArgString('_', "feed.{bid}.func",s"Function Tx Feed"),
-        ArgString('_', "feed.{bid}.mempool",s"Mempool Tx Feed"),
+        ArgString('_', "feed.{bid}.func",s"Function Feed"),
+        ArgString('_', "feed.{bid}.mempool",s"Mempool Feed"),
+        ArgString('_', "feed.{bid}.tx",s"Tx Feed"),
 
         ArgLong('_', "limit",s"Limit for entities to output (def=${d.limit})"),
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
@@ -131,7 +134,7 @@ object App extends skel.Server {
         ArgString('s', "store.script",s"datastore for Scripts to execute on TX (def=${d.scriptStore})"),
         ArgString('_', "store.abi",s"ABI definitions store (def: ${d.abiStore})"),
  
-        ArgString('a', "alarms",s"Alarms to generate on script triggers (ske-notify format, ex: email://user@mail.com ) (def=${d.alarms})"),
+        ArgString('a', "alarms",s"Alert Triggers (ex: script-1.js=tx=none://). Notification is skel-notify) (def=${d.alarms})"),
         ArgLong('_', "alarms.throttle",s"Throttle alarms (def=${d.alarmsThrottle})"),
 
         ArgInt('_', "history",s"History limit for alarms (def=${d.history})"),
@@ -157,13 +160,14 @@ object App extends skel.Server {
       bid = c.getListString("bid",d.bid),
       blockchains = c.getListString("bid",d.bid).map( bid => 
         bid -> ConfigBlockchain(bid,
-          feedTx = c.getString(s"feed.${bid}.tx").getOrElse(d.feedTx),
+          feedTransaction = c.getString(s"feed.${bid}.transaction").getOrElse(d.feedTransaction),
           feedBlock = c.getString(s"feed.${bid}.block").getOrElse(d.feedBlock),
           feedToken = c.getString(s"feed.${bid}.token").getOrElse(d.feedToken),
           feedEvent = c.getString(s"feed.${bid}.event").getOrElse(d.feedEvent),
           feedLog = c.getString(s"feed.${bid}.log").getOrElse(d.feedLog),
           feedFunc = c.getString(s"feed.${bid}.func").getOrElse(d.feedFunc),
           feedMempool = c.getString(s"feed.${bid}.mempool").getOrElse(d.feedMempool),
+          feedTx = c.getString(s"feed.${bid}.tx").getOrElse(d.feedTx),
         )
       ).toMap,
       
@@ -240,9 +244,10 @@ object App extends skel.Server {
       case "server" => {
 
         val blockchainInterceptors = config.blockchains.values.map( b => {
-          val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
-          val ppTx = new PipelineETLInterceptTx(
-            if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
+
+          val ixTransaction = new InterceptorTransaction(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppTransaction = new PipelineETLInterceptTransaction(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedTransaction else config.feed, config.output,ixTransaction)(config)
           
           val ixBlock = new InterceptorBlock(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppBlock = new PipelineETLInterceptBlock(
@@ -268,17 +273,22 @@ object App extends skel.Server {
           val ixMempool = new InterceptorMempool(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
           val ppMempool = new PipelineEthInterceptMempool(
             if(!b.bid.isEmpty) config.blockchains(b.bid).feedFunc else config.feed, config.output, ixMempool)(config)
+
+          val ixTx = new InterceptorTx(b.bid,datastoreInterceptions,datastoreScripts,config.alarmsThrottle)
+          val ppTx = new PipelineETLInterceptTx(
+            if(!b.bid.isEmpty) config.blockchains(b.bid).feedTx else config.feed, config.output,ixTx)(config)
           
           val blockchainIx = List(
-            s"${b.bid}.${ixTx.entity()}" -> ixTx,
+            s"${b.bid}.${ixTransaction.entity()}" -> ixTransaction,
             s"${b.bid}.${ixBlock.entity()}" -> ixBlock,
             s"${b.bid}.${ixToken.entity()}" -> ixToken,
             s"${b.bid}.${ixEvent.entity()}" -> ixEvent,
             s"${b.bid}.${ixFunc.entity()}" -> ixFunc,
             s"${b.bid}.${ixMempool.entity()}" -> ixMempool,
+            s"${b.bid}.${ixTx.entity()}" -> ixTx,
           )
 
-          (blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc,ppMempool)
+          (blockchainIx,ppTransaction,ppBlock,ppToken,ppEvent,ppFunc,ppMempool,ppTx)
 
         })
         
@@ -296,14 +306,15 @@ object App extends skel.Server {
           )
         )
 
-        blockchainInterceptors.foreach{ case(blockchainIx,ppTx,ppBlock,ppToken,ppEvent,ppFunc,ppMempool) => 
+        blockchainInterceptors.foreach{ case(blockchainIx,ppTransaction,ppBlock,ppToken,ppEvent,ppFunc,ppMempool,ppTx) => 
           // start pipelines
-          ppTx.run()
+          ppTransaction.run()
           ppBlock.run()
           ppToken.run()
           ppEvent.run()
           ppFunc.run()
           ppMempool.run()
+          ppTx.run()
         }
         
         //(r1,Some(ppTx))
@@ -312,29 +323,31 @@ object App extends skel.Server {
 
       case "intercept" => {        
         def buildInterceptions(alarms:Seq[String]):Seq[Interception] = {
-          alarms.map(a => { 
+          val iix = alarms.map(a => { 
               val ix:Interception = a.split("=").toList match {
-                case sid :: typ :: ua :: Nil => 
-                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList, entity = typ)
-                case sid :: ua :: Nil => 
-                  Interception(UUID.random, "Ix-1", sid, ua.split(";").toList)
-                case ua :: Nil => 
-                  Interception(UUID.random, "Ix-2", "script-1.js", ua.split(";").toList)
+                case script :: entity :: alarm :: Nil => 
+                  Interception(UUID.random, "Ix-1", script, alarm.split(";").toList, entity = entity)
+                case script :: alarm :: Nil => 
+                  Interception(UUID.random, "Ix-1", script, alarm.split(";").toList, entity = "transaction")
+                case alarm :: Nil => 
+                  Interception(UUID.random, "Ix-2", "script-1.js", alarm.split(";").toList, entity = "transaction")
                 case _ => 
-                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"))
+                  Interception(UUID.random, "Ix-3", "script-1.js", List("stdout://"), entity = "transaction")
               }
               ix
             }
           )
+          Console.err.println(s"Interceptors: ${iix}")
+          iix
         }
 
         val pp = config.entity match {
           case "block" =>
             new PipelineETLInterceptBlock(config.feed,config.output, 
                 new InterceptorBlock(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
-          case "tx" =>
-            new PipelineETLInterceptTx(config.feed,config.output, 
-                new InterceptorTx(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
+          case "transaction" =>
+            new PipelineETLInterceptTransaction(config.feed,config.output, 
+                new InterceptorTransaction(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
           case "token" | "transfer" =>
             new PipelineETLInterceptTokenTransfer(config.feed,config.output, 
                 new InterceptorTokenTransfer(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))(config)                          
@@ -351,13 +364,18 @@ object App extends skel.Server {
           case "mempool" =>
             new PipelineEthInterceptMempool(config.feed,config.output, 
                 new InterceptorMempool(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
+          
+          case "tx" =>
+            new PipelineETLInterceptTx(config.feed,config.output, 
+                new InterceptorTx(config.bid.head,datastoreInterceptions,datastoreScripts,config.alarmsThrottle,buildInterceptions(config.alarms)))
         }
 
         (pp.run(),Some(pp))
       }
     }
     
-    Console.err.println(s"r=${r}")
+    Console.err.println(s"r=${r},pp=${pp}")
+
     r match {
       case a:Awaitable[_] => {
         val rr = Await.result(a,FiniteDuration(300,TimeUnit.MINUTES))

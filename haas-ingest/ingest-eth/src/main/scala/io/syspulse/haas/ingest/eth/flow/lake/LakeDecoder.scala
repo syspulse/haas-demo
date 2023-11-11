@@ -19,20 +19,21 @@ import DefaultJsonProtocol._
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.serde._
-import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
+import io.syspulse.haas.core.{ Block, Transaction, TokenTransfer, Event, Tx }
 
 import io.syspulse.haas.ingest.eth.EthURI
 
 import io.syspulse.haas.ingest.eth.flow.EthDecoder
 
-trait LakeDecoder[T] extends EthDecoder[T,Block,Tx,TokenTransfer,Event] {
+trait LakeDecoder[T] extends EthDecoder[T,Block,Transaction,TokenTransfer,Event,Tx] {
 
   protected val log = Logger(s"${this}")
-
-  import TxJson._
+  
   import BlockJson._
+  import TransactionJson._
   import TokenTransferJson._
   import EventJson._
+  import TxJson._
 
   def parseBlock(data:String):Seq[Block] = {
     if(data.isEmpty()) return Seq()
@@ -91,13 +92,13 @@ trait LakeDecoder[T] extends EthDecoder[T,Block,Tx,TokenTransfer,Event] {
     }
   }
 
-  def parseTx(data:String):Seq[Tx] = {
+  def parseTransaction(data:String):Seq[Transaction] = {
     if(data.isEmpty()) return Seq()
 
     try {
       // check it is JSON
       if(data.stripLeading().startsWith("{")) {
-        val tx = data.parseJson.convertTo[Tx]
+        val tx = data.parseJson.convertTo[Transaction]
                         
         Seq(tx)
       } else {
@@ -115,7 +116,7 @@ trait LakeDecoder[T] extends EthDecoder[T,Block,Tx,TokenTransfer,Event] {
                  val ts = block_timestamp.toLong
                  //latestTs.set(ts * 1000L)
 
-                 Seq(Tx(
+                 Seq(Transaction(
                     ts,
                     transaction_index.toInt,
                     hash,
@@ -147,6 +148,27 @@ trait LakeDecoder[T] extends EthDecoder[T,Block,Tx,TokenTransfer,Event] {
           }
           tx
         }
+      }
+    } catch {
+      case e:Exception => 
+        log.error(s"failed to parse: '${data}'",e)
+        Seq()
+    }
+  }
+
+  def parseTx(data:String):Seq[Tx] = {
+    if(data.isEmpty()) return Seq()
+
+    try {
+      // check it is JSON
+      if(data.stripLeading().startsWith("{")) {
+        val tx = data.parseJson.convertTo[Tx]
+                        
+        Seq(tx)
+      } else {
+        // CSV is not supported !
+        log.error(s"CSV is not supported for Tx: '${data}'")
+        Seq()
       }
     } catch {
       case e:Exception => 

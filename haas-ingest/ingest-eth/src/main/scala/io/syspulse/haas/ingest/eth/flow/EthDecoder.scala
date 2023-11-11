@@ -20,14 +20,15 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.serde._
 
-trait EthDecoder[E,BLOCK,TX,TRANSFER,LOG] {
+trait EthDecoder[E,BLOCK,TRANSACTION,TRANSFER,LOG,TX] {
   implicit val fmt:JsonFormat[E]
 
   def OptionEmpty(s:String) = if(s.isEmpty()) None else Some(s)
 
   def parseBlock(data:String):Seq[BLOCK]
-  def parseTx(data:String):Seq[TX]  
+  def parseTransaction(data:String):Seq[TRANSACTION]
   def parseTokenTransfer(data:String):Seq[TRANSFER]
   def parseEventLog(data:String):Seq[LOG]
+  def parseTx(data:String):Seq[TX]  
 
 }

@@ -15,3 +15,11 @@ case class Event(
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)
 }
+
+// used only in Fat Tx
+case class EventTx(
+  i:Int,         // log index
+  contract:String,
+  data:String,  
+  topics:List[String] = List(), 
+) extends Ingestable

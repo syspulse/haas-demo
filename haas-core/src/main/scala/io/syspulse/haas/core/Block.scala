@@ -4,7 +4,7 @@ import io.syspulse.skel.Ingestable
 
 case class Block(
   i:Long,       // block number
-  hash:String,  
+  hash:String,  // block hash
   phash:String, // parent hash
   non:String,   // noce
   uncl:String,  // uncles
@@ -14,8 +14,8 @@ case class Block(
   strt:String, // state root
   rert:String, // receipt root
 
-  miner:String,
-  dif:BigInt,
+  miner:String, // miner
+  dif:BigInt,  // difficulty
   dif0:BigInt, // total difficulty
   
   sz:Long,     // size
@@ -23,7 +23,7 @@ case class Block(
   used:Long,   // gas used
   limit:Long,  // gas limit
 
-  ts:Long, 
+  ts:Long,  // timestamp
   cnt:Long, // transaction count
   fee:Option[Long], // base fee
 
