@@ -9,21 +9,32 @@ import com.typesafe.scalalogging.Logger
 
 case class Block(num:Long,hash:String,ts:Long = 0L,txCound:Long = 0)
 
-class CursorBlock(file:String = "LAST_BLOCK") {
+class CursorBlock(file:String = "BLOCK") {
   private val log = Logger(this.getClass)
 
   override def toString() = s"${current} [${blockStart} : ${blockEnd}]"
 
+  var stateFile = file
   var current:Long = 0
   var blockStart:Long = 0
   var blockEnd:Long = 0
+
+  def read(newStateFile:String = file):String = this.synchronized {
+    stateFile = newStateFile
+    // can be string lile ("latest")
+    os.read(os.Path(stateFile,os.pwd))    
+  }
+
+  def write(current:Long) = this.synchronized {
+    os.write.over(os.Path(file,os.pwd),current.toString)    
+  }
   
   val lag:Int = 0            // lag means how many blocks wait until moving to the next block
                              // this is also a depth of last history to check for reorg 
     
   var lagging:Int = 0        // current lag counter (from lag to 0). On lagging == 0 next is incremented
 
-  def init(blockStart:Long,blockEnd:Long) = {
+  def init(blockStart:Long, blockEnd:Long) = {
     this.synchronized {
       this.current = blockStart
       this.blockStart = blockStart
@@ -44,7 +55,8 @@ class CursorBlock(file:String = "LAST_BLOCK") {
   }
 
   def commit(block:Long) = this.synchronized {
-    current = block + 1    
+    current = block + 1
+    write(current)
   }
 
 }

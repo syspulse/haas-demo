@@ -50,6 +50,8 @@ import scala.util.control.NoStackTrace
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 class BehindException(behind: Long) extends RuntimeException("") with NoStackTrace
 
+// ATTENTION !!!
+// throttle is overriden in Config to support batchable retries !
 abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
   extends PipelineEth[T,O,E](config.copy(throttle = 0L))(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
@@ -68,12 +70,11 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
     feed.split("://").toList match {
       case "http" :: _ | "https" :: _ => 
         
-        val (blockStr,stateFile) = 
+        val blockStr = 
           (config.block.split("://").toList match {
-            case "file" :: file :: Nil => // state file
-              (os.read(os.Path(file,os.pwd)),Some(file))
-            case _ => 
-              (config.block,None)
+            case "file" :: file :: Nil => cursor.read(file)
+            case "file" :: Nil => cursor.read()
+            case _ => config.block
           })
 
         val blockStart = blockStr.strip match {
