@@ -9,4 +9,5 @@ fi
 
 DIR=${1}
 
-aws s3 ls $R s3://haas-data-${ENV}/${DIR}
+#aws s3 ls $R s3://haas-data-${ENV}/${DIR}
+aws s3 ls $R s3://haas-${ENV}-data/${DIR}

@@ -31,6 +31,21 @@ class LastBlock {
   
   override def toString() = s"${LastBlock.lastBlock}"
 
+  def isBehind(block:Long):Long = {
+    LastBlock.lastBlock.synchronized {
+      LastBlock.lastBlock match {
+        case Some(lb) =>
+          if(block > lb.next) {
+            val behind = block - lb.next
+            behind
+          } else
+            0 
+        case None => 
+          0
+      }   
+    }
+  }
+
   def isReorg(block:Long,blockHash:String):List[Block] = {
     val reorgs = LastBlock.lastBlock.synchronized {      
       LastBlock.lastBlock match {

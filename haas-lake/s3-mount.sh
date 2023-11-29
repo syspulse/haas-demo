@@ -1,5 +1,6 @@
 PASSWD=/tmp/passwd-s3fs 
-S3_BUCKET=${S3_BUCKET:-haas-data-dev}
+#S3_BUCKET=${S3_BUCKET:-haas-data-dev}
+S3_BUCKET=${S3_BUCKET:-haas-dev-data}
 S3_MOUNT=${S3_MOUNT:-/mnt/s3}
 
 echo "$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY" >$PASSWD

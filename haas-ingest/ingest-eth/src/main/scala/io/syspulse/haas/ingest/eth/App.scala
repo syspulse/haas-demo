@@ -164,18 +164,18 @@ object App extends skel.Server {
             Some(new lake.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
           case "transfer.lake" | "token.lake" =>
             Some(new lake.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
-          case "log.lake" | "even.lake" =>
+          case "log.lake" | "event.lake" =>
             Some(new lake.PipelineEvent(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
           case "tx.lake" =>
             Some(new lake.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
           // RPC
           case "block.rpc" =>
-            Some(new rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+            Some(new rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
           
           // Transaction and Tx return the same !!
           case "transaction.rpc" | "tx.rpc" =>
-            Some(new rpc.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+            Some(new rpc3.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

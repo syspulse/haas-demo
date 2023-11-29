@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow.rpc
+package io.syspulse.haas.ingest.eth.flow.rpc3
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -34,12 +34,11 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
-import io.syspulse.haas.ingest.eth.rpc._
-import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
+import io.syspulse.haas.ingest.eth.rpc3._
+import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
 
-//import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
 
 abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
@@ -58,9 +57,7 @@ abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
   }
 
   def convert(block:RpcBlock):RpcBlock = {
-    val b = block.result.get
-    lastBlock.commit(toLong(b.number),b.hash,toLong(b.timestamp),b.transactions.size)
-    block    
+    block
   }
 }
 
@@ -85,7 +82,7 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
     val receipts:Map[String,RpcReceipt] = receiptsRsp.statusCode match {
       case 200 =>
         // need to import it here for List[]
-        import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
+        import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
 
         val batchRsp = receiptsRsp.data.toString
 
@@ -101,6 +98,9 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
               None
             }
           }
+
+          // commit cursor !
+          cursor.commit(toLong(b.number))
 
           rr.map( r => r.transactionHash -> r).toMap
 

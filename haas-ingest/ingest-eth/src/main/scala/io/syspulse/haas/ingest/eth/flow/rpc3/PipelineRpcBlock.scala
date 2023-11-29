@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow.rpc
+package io.syspulse.haas.ingest.eth.flow.rpc3
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -32,16 +32,16 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.core.Block
 import io.syspulse.haas.serde.BlockJson
 import io.syspulse.haas.serde.BlockJson._
-import io.syspulse.haas.ingest.eth.rpc._
-import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
+import io.syspulse.haas.ingest.eth.rpc3._
+import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.Config
 
-import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
+import io.syspulse.haas.ingest.eth.flow.rpc3._
 
 abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineRPC[RpcBlock,Block,E](config) {
+  PipelineRPC[RpcBlock,RpcBlock,E](config) {
   
   def apiSuffix():String = s"/block"
 
@@ -49,35 +49,23 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
     val bb = parseBlock(data)    
     if(bb.size!=0) {
       val b = bb.last.result.get
-      latestTs.set(toLong(b.timestamp) * 1000L)
-      
-      val blockNum = toLong(b.number)
-      
-      // check behind
-      val behind = lastBlock.isBehind(blockNum)
-      if(behind >= 1) {
-        log.warn(s"Behind: ${behind}: next=${lastBlock.next()}, new=${blockNum}")
-        throw new RetryException(s"blocks behind: '${behind}'")
-      }
-
-      // check reorg
-      val reorgs = lastBlock.isReorg(blockNum,b.hash)
-      if(reorgs.size > 0) {
-        // apply reorg
-        log.warn(s"Blockchain Reorg: [${blockNum}/${b.hash},${b.transactions.size},${Util.tsToString(toLong(b.timestamp) * 1000L)}] ======> : depth=${reorgs.size}: ${reorgs}")
-        lastBlock.reorg(reorgs)
-      }
-
-      val already = lastBlock.commit(blockNum,b.hash,toLong(b.timestamp),b.transactions.size)
-      if(already) {
-        throw new RetryException(s"block already committed: '${toLong(b.number)}'")
-      }
+      latestTs.set(toLong(b.timestamp) * 1000L)      
     }
-
     bb
   }
 
-  def convert(block:RpcBlock):Block = {
+  def convert(block:RpcBlock):RpcBlock = {
+    block
+  }
+
+  // def transform(block: Block): Seq[Block] = {
+  //   Seq(block)
+  // }
+}
+
+class PipelineBlock(config:Config) extends PipelineRpcBlock[Block](config) {
+
+  def transform(block: RpcBlock): Seq[Block] = {
     val b = block.result.get
     val blk = Block(
       toLong(b.number),
@@ -103,19 +91,10 @@ abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
       b.transactions.size,
       b.baseFeePerGas.map(d => toLong(d))
     )
-        
-    blk
-  }
-
-  // def transform(block: Block): Seq[Block] = {
-  //   Seq(block)
-  // }
-}
-
-class PipelineBlock(config:Config) 
-  extends PipelineRpcBlock[Block](config) {
-
-  def transform(block: Block): Seq[Block] = {
-    Seq(block)
+    
+    // commit cursor
+    cursor.commit(toLong(b.number))
+    
+    Seq(blk)
   }    
 }

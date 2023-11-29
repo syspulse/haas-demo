@@ -48,6 +48,7 @@ import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
+class BehindException(behind: Long) extends RuntimeException("") with NoStackTrace
 
 abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
@@ -125,7 +126,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
           lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
             val id = System.currentTimeMillis() / 1000L
-            val blockHex = "latest"//"0x%x".format(block)
+            val blockHex = "latest"// "0x%x".format(block) //
             val json = s"""{
                 "jsonrpc":"2.0","method":"eth_getBlockByNumber",
                 "params":["${blockHex}",true],
