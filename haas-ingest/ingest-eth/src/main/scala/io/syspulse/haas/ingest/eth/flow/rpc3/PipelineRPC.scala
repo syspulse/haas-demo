@@ -46,6 +46,7 @@ import io.syspulse.haas.ingest.eth.Config
 import akka.actor.typed.ActorSystem
 import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
+import requests.Response
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 class BehindException(behind: Long) extends RuntimeException("") with NoStackTrace
@@ -95,7 +96,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toInt
             }
           case hex if hex.startsWith("0x") =>
-            java.lang.Long.parseLong(hex,16).toInt
+            java.lang.Long.parseLong(hex.drop(2),16).toInt
           case dec =>
             dec.toInt
         }
@@ -143,24 +144,36 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           .mapConcat(lastBlock => {
             cursor.current to lastBlock            
           })
-          //.throttle(1,FiniteDuration(config.throttle,TimeUnit.MILLISECONDS))
-          .map(block => {
-            log.info(s"--> ${block}")
+          .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
+          .mapConcat(blocks => {
+            log.info(s"--> ${blocks}")
             
-            val blockHex = s"0x${block.toHexString}"
-            val json = s"""{
-                "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                "params":["${blockHex}",true],
-                "id":0
-              }""".trim.replaceAll("\\s+","")
-
+            val blocksReq = blocks.map(block => {
+              val blockHex = s"0x${block.toHexString}"
+              s"""{
+                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                  "params":["${blockHex}",true],
+                  "id":0
+                }""".trim.replaceAll("\\s+","")  
+            })
+                        
+            val json = s"""[${blocksReq.mkString(",")}]"""
             val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
             log.info(s"rsp=${rsp.statusCode}")
             
-            ByteString(rsp.text())
-          })                          
+            val batch = decodeBatch(rsp.text())            
+            batch.map(r => ByteString(r))
+          })
       
       case _ => super.source(feed)
     }
+  }
+
+  def decodeSingle(rsp:String):Seq[String] = Seq(rsp)
+  def decodeBatch(rsp:String):Seq[String] = {
+    // ATTENTION !!!
+    // very inefficient, optimize with web3-proxy approach 
+    val jsonBatch = ujson.read(rsp)
+    jsonBatch.arr.map(a => a.toString()).toSeq
   }
 }

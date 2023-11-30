@@ -3,9 +3,9 @@ package io.syspulse.haas.ingest.eth
 import com.typesafe.scalalogging.Logger
 
 case class Config(  
-  host:String="0.0.0.0",
-  port:Int=8080,
-  uri:String = "/api/v1/eth",
+  // host:String="0.0.0.0",
+  // port:Int=8080,
+  // uri:String = "/api/v1/eth",
   
   feed:String = "",
   output:String = "",
@@ -53,7 +53,7 @@ case class Config(
 
   block:String = "latest", // which block to use (only for http:// source)
   blockEnd:String = "",    // empty is infinite
-
+  blockBatch:Int = 10,     // batch size (how many blocks to ask)
   blockLag:Int = 0, // lag
 
   cmd:String = "ingest",

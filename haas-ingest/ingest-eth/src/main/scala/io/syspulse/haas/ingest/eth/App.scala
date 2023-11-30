@@ -29,9 +29,9 @@ object App extends skel.Server {
       new ConfigurationProp,
       new ConfigurationEnv, 
       new ConfigurationArgs(args,"ingest-eth","",
-        ArgString('h', "http.host",s"listen host (def: ${d.host})"),
-        ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
-        ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
+        // ArgString('h', "http.host",s"listen host (def: ${d.host})"),
+        // ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
+        // ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         
         ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
         ArgString('_', "feed.tx",s"Tx Feed (def: ${d.feedTx})"),
@@ -66,9 +66,10 @@ object App extends skel.Server {
         ArgLong('_', "throttle.source",s"Throttle source (e.g. http, (def: ${d.throttleSource}))"),
         ArgString('_', "block",s"Ingest from this block (def: ${d.block})"),
         ArgString('_', "block.end",s"Ingest until this block (def: ${d.blockEnd})"),
-        ArgInt('l', "lag",s"Ingest lag (def: ${d.blockLag})"),
+        ArgInt('l', "lag",s"Blocks lag (def: ${d.blockLag})"),
+        ArgInt('b', "batch",s"Blocks Batch (def: ${d.blockBatch})"),
         
-        ArgCmd("server",s"Server"),
+        // ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
         ArgCmd("intercept",s"Intercept pipeline (-s script)"),
         
@@ -78,9 +79,9 @@ object App extends skel.Server {
     )).withLogging()
 
     val config = Config(
-      host = c.getString("http.host").getOrElse(d.host),
-      port = c.getInt("http.port").getOrElse(d.port),
-      uri = c.getString("http.uri").getOrElse(d.uri),
+      // host = c.getString("http.host").getOrElse(d.host),
+      // port = c.getInt("http.port").getOrElse(d.port),
+      // uri = c.getString("http.uri").getOrElse(d.uri),
       
       feed = c.getString("feed").getOrElse(d.feed),
       output = c.getString("output").getOrElse(d.output),
@@ -118,6 +119,7 @@ object App extends skel.Server {
       block = c.getString("block").getOrElse(d.block),
       blockEnd = c.getString("block.end").getOrElse(d.blockEnd),
       blockLag = c.getInt("lag").getOrElse(d.blockLag),
+      blockBatch = c.getInt("batch").getOrElse(d.blockBatch),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
