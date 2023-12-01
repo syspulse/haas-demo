@@ -48,9 +48,9 @@ import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
 import requests.Response
 import akka.stream.scaladsl.Sink
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.P
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
-class BehindException(behind: Long) extends RuntimeException("") with NoStackTrace
 
 // ATTENTION !!!
 // throttle is overriden in Config to support batchable retries !
@@ -67,7 +67,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
   import EthRpcJson._
 
   val cursor = new CursorBlock()
-  val reorg = new ReorgBlock(config.blockLag)
+  val reorg = new ReorgBlock(config.blockReorg)
     
   override def source(feed:String) = {
     feed.split("://").toList match {
@@ -124,22 +124,22 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
         )
 
         // ----- Reorg -----------------------------------------------------------------------------------
-        val reorgFlow = Flow[Long].map( lastBlock => {
-          if(cursor.current == lastBlock + 1 ) {
-            
-            // check the block again for reorg
-            val blockHex = s"0x${lastBlock.toHexString}"
-            val blocksReq = s"""{
-                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                  "params":["${blockHex}",true],
-                  "id":0
-                }""".trim.replaceAll("\\s+","")
+        val reorgFlow = (lastBlock:String) => {
+          if(config.blockReorg > 0 ) {            
+            // // check the block again for reorg
+            // val blockHex = s"0x${lastBlock.toHexString}"
+            // val blocksReq = s"""{
+            //       "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+            //       "params":["${blockHex}",true],
+            //       "id":0
+            //     }""".trim.replaceAll("\\s+","")
                         
-            val json = blocksReq
-            val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
-            log.info(s"rsp=${rsp.statusCode}: checking reorg: ${lastBlock}")
+            // val json = blocksReq
+            // val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
+            // log.info(s"rsp=${rsp.statusCode}: checking reorg: ${lastBlock}")              
+            // val r = ujson.read(decodeSingle(rsp.text()).head)
             
-            val r = ujson.read(decodeSingle(rsp.text()).head)
+            val r = ujson.read(lastBlock)
             val result = r.obj("result").obj
             
             val blockNum = java.lang.Long.decode(result("number").str).toLong
@@ -153,13 +153,14 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               log.warn(s"reorg block: >>>>>>>>> ${blockNum}/${blockHash}: reorgs=${rr}")
               os.write.append(os.Path("REORG",os.pwd),s"${ts},${blockNum},${blockHash},${txCount}}")
               reorg.reorg(rr)
-            } 
+              true
+            } else {
+              
+              reorg.cache(blockNum,blockHash,ts,txCount)              
+            }
 
-          } 
-
-          // pass lastBlock to the rest of the flow
-          lastBlock
-        })          
+          } else true
+        }
         
         // ------- Flow ------------------------------------------------------------------------------------
         sourceTick
@@ -176,15 +177,27 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
             val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
             //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
+            rsp.statusCode match {
+              case 200 => //
+              case _ => 
+                // retry
+                log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
+                throw new RetryException("")
+            }
+            
             val r = ujson.read(rsp.text())
             val lastBlock = java.lang.Long.decode(r.obj("result").str).toLong
             
             log.info(s"last=${lastBlock}, current=${cursor.get()}")
             lastBlock
           })
-          .via(reorgFlow)
           .mapConcat(lastBlock => {
-            cursor.current to lastBlock            
+            if(config.blockReorg == 0 || cursor.current < (lastBlock - config.blockReorg))
+              // normal fast operation or reorg before the tip
+              cursor.current to lastBlock
+            else
+              // reorg operation on the tip
+              (cursor.current - config.blockReorg) to lastBlock
           })          
           .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
           .mapConcat(blocks => {
@@ -203,9 +216,19 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
             log.info(s"rsp=${rsp.statusCode}")
             
+            rsp.statusCode match {
+              case 200 => //
+              case _ => 
+                // retry
+                log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
+                throw new RetryException("")
+            }
+            
             val batch = decodeBatch(rsp.text())            
-            batch.map(r => ByteString(r))
+            batch
           })
+          .filter(reorgFlow)
+          .map(b => ByteString(b))
       
       case _ => super.source(feed)
     }

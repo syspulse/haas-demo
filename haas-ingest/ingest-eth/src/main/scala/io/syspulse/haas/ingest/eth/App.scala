@@ -68,6 +68,7 @@ object App extends skel.Server {
         ArgString('_', "block.end",s"Ingest until this block (def: ${d.blockEnd})"),
         ArgInt('l', "lag",s"Blocks lag (def: ${d.blockLag})"),
         ArgInt('b', "batch",s"Blocks Batch (def: ${d.blockBatch})"),
+        ArgInt('_', "reorg",s"Blocks Reorg depth (def: ${d.blockReorg})"),
         
         // ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
@@ -120,6 +121,7 @@ object App extends skel.Server {
       blockEnd = c.getString("block.end").getOrElse(d.blockEnd),
       blockLag = c.getInt("lag").getOrElse(d.blockLag),
       blockBatch = c.getInt("batch").getOrElse(d.blockBatch),
+      blockReorg = c.getInt("reorg").getOrElse(d.blockReorg),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
