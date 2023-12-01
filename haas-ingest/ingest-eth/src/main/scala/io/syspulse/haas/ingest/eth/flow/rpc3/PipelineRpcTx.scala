@@ -34,10 +34,10 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc3._
 import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
-import io.syspulse.haas.ingest.eth.Config
 
 
 abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
@@ -99,7 +99,7 @@ class PipelineTx(config:Config) extends PipelineRpcTx[Tx](config) {
             }
           }
 
-          // commit cursor !
+          // commit cursor
           cursor.commit(toLong(b.number))
 
           rr.map( r => r.transactionHash -> r).toMap

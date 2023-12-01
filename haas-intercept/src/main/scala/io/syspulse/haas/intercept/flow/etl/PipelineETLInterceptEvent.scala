@@ -50,7 +50,7 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorEvent
 
 class PipelineETLInterceptEvent(feed:String,output:String,override val interceptor:InterceptorEvent)(implicit config:Config) 
   extends PipelineETLLog[InterceptionAlarm](
-    io.syspulse.haas.ingest.eth.Config(
+    Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,

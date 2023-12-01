@@ -20,7 +20,6 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
 
 import io.syspulse.skel
-import io.syspulse.skel.config._
 import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 

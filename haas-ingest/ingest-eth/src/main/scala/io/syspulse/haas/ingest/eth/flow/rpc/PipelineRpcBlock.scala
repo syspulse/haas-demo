@@ -32,10 +32,10 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.core.Block
 import io.syspulse.haas.serde.BlockJson
 import io.syspulse.haas.serde.BlockJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
-import io.syspulse.haas.ingest.eth.Config
 
 import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
 

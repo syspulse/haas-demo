@@ -34,10 +34,10 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
-import io.syspulse.haas.ingest.eth.Config
 
 //import io.syspulse.haas.ingest.eth.flow.rpc.LastBlock
 

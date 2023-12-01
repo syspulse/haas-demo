@@ -42,7 +42,8 @@ import io.syspulse.haas.ingest.eth.EthURI
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth
 
-import io.syspulse.haas.ingest.eth.Config
+import io.syspulse.haas.ingest.Config
+
 import akka.actor.typed.ActorSystem
 import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace

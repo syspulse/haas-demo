@@ -29,6 +29,7 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 
 import java.util.concurrent.TimeUnit
 
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth._
 
 import io.syspulse.haas.evm.EvmTx

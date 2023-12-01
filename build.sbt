@@ -347,8 +347,8 @@ lazy val ingest_eth = (project in file("haas-ingest/ingest-eth"))
     sharedConfigDocker,
     dockerBuildxSettings,
 
-    //appAssemblyConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
-    appDockerConfig("ingest-eth","io.syspulse.haas.ingest.eth.App"),
+    //appAssemblyConfig("ingest-eth","io.syspulse.haas.ingest.App"),
+    appDockerConfig("ingest-eth","io.syspulse.haas.ingest.App"),
     
     libraryDependencies ++= libHttp ++ libAkka ++ libAlpakka ++ libPrometheus ++ Seq(
       libSkelCore,

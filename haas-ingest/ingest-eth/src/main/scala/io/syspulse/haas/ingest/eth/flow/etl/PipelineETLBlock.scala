@@ -16,7 +16,6 @@ import akka.stream.scaladsl.Flow
 import io.syspulse.skel
 import io.syspulse.skel.config._
 import io.syspulse.skel.util.Util
-import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest._
 import io.syspulse.skel.ingest.store._
@@ -32,6 +31,7 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.core.Block
 import io.syspulse.haas.serde.BlockJson
 import io.syspulse.haas.serde.BlockJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth

@@ -39,6 +39,7 @@ import io.syspulse.haas.core.Block
 import io.syspulse.haas.core.Event
 import io.syspulse.haas.serde.EventJson
 import io.syspulse.haas.serde.EventJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth

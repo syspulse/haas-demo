@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth
+package io.syspulse.haas.ingest
 
 import com.typesafe.scalalogging.Logger
 

@@ -49,7 +49,7 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorBlock
 
 class PipelineETLInterceptBlock(feed:String,output:String,override val interceptor:InterceptorBlock)(implicit config:Config) 
   extends PipelineETLBlock[InterceptionAlarm](
-    io.syspulse.haas.ingest.eth.Config(
+    Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,

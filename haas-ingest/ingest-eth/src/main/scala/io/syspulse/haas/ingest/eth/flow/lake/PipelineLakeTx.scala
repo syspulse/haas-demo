@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.core.Tx
 import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 

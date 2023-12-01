@@ -23,6 +23,7 @@ import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
 
 import io.syspulse.haas.ingest.eth.EthURI
 
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson
 

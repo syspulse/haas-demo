@@ -50,7 +50,7 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorTokenTransfer
 
 class PipelineETLInterceptTokenTransfer(feed:String,output:String,override val interceptor:InterceptorTokenTransfer)(implicit config:Config) 
   extends PipelineETLTokenTransfer[InterceptionAlarm](
-    io.syspulse.haas.ingest.eth.Config(
+    Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,

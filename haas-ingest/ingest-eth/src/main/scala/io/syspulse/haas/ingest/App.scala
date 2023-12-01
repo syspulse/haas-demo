@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth
+package io.syspulse.haas.ingest
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}

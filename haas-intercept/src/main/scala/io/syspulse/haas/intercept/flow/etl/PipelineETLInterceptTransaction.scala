@@ -48,7 +48,7 @@ import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
 
 class PipelineETLInterceptTransaction(feed:String,output:String,override val interceptor:InterceptorTransaction)(implicit config:Config) 
   extends PipelineETLTransaction[InterceptionAlarm](
-    io.syspulse.haas.ingest.eth.Config(
+    Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,

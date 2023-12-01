@@ -38,6 +38,7 @@ import io.syspulse.haas.core.TokenTransfer
 import io.syspulse.haas.serde.TokenTransferJson
 import io.syspulse.haas.serde.TokenTransferJson._
 import io.syspulse.haas.ingest.eth._
+import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
