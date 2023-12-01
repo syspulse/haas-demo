@@ -22,10 +22,11 @@ import io.syspulse.skel.crypto.eth.abi.AbiStoreSignatures
 import io.syspulse.skel.crypto.eth.abi.SignatureStoreMem
 import io.syspulse.skel.crypto.eth.abi.FuncSignature
 import io.syspulse.skel.crypto.eth.abi.EventSignature
-import io.syspulse.haas.ingest.eth.flow.EthDecoder
+
+import io.syspulse.haas.ingest.Decoder
 
 
-class Decoder[T](implicit val fmt:JsonFormat[T]) extends EthDecoder[T] {
+class DecoderTest[T](implicit val fmt:JsonFormat[T]) extends Decoder[T,_,_,_,_,_] {
 
 }
 
@@ -41,7 +42,7 @@ class InterceptSpec extends AnyWordSpec with Matchers {
   "InterceptSpec" should {
     
     "parse USDT Event as ABI " in {
-      val decoder = new Decoder[EthLog]
+      val decoder = new DecoderTest[EthLog]
       val d1 = """{"type": "log", 
         "log_index": 14, 
         "transaction_hash": "0x224ebde55d7b989f64c3431054af357c3fba52f493dfb855123ecc2f636bcb93", 

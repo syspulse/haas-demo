@@ -34,10 +34,10 @@ import io.syspulse.haas.serde.TxJson
 import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.PipelineIngest
 
 abstract class PipelineLakeTx[E <: skel.Ingestable](config:Config)(implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[Tx,Tx,E](config) with PipelineLake[E] {
+  PipelineIngest[Tx,Tx,E](config) with PipelineLake[E] {
   
   def apiSuffix():String = s"/tx"
 

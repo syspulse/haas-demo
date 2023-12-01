@@ -23,9 +23,9 @@ import io.syspulse.haas.core.{ Block, Transaction, TokenTransfer, Event, Tx }
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-import io.syspulse.haas.ingest.eth.flow.EthDecoder
+import io.syspulse.haas.ingest.Decoder
 
-trait LakeDecoder[T] extends EthDecoder[T,Block,Transaction,TokenTransfer,Event,Tx] {
+trait LakeDecoder[T] extends Decoder[T,Block,Transaction,TokenTransfer,Event,Tx] {
 
   protected val log = Logger(s"${this}")
   

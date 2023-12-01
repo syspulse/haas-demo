@@ -139,7 +139,7 @@ object App extends skel.Server {
     
     val (r,pp) = config.cmd match {
       case "ingest" => {
-        val pp:Seq[PipelineEth[_,_,_]] = config.entity.flatMap( e => e match {
+        val pp:Seq[PipelineIngest[_,_,_]] = config.entity.flatMap( e => e match {
 
           // ethereum_etl 
           case "block" | "block.etl" =>

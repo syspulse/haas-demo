@@ -27,9 +27,9 @@ import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson
 
-import io.syspulse.haas.ingest.eth.flow.EthDecoder
+import io.syspulse.haas.ingest.Decoder
 
-trait RPCDecoder[T] extends EthDecoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog,RpcTx] {
+trait RPCDecoder[T] extends Decoder[T,RpcBlock,RpcTx,RpcTokenTransfer,RpcLog,RpcTx] {
 
   protected val log = Logger(s"${this}")
 

@@ -36,11 +36,11 @@ import io.syspulse.haas.evm.EvmTx
 import io.syspulse.haas.core.MempoolTx
 import io.syspulse.haas.evm.EvmTxPoolJson._
 import io.syspulse.haas.serde.MempoolJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.PipelineIngest
 
 abstract class PipelineEthMempool[E <: skel.Ingestable](config:Config)
                                                        (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EvmTx,MempoolTx,E](config) {
+  PipelineIngest[EvmTx,MempoolTx,E](config) {
   
   def apiSuffix():String = s"/mempool"
 

@@ -39,7 +39,7 @@ import io.syspulse.haas.ingest.eth.rpc._
 import io.syspulse.haas.ingest.eth.rpc.EthRpcJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.PipelineIngest
 import io.syspulse.haas.ingest.eth
 
 import io.syspulse.haas.ingest.Config
@@ -52,7 +52,7 @@ class BehindException(behind: Long) extends RuntimeException("") with NoStackTra
 
 abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
-  extends PipelineEth[T,O,E](config)(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
+  extends PipelineIngest[T,O,E](config)(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
 
   override val retrySettings:Option[RestartSettings] = Some(RestartSettings(
     minBackoff = FiniteDuration(1000,TimeUnit.MILLISECONDS),

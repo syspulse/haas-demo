@@ -35,7 +35,6 @@ import io.syspulse.haas.serde.BlockJson._
 import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc3._
 import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
 import io.syspulse.haas.ingest.eth.flow.rpc3._
 

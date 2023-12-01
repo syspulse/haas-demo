@@ -37,8 +37,6 @@ import io.syspulse.haas.serde.TxJson._
 import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.rpc3._
 import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
-
 
 abstract class PipelineRpcTx[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 

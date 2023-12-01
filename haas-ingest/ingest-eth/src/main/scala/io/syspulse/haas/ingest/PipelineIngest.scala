@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest
 
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.skel.ingest.flow.Flows
@@ -42,7 +42,7 @@ import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
 
-abstract class PipelineEth[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
+abstract class PipelineIngest[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit val fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
   extends Pipeline[T,O,E](config.feed,config.output,config.throttle,config.delimiter,config.buffer) {
   

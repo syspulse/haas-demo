@@ -43,7 +43,6 @@ import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 import io.syspulse.haas.intercept.InterceptionJson._
 
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
 import io.syspulse.haas.ingest.eth.flow.etl.PipelineETLTokenTransfer
 import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
 import io.syspulse.haas.intercept.flow.eth.InterceptorTokenTransfer

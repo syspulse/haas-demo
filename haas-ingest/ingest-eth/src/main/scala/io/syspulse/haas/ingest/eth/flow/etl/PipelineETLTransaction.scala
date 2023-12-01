@@ -35,11 +35,11 @@ import io.syspulse.haas.serde.TransactionJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.PipelineIngest
 
 abstract class PipelineETLTransaction[E <: skel.Ingestable](config:Config)
                                                   (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthTransaction,Transaction,E](config) with PipelineETL[E] {
+  PipelineIngest[EthTransaction,Transaction,E](config) with PipelineETL[E] {
   
   def apiSuffix():String = s"/transaction"
 

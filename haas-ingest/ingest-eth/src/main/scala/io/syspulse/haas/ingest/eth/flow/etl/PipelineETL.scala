@@ -39,7 +39,6 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
 
 trait PipelineETL[E] extends ETLDecoder[E] {
 

@@ -24,9 +24,9 @@ import io.syspulse.haas.ingest.eth.EthURI
 
 import io.syspulse.haas.ingest.eth.EthEtlJson
 import io.syspulse.haas.ingest.eth.{EthBlock,EthTransaction,EthTokenTransfer,EthLog,EthTx}
-import io.syspulse.haas.ingest.eth.flow.EthDecoder
+import io.syspulse.haas.ingest.Decoder
 
-trait ETLDecoder[T] extends EthDecoder[T,EthBlock,EthTransaction,EthTokenTransfer,EthLog,EthTx] {
+trait ETLDecoder[T] extends Decoder[T,EthBlock,EthTransaction,EthTokenTransfer,EthLog,EthTx] {
 
   protected val log = Logger(s"${this}")
 

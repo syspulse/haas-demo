@@ -40,11 +40,11 @@ import io.syspulse.haas.serde.TokenTransferJson._
 import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.Config
 import io.syspulse.haas.ingest.eth.EthEtlJson._
-import io.syspulse.haas.ingest.eth.flow.PipelineEth
+import io.syspulse.haas.ingest.PipelineIngest
 
 abstract class PipelineETLTokenTransfer[E <: skel.Ingestable](config:Config)
                                                              (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineEth[EthTokenTransfer,TokenTransfer,E](config) with PipelineETL[E] {
+  PipelineIngest[EthTokenTransfer,TokenTransfer,E](config) with PipelineETL[E] {
   
   def apiSuffix():String = s"/transfer"
 

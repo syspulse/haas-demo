@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow
+package io.syspulse.haas.ingest
 
 import java.util.concurrent.atomic.AtomicLong
 import scala.jdk.CollectionConverters._
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.serde._
 
-trait EthDecoder[E,BLOCK,TRANSACTION,TRANSFER,LOG,TX] {
+trait Decoder[E,BLOCK,TRANSACTION,TRANSFER,LOG,TX] {
   implicit val fmt:JsonFormat[E]
 
   def OptionEmpty(s:String) = if(s.isEmpty()) None else Some(s)
