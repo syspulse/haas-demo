@@ -7,8 +7,6 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
-case class Block(num:Long,hash:String,ts:Long = 0L,txCound:Long = 0)
-
 class CursorBlock(file:String = "BLOCK",lag:Int = 0) {
   private val log = Logger(this.getClass)
 

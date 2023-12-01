@@ -47,6 +47,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
 import requests.Response
+import akka.stream.scaladsl.Sink
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 class BehindException(behind: Long) extends RuntimeException("") with NoStackTrace
@@ -66,6 +67,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
   import EthRpcJson._
 
   val cursor = new CursorBlock()
+  val reorg = new ReorgBlock(config.blockLag)
     
   override def source(feed:String) = {
     feed.split("://").toList match {
@@ -121,9 +123,48 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           s"ingest-eth-${feed}"
         )
 
+        // ----- Reorg -----------------------------------------------------------------------------------
+        val reorgFlow = Flow[Long].map( lastBlock => {
+          if(cursor.current == lastBlock + 1 ) {
+            
+            // check the block again for reorg
+            val blockHex = s"0x${lastBlock.toHexString}"
+            val blocksReq = s"""{
+                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
+                  "params":["${blockHex}",true],
+                  "id":0
+                }""".trim.replaceAll("\\s+","")
+                        
+            val json = blocksReq
+            val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
+            log.info(s"rsp=${rsp.statusCode}: checking reorg: ${lastBlock}")
+            
+            val r = ujson.read(decodeSingle(rsp.text()).head)
+            val result = r.obj("result").obj
+            
+            val blockNum = java.lang.Long.decode(result("number").str).toLong
+            val blockHash = result("hash").str
+            val ts = java.lang.Long.decode(result("timestamp").str).toLong
+            val txCount = result("transactions").arr.size
+
+            // check if reorg
+            val rr = reorg.isReorg(blockNum,blockHash)
+            if(rr.size > 0) {
+              log.warn(s"reorg block: >>>>>>>>> ${blockNum}/${blockHash}: reorgs=${rr}")
+              os.write.append(os.Path("REORG",os.pwd),s"${ts},${blockNum},${blockHash},${txCount}}")
+              reorg.reorg(rr)
+            } 
+
+          } 
+
+          // pass lastBlock to the rest of the flow
+          lastBlock
+        })          
+        
+        // ------- Flow ------------------------------------------------------------------------------------
         sourceTick
           .map(h => {
-            log.info(s"Cron --> ${h}")
+            log.debug(s"Cron --> ${h}")
 
             // request latest block to know where we are from current
             val blockHex = "latest"
@@ -136,14 +177,15 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
             //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
             val r = ujson.read(rsp.text())
-            val lastBlock = java.lang.Long.decode(r.obj("result").str)
+            val lastBlock = java.lang.Long.decode(r.obj("result").str).toLong
             
             log.info(s"last=${lastBlock}, current=${cursor.get()}")
             lastBlock
           })
+          .via(reorgFlow)
           .mapConcat(lastBlock => {
             cursor.current to lastBlock            
-          })
+          })          
           .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
           .mapConcat(blocks => {
             log.info(s"--> ${blocks}")
