@@ -107,12 +107,51 @@ __NOTE__: Use different Consumer Groups otherwise Kafka will load balance
 ./run-ingest-eth.sh intercept -e transaction -f kafka://localhost:9092/transactions/group-2 -o stdout:// -s file://scripts/script-1.js
 ```
 
-## Reorg (Blockchain re-organizations)
+## via RPC
 
-NOTE: it is important to have `throttle` small enough to detect fast reorgs (more detection than etherscan)
+Blocks from latest:
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=latest 
+```
+
+Blocks catch-up:
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --throttle=30000
+```
+
+Blocks from specific block in batches:
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=19999 --batch=10
+```
+
+Blocks from state file (to continue stream with restarts)
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=file://BLOCKS 
+```
+
+Transactions + Receipts:
+```
+./run-ingest-eth.sh -e tx.rpc -f http://geth:8545
+```
+
+### Lag (to prevent reorg-ed data)
+
+It will return blocks in past from lastest block at the depth of `lag` parameter
 
 ```
-./run-ingest-eth.sh -e block.rpc -f http://geth1.demo.hacken.cloud:8545 --delimiter= --block=latest --logging=WARN --lag=2 --throttle=1000 >reorg-1.log
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --delimiter= --block=latest --lag=2 
+```
+
+### Reorg Detection (Blockchain re-organizations)
+
+`--reorg` option allows to catch reorganizations when new block replaces old one. `reorg` specifies how deep the memory for old blocks must be to detect reorg
+
+__NOTES__: 
+1. Important to have `throttle` small enough to detect fast reorgs (more detection than etherscan)
+2. `--lag` and `--reorg` are not compatible and should not be used together
+
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --delimiter= --block=latest --logging=WARN --reorg=2 --throttle=1000
 ```
 
 
