@@ -13,7 +13,7 @@ class CursorBlock(file:String = "BLOCK",lag:Int = 0) {
   override def toString() = s"${current} [${blockStart} : ${blockEnd}]"
 
   var stateFile = file
-  var current:Long = 0
+  private var current:Long = 0
   var blockStart:Long = 0
   var blockEnd:Long = 0
 

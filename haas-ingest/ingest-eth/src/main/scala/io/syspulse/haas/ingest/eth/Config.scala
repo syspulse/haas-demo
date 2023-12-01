@@ -55,7 +55,7 @@ case class Config(
   blockEnd:String = "",    // empty is infinite
   blockBatch:Int = 10,     // batch size (how many blocks to ask)
   blockLag:Int = 0, // lag
-  blockReorg:Int = 2, // number of block reorgs
+  blockReorg:Int = 0, // number of block reorgs
 
   cmd:String = "ingest",
   params: Seq[String] = Seq(),

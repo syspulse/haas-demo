@@ -112,7 +112,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             dec.toInt
         }
 
-        cursor.init(blockStart, blockEnd)
+        cursor.init(blockStart - config.blockLag, blockEnd)
                    
         log.info(s"cursor: ${cursor}")        
 
@@ -188,16 +188,18 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             val r = ujson.read(rsp.text())
             val lastBlock = java.lang.Long.decode(r.obj("result").str).toLong
             
-            log.info(s"last=${lastBlock}, current=${cursor.get()}")
-            lastBlock
+            log.info(s"last=${lastBlock}, current=${cursor.get()}, lag=${config.blockLag}")
+            lastBlock - config.blockLag
           })
           .mapConcat(lastBlock => {
-            if(config.blockReorg == 0 || cursor.current < (lastBlock - config.blockReorg))
+            // ATTENTION:
+            // lag and reorg are not compatible !            
+            if(config.blockReorg == 0 || cursor.get() < (lastBlock - config.blockReorg))              
               // normal fast operation or reorg before the tip
-              cursor.current to lastBlock
+              cursor.get() to lastBlock
             else
               // reorg operation on the tip
-              (cursor.current - config.blockReorg) to lastBlock
+              (cursor.get() - config.blockReorg) to lastBlock
           })          
           .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
           .mapConcat(blocks => {
