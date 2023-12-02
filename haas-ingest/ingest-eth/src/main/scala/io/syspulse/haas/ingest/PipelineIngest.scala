@@ -41,6 +41,7 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.ingest.eth.EthEtlJson._
 
 import io.syspulse.haas.ingest.eth.EthURI
+import io.syspulse.haas.ingest.icp.IcpURI
 
 abstract class PipelineIngest[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit val fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
@@ -74,8 +75,8 @@ abstract class PipelineIngest[T,O <: skel.Ingestable,E <: skel.Ingestable](confi
 
   override def source(feed:String) = {
     feed.split("://").toList match {
-      case "node" :: _ => super.source(EthURI(feed,apiSuffix()).uri)
-           
+      case "eth" :: _ => super.source(EthURI(feed,apiSuffix()).uri)
+      case "icp" :: _ => super.source(IcpURI(feed,apiSuffix()).uri)
       case _ => super.source(feed)
     }
   }

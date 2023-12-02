@@ -95,12 +95,12 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               0
             } else {
               val latest = ujson.read(rsp.text()).obj("result").obj("number").str
-              java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toInt
+              java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toLong
             }
           case hex if hex.startsWith("0x") =>
-            java.lang.Long.parseLong(hex.drop(2),16).toInt
+            java.lang.Long.parseLong(hex.drop(2),16).toLong
           case dec =>
-            dec.toInt
+            dec.toLong
         }
         
         val blockEnd = config.blockEnd match {

@@ -40,8 +40,8 @@ import io.syspulse.haas.ingest.eth.flow.rpc3._
 
 abstract class PipelineRpcBlock[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineRPC[RpcBlock,RpcBlock,E](config) {
-  
+  PipelineRPC[RpcBlock,RpcBlock,E](config) {  
+
   def apiSuffix():String = s"/block"
 
   def parse(data:String):Seq[RpcBlock] = {

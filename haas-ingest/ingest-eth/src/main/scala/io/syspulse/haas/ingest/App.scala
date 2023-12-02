@@ -15,7 +15,8 @@ import io.syspulse.skel.util.Util
 import io.syspulse.skel.config._
 
 import io.syspulse.skel.ingest.flow.Pipeline
-import io.syspulse.haas.ingest.eth.flow._
+import io.syspulse.haas.ingest.eth
+import io.syspulse.haas.ingest.icp
 
 object App extends skel.Server {
   
@@ -143,43 +144,44 @@ object App extends skel.Server {
 
           // ethereum_etl 
           case "block" | "block.etl" =>
-            Some(new etl.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+            Some(new eth.flow.etl.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
           case "transaction" | "transaction.etl" =>
-            Some(new etl.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTx,config.output)))
+            Some(new eth.flow.etl.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTx,config.output)))
           
           case "transfer" | "token" | "transfer.etl" | "token.etl" =>
-            Some(new etl.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
+            Some(new eth.flow.etl.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
 
           case "log" | "event" | "log.etl" | "event.etl" => 
-            Some(new etl.PipelineLog(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
+            Some(new eth.flow.etl.PipelineLog(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
 
               
           case "mempool" => 
-            Some(new PipelineMempool(orf(config,config.feedMempool,config.feed,config.outputMempool,config.output)))
+            Some(new eth.flow.PipelineMempool(orf(config,config.feedMempool,config.feed,config.outputMempool,config.output)))
 
           case "tx" | "tx.etl" =>
-            Some(new etl.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+            Some(new eth.flow.etl.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
           // Lake stored
           case "block.lake" =>
-            Some(new lake.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+            Some(new eth.flow.lake.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
           case "transaction.lake" =>
-            Some(new lake.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+            Some(new eth.flow.lake.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
           case "transfer.lake" | "token.lake" =>
-            Some(new lake.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
+            Some(new eth.flow.lake.PipelineTokenTransfer(orf(config,config.feedTransfer,config.feed,config.outputTransfer,config.output)))
           case "log.lake" | "event.lake" =>
-            Some(new lake.PipelineEvent(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
+            Some(new eth.flow.lake.PipelineEvent(orf(config,config.feedLog,config.feed,config.outputLog,config.output)))
           case "tx.lake" =>
-            Some(new lake.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
+            Some(new eth.flow.lake.PipelineTx(orf(config,config.feedTx,config.feed,config.outputTx,config.output)))
 
-          // RPC
+          // Web3 RPC Transaction and Tx return the same !!
           case "block.rpc" =>
-            Some(new rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
-          
-          // Transaction and Tx return the same !!
+            Some(new eth.flow.rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
           case "transaction.rpc" | "tx.rpc" =>
-            Some(new rpc3.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+            Some(new eth.flow.rpc3.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+
+          case "block.icp" =>
+            Some(new icp.flow.rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");
