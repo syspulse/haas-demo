@@ -5,7 +5,9 @@ import io.syspulse.skel.Ingestable
 case class Block(
   i:Long,       // block number
   hash:String,  // block hash 
-  ts:Long       // timestamp
+  phash:String, // parent hash
+  ts:Long,       // timestamp
+  tx:Option[Seq[Transaction]], // transactions
 
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(i)

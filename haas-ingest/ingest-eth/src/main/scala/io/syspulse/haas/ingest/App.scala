@@ -54,7 +54,7 @@ object App extends skel.Server {
         ArgLong('_', "size",s"Size limit for output (def=${d.size})"),
 
         ArgLong('_', "freq",s"Frequency (def=${d.freq}"),
-        ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
+        //ArgString('_', "delimiter","""Delimiter characteds (def: '\n'). Usage example: --delimiter=`echo -e $"\r"` """),
         ArgInt('_', "buffer",s"Frame buffer (Akka Framing) (def: ${d.buffer})"),
         ArgLong('_', "throttle",s"Throttle messages in msec (def: ${d.throttle})"),
 
@@ -182,6 +182,8 @@ object App extends skel.Server {
 
           case "block.icp" =>
             Some(new icp.flow.rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.icp" | "tx.icp" =>
+            Some(new icp.flow.rpc3.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

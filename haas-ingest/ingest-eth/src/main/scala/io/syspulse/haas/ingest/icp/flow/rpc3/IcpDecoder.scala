@@ -28,7 +28,7 @@ import io.syspulse.haas.ingest.icp.flow.rpc3.IcpRpcJson
 
 import io.syspulse.haas.ingest.Decoder
 
-trait IcpDecoder[T] extends Decoder[T,IcpBlock,Nothing,Nothing,Nothing,Nothing] {
+trait IcpDecoder[T] extends Decoder[T,IcpRpcBlock,Nothing,Nothing,Nothing,Nothing] {
 
   protected val log = Logger(s"${this}")
 
@@ -39,14 +39,14 @@ trait IcpDecoder[T] extends Decoder[T,IcpBlock,Nothing,Nothing,Nothing,Nothing] 
   def toOption(data:String) = if(data.isEmpty() || data=="0x") None else Some(data)
   def toOptionLong(data:String) = if(data.isEmpty() || data=="0x") None else Some(toLong(data))
 
-  def parseBlock(data:String):Seq[IcpBlock] = {
+  def parseBlock(data:String):Seq[IcpRpcBlock] = {
     if(data.isEmpty()) return Seq()
     
     // only JSON is supported
     if(data.stripLeading().startsWith("{")) {
       
       val block = try {
-        data.parseJson.convertTo[IcpBlock]
+        data.parseJson.convertTo[IcpRpcBlock]
       } catch {
         case e:Exception => 
           log.error(s"failed to parse: '${data}'",e)

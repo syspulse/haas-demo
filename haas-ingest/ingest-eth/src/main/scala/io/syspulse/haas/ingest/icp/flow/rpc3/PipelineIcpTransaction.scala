@@ -25,29 +25,36 @@ import java.util.concurrent.TimeUnit
 import io.syspulse.haas.ingest.Config
 
 import io.syspulse.haas.ingest.icp.Block
+import io.syspulse.haas.ingest.icp.Transaction
+import io.syspulse.haas.ingest.icp.Operation
 import io.syspulse.haas.ingest.icp.IcpJson._
 
 import io.syspulse.haas.ingest.icp.flow.rpc3._
 import io.syspulse.haas.ingest.icp.flow.rpc3.IcpRpcJson._
 
 
-abstract class PipelineIcpBlock[E <: skel.Ingestable](config:Config)
+abstract class PipelineIcpTransaction[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineIcp[IcpRpcBlock,IcpRpcBlock,E](config) {
+  PipelineIcp[IcpRpcTransaction,IcpRpcTransaction,E](config) {
     
-  def apiSuffix():String = s"/block"
+  def apiSuffix():String = s"/transaction"
 
-  def parse(data:String):Seq[IcpRpcBlock] = {
+  def parse(data:String):Seq[IcpRpcTransaction] = {
     val bb = parseBlock(data)    
+   
     if(bb.size!=0) {
-      val b = bb.last.block
-      latestTs.set(b.timestamp * 1000L)      
-    }
-    bb
+      latestTs.set(bb.last.block.timestamp * 1000L)
+      
+      bb.flatMap(b => {
+        b.block.transactions
+      })
+
+    } else
+      Seq()
   }
 
-  def convert(block:IcpRpcBlock):IcpRpcBlock = {
-    block
+  def convert(tx:IcpRpcTransaction):IcpRpcTransaction = {
+    tx
   }
 
   // def transform(block: Block): Seq[Block] = {
@@ -55,20 +62,28 @@ abstract class PipelineIcpBlock[E <: skel.Ingestable](config:Config)
   // }
 }
 
-class PipelineBlock(config:Config) extends PipelineIcpBlock[Block](config) {    
+class PipelineTansaction(config:Config) extends PipelineIcpTransaction[Transaction](config) {    
 
-  def transform(b: IcpRpcBlock): Seq[Block] = {
-    val block = Block(
-      b.block.block_identifier.index,
-      b.block.block_identifier.hash,
-      b.block.parent_block_identifier.hash,
-      b.block.timestamp * 1000L,
-      tx = None
+  def transform(tx: IcpRpcTransaction): Seq[Transaction] = {
+    val t = Transaction(            
+      tx.transaction_identifier.hash,
+      ops = tx.operations.map(o => Operation(
+        o.operation_identifier.index,
+        o.`type`,
+        o.status,
+        o.account.address,
+        o.amount.value,
+        o.amount.currency.symbol,
+        o.amount.currency.decimals,
+      )),
+      
+      tx.metadata.block_height,
+      tx.metadata.timestamp / 1000000L,      
     )
 
     // commit cursor
-    cursor.commit(block.i)
+    cursor.commit(t.b)
 
-    Seq(block)
+    Seq(t)
   }    
 }

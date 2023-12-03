@@ -176,14 +176,15 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           .mapConcat(lastBlock => {
             cursor.get() to lastBlock            
           })          
-          .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
+          // batch limiter with a small tiny throttle
+          .groupedWithin(config.blockBatch,FiniteDuration( 50L ,TimeUnit.MILLISECONDS)) 
           .mapConcat(blocks => {
             log.info(s"--> ${blocks}")
-            
-            val json = blocks.map(block => {
-              s"""{"network_identifier":{"blockchain":"Internet Computer","network":"00000000000000020101"},
-              "block_identifier": {"index": ${block}}}"""
-            }).mkString("")
+            blocks
+          })
+          .map( block => {
+            val json = 
+              s"""{"network_identifier":{"blockchain":"Internet Computer","network":"00000000000000020101"},"block_identifier": {"index": ${block}}}"""            
 
             try {
               val rsp = requests.post(uri + "block", data = json,headers = Map("content-type" -> "application/json"))              
@@ -196,13 +197,13 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
                   throw new RetryException("")
               }
               
-              val batch = decodeSingle(rsp.text())            
-              batch
+              rsp.text()              
+
             } catch {
               case e:Exception => 
-                log.error(s"failed to get block: ${e}")
+                log.error(s"failed to get block: ${block}",e)
                 throw e
-            }
+            }            
           })
           .map(b => ByteString(b))
       
