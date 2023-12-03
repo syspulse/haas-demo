@@ -74,7 +74,11 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
     feed.split("://").toList match {
       case "http" :: _ | "https" :: _ | "icp" :: _ => 
 
-        val uri = IcpURI(feed).uri
+        val rpcUri = IcpURI(feed)
+        val uri = rpcUri.uri
+        val blockchain = rpcUri.blockchain
+        val network = rpcUri.network        
+        log.info(s"uri=${uri}, blockchain=${blockchain}/${network}")
         
         val blockStr = 
           (config.block.split("://").toList match {
@@ -87,7 +91,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           case "latest" =>
             val rsp = requests.post(uri + "network/status",
               headers = Seq(("Content-Type","application/json")),
-              data = s"""{"network_identifier":{"blockchain":"Internet Computer","network":"00000000000000020101"}}"""
+              data = s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"}}"""
             )
             // {
             //   "current_block_identifier": {
@@ -152,7 +156,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             val rsp = try {
               requests.post(uri + "network/status",
               headers = Seq(("Content-Type","application/json")),
-              data = s"""{"network_identifier":{"blockchain":"Internet Computer","network":"00000000000000020101"}}"""
+              data = s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"}}"""
             )} catch {
               case e:Exception =>
                 log.error(s"failed to get latest block: ${e}")
@@ -184,7 +188,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           })
           .map( block => {
             val json = 
-              s"""{"network_identifier":{"blockchain":"Internet Computer","network":"00000000000000020101"},"block_identifier": {"index": ${block}}}"""            
+              s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"},"block_identifier": {"index": ${block}}}"""
 
             try {
               val rsp = requests.post(uri + "block", data = json,headers = Map("content-type" -> "application/json"))              
