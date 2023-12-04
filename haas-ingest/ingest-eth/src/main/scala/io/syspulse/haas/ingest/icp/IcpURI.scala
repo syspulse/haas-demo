@@ -29,18 +29,14 @@ case class IcpURI(rpcUri:String,apiSuffix:String="",apiToken:String="") {
     val prefix = "https://"
 
     rpcUri.trim.stripPrefix(PREFIX).split("/|@").toList match {
-      case blockchain :: path if(rpcUri.contains("@")) => 
-        val b = getBlockchain(blockchain)
-        (b._1, b._2, prefix + path)
-      
-      case "" :: Nil if(rpcUri.contains("@")) => 
-        val b = getBlockchain(blockchain)
-        (b._1, b._2, prefix + DEFAULT_HOST + "/" + rpcUrl(apiToken) + apiSuffix)
-
       case blockchain :: Nil if(rpcUri.contains("@")) => 
         val b = getBlockchain(blockchain)
         (b._1, b._2, prefix + DEFAULT_HOST + "/" + rpcUrl(apiToken) + apiSuffix)
       
+      case blockchain :: path if(rpcUri.contains("@")) => 
+        val b = getBlockchain(blockchain)
+        (b._1, b._2, prefix + path.mkString("/"))
+                  
       case host :: path :: _ => 
         val b = getBlockchain("")
         (b._1, b._2, prefix + host + path)
@@ -60,6 +56,6 @@ case class IcpURI(rpcUri:String,apiSuffix:String="",apiToken:String="") {
     case (b,n,u) => 
       rBlockchain = b
       rNetwork = n
-      rUri = u
+      rUri = u.replaceAll("\\/+$","")
   }
 }

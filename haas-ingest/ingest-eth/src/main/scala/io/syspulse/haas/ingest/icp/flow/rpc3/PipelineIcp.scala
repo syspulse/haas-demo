@@ -89,7 +89,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
         val blockStart:Long = blockStr.strip match {
           case "latest" =>
-            val rsp = requests.post(uri + "network/status",
+            val rsp = requests.post(uri + "/network/status",
               headers = Seq(("Content-Type","application/json")),
               data = s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"}}"""
             )
@@ -154,7 +154,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
             // request latest block to know where we are from current
             val rsp = try {
-              requests.post(uri + "network/status",
+              requests.post(uri + "/network/status",
               headers = Seq(("Content-Type","application/json")),
               data = s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"}}"""
             )} catch {
@@ -191,7 +191,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               s"""{"network_identifier":{"blockchain":"${blockchain}","network":"${network}"},"block_identifier": {"index": ${block}}}"""
 
             try {
-              val rsp = requests.post(uri + "block", data = json,headers = Map("content-type" -> "application/json"))              
+              val rsp = requests.post(uri + "/block", data = json,headers = Map("content-type" -> "application/json"))              
               
               rsp.statusCode match {
                 case 200 => //
