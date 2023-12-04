@@ -8,10 +8,12 @@ case class IcpURI(rpcUri:String,apiSuffix:String="",apiToken:String="") {
   val PREFIX = "icp://"
 
   val DEFAULT_HOST = "rosetta-api.internetcomputer.org"
+  val DEFAULT_BLOCKCHAIN = "Internet Computer"
+  val DEFAULT_NETWORK = "00000000000000020101"
   def rpcUrl(apiToken:String = "") = s""
   
-  private var rBlockchain = "Internet Computer"
-  private var rNetwork = "00000000000000020101"
+  private var rBlockchain = DEFAULT_BLOCKCHAIN
+  private var rNetwork = DEFAULT_NETWORK
   private var rUri = ""
 
   def blockchain:String = rBlockchain
@@ -20,9 +22,9 @@ case class IcpURI(rpcUri:String,apiSuffix:String="",apiToken:String="") {
 
   def getBlockchain(blockchain:String):(String,String) = blockchain.split("\\:").toList match {
     case blockchain :: network :: _ => (blockchain,network)
-    case "" :: Nil => ("Internet Computer","00000000000000020101")
-    case network :: Nil => ("Internet Computer",network)
-    case Nil => ("Internet Computer","00000000000000020101")
+    case "" :: Nil => (DEFAULT_BLOCKCHAIN,DEFAULT_NETWORK)
+    case network :: Nil => (DEFAULT_BLOCKCHAIN,network)
+    case Nil => (DEFAULT_BLOCKCHAIN,DEFAULT_NETWORK)
   }
 
   def parse(rpcUri:String):(String,String,String) = {
