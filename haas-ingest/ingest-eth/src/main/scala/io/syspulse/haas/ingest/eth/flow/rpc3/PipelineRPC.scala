@@ -49,6 +49,7 @@ import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
 import requests.Response
 import akka.stream.scaladsl.Sink
+import io.syspulse.haas.ingest.CursorBlock
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 
@@ -66,7 +67,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
   import EthRpcJson._
 
-  val cursor = new CursorBlock()
+  val cursor = new CursorBlock("BLOCK-ETH")
   val reorg = new ReorgBlock(config.blockReorg)
     
   override def source(feed:String) = {

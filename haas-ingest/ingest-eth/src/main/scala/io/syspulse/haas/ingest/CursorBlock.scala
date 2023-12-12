@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow.rpc3
+package io.syspulse.haas.ingest
 
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.skel.ingest.flow.Flows
@@ -7,7 +7,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
 import com.typesafe.scalalogging.Logger
 
-class CursorBlock(file:String = "BLOCK-ETH",lag:Int = 0) {
+class CursorBlock(file:String = "BLOCK",lag:Int = 0) {
   private val log = Logger(this.getClass)
 
   override def toString() = s"${current} [${blockStart} : ${blockEnd}]"
