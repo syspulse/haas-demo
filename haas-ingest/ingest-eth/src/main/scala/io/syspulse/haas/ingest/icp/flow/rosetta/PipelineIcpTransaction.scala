@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.icp.flow.rpc3
+package io.syspulse.haas.ingest.icp.flow.rosetta
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{Duration,FiniteDuration}
@@ -29,8 +29,8 @@ import io.syspulse.haas.ingest.icp.Transaction
 import io.syspulse.haas.ingest.icp.Operation
 import io.syspulse.haas.ingest.icp.IcpJson._
 
-import io.syspulse.haas.ingest.icp.flow.rpc3._
-import io.syspulse.haas.ingest.icp.flow.rpc3.IcpRpcJson._
+import io.syspulse.haas.ingest.icp.flow.rosetta._
+import io.syspulse.haas.ingest.icp.flow.rosetta.IcpRpcJson._
 
 
 abstract class PipelineIcpTransaction[E <: skel.Ingestable](config:Config)

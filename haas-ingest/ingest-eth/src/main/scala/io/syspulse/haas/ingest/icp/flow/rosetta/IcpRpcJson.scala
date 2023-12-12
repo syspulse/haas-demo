@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.icp.flow.rpc3
+package io.syspulse.haas.ingest.icp.flow.rosetta
 
 import com.typesafe.scalalogging.Logger
 

@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.icp.flow.rpc3
+package io.syspulse.haas.ingest.icp.flow.rosetta
 
 import java.util.concurrent.atomic.AtomicLong
 import scala.jdk.CollectionConverters._
@@ -23,8 +23,8 @@ import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
 
 import io.syspulse.haas.ingest.icp.IcpURI
 
-import io.syspulse.haas.ingest.icp.flow.rpc3._
-import io.syspulse.haas.ingest.icp.flow.rpc3.IcpRpcJson
+import io.syspulse.haas.ingest.icp.flow.rosetta._
+import io.syspulse.haas.ingest.icp.flow.rosetta.IcpRpcJson
 
 import io.syspulse.haas.ingest.Decoder
 

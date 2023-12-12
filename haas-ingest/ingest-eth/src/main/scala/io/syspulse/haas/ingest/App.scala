@@ -180,10 +180,11 @@ object App extends skel.Server {
           case "transaction.rpc" | "tx.rpc" =>
             Some(new eth.flow.rpc3.PipelineTx(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
 
-          case "block.icp" =>
-            Some(new icp.flow.rpc3.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
-          case "transaction.icp" | "tx.icp" =>
-            Some(new icp.flow.rpc3.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          // ICP Rosetta API
+          case "block.icp.rosetta" =>
+            Some(new icp.flow.rosetta.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.icp.rosetta" | "tx.icp.rosetta" =>
+            Some(new icp.flow.rosetta.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

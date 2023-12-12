@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.icp.flow.rpc3
+package io.syspulse.haas.ingest.icp.flow.rosetta
 
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.skel.ingest.flow.Flows
@@ -35,8 +35,8 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
-import io.syspulse.haas.ingest.icp.flow.rpc3._
-import io.syspulse.haas.ingest.icp.flow.rpc3.IcpRpcJson._
+import io.syspulse.haas.ingest.icp.flow.rosetta._
+import io.syspulse.haas.ingest.icp.flow.rosetta.IcpRpcJson._
 
 import io.syspulse.haas.ingest.icp.IcpURI
 import io.syspulse.haas.ingest.PipelineIngest
