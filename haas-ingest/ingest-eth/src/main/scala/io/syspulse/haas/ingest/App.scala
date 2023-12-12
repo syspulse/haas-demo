@@ -17,6 +17,7 @@ import io.syspulse.skel.config._
 import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth
 import io.syspulse.haas.ingest.icp
+import io.syspulse.haas.ingest.starknet
 
 object App extends skel.Server {
   
@@ -70,6 +71,8 @@ object App extends skel.Server {
         ArgInt('l', "lag",s"Blocks lag (def: ${d.blockLag})"),
         ArgInt('b', "batch",s"Blocks Batch (def: ${d.blockBatch})"),
         ArgInt('_', "reorg",s"Blocks Reorg depth (def: ${d.blockReorg})"),
+
+        ArgString('_', "api.token",s"API Token (def: ${d.apiToken})"),
         
         // ArgCmd("server",s"Server"),
         ArgCmd("ingest",s"Ingest pipeline (requires -e <entity>)"),
@@ -123,6 +126,8 @@ object App extends skel.Server {
       blockLag = c.getInt("lag").getOrElse(d.blockLag),
       blockBatch = c.getInt("batch").getOrElse(d.blockBatch),
       blockReorg = c.getInt("reorg").getOrElse(d.blockReorg),
+
+      apiToken = c.getString("api.token").getOrElse(d.apiToken),
       
       cmd = c.getCmd().getOrElse(d.cmd),
       
@@ -185,6 +190,12 @@ object App extends skel.Server {
             Some(new icp.flow.rosetta.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
           case "transaction.icp.rosetta" | "tx.icp.rosetta" =>
             Some(new icp.flow.rosetta.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+
+          // Starknet
+          case "block.starknet" =>
+            Some(new starknet.flow.rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.starknet" =>
+            Some(new starknet.flow.rpc.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");

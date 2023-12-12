@@ -70,7 +70,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
 
   import IcpRpcJson._
 
-  val cursor = new CursorBlock("BLOCK-ICP")  
+  val cursor = new CursorBlock("BLOCK-icp")  
     
   override def source(feed:String) = {
     feed.split("://").toList match {

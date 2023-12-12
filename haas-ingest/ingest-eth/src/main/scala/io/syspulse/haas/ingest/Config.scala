@@ -57,6 +57,8 @@ case class Config(
   blockLag:Int = 0, // lag
   blockReorg:Int = 0, // number of block reorgs
 
+  apiToken:String = "",
+
   cmd:String = "ingest",
   params: Seq[String] = Seq(),
   sinks:Seq[String] = Seq()

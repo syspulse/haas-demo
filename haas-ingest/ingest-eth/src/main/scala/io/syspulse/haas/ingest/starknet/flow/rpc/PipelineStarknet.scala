@@ -1,4 +1,4 @@
-package io.syspulse.haas.ingest.eth.flow.rpc3
+package io.syspulse.haas.ingest.starknet.flow.rpc
 
 import java.util.concurrent.atomic.AtomicLong
 import io.syspulse.skel.ingest.flow.Flows
@@ -35,12 +35,12 @@ import com.github.mjakubowski84.parquet4s.{ParquetRecordEncoder,ParquetSchemaRes
 import java.util.concurrent.TimeUnit
 
 import io.syspulse.haas.core.{ Block, Tx, TokenTransfer, Event }
-import io.syspulse.haas.ingest.eth.rpc3._
-import io.syspulse.haas.ingest.eth.rpc3.EthRpcJson._
+import io.syspulse.haas.ingest.starknet.flow.rpc._
+import io.syspulse.haas.ingest.starknet.flow.rpc.StarknetRpcJson._
 
-import io.syspulse.haas.ingest.eth.EthURI
+import io.syspulse.haas.ingest.starknet.StarknetURI
 import io.syspulse.haas.ingest.PipelineIngest
-import io.syspulse.haas.ingest.eth
+import io.syspulse.haas.ingest.starknet
 
 import io.syspulse.haas.ingest.Config
 
@@ -49,15 +49,18 @@ import akka.stream.RestartSettings
 import scala.util.control.NoStackTrace
 import requests.Response
 import akka.stream.scaladsl.Sink
+
 import io.syspulse.haas.ingest.CursorBlock
 
 class RetryException(msg: String) extends RuntimeException(msg) with NoStackTrace
 
+case class BlockId(index:Long,hash:String)
+
 // ATTENTION !!!
 // throttle is overriden in Config to support batchable retries !
-abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
+abstract class PipelineStarknet[T,O <: skel.Ingestable,E <: skel.Ingestable](config:Config)
                                                                        (implicit fmt:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E])
-  extends PipelineIngest[T,O,E](config.copy(throttle = 0L))(fmt,parqEncoders,parsResolver) with RPCDecoder[E] {
+  extends PipelineIngest[T,O,E](config.copy(throttle = 0L))(fmt,parqEncoders,parsResolver) with StarknetDecoder[E] {
 
   override val retrySettings:Option[RestartSettings] = Some(RestartSettings(
     minBackoff = FiniteDuration(1000,TimeUnit.MILLISECONDS),
@@ -65,52 +68,53 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
     randomFactor = 0.2
   ))
 
-  import EthRpcJson._
+  import StarknetRpcJson._
 
-  val cursor = new CursorBlock("BLOCK-eth")
-  val reorg = new ReorgBlock(config.blockReorg)
+  val cursor = new CursorBlock("BLOCK-starknet")  
     
   override def source(feed:String) = {
     feed.split("://").toList match {
-      case "http" :: _ | "https" :: _ => 
-        
-        val blockStr = 
-          (config.block.split("://").toList match {
-            case "file" :: file :: Nil => cursor.read(file)
-            case "file" :: Nil => cursor.read()
-            case _ => config.block
-          })
+      case "http" :: _ | "https" :: _ | "starknet" :: _ => 
 
-        val blockStart = blockStr.strip match {
+        val rpcUri = StarknetURI(feed,apiToken = config.apiToken)
+        val uri = rpcUri.uri
+        log.info(s"uri=${uri}")
+        
+        val blockStr = config.block.split("://").toList match {
+          case "file" :: file :: Nil => cursor.read(file)
+          case "file" :: Nil => cursor.read()
+          case _ => config.block
+        }
+
+        val blockStart:Long = blockStr.strip match {
           case "latest" =>
-            val rsp = requests.post(feed,
+            val rsp = requests.post(uri,
               headers = Seq(("Content-Type","application/json")),
-              data = s"""{
-                "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                "params":["latest",false],
-                "id":0
-              }""".trim.replaceAll("\\s+","")
+              data = s"""{"jsonrpc":"2.0","method":"starknet_blockNumber","params":[],"id":1}"""
             )
+            
             if(rsp.statusCode != 200) {
               log.error(s"failed to get latest block: ${rsp}")
               0
             } else {
-              val latest = ujson.read(rsp.text()).obj("result").obj("number").str
-              java.lang.Long.parseLong(latest.stripPrefix("0x"),16).toLong
+              val r = ujson.read(rsp.text())
+              r.obj("result").num.toLong
             }
           case hex if hex.startsWith("0x") =>
-            java.lang.Long.parseLong(hex.drop(2),16).toLong
+            val index = java.lang.Long.parseLong(hex.drop(2),16).toLong
+            index
           case dec =>
-            dec.toLong
+            val index = dec.toLong
+            index
         }
         
         val blockEnd = config.blockEnd match {
           case "" => Int.MaxValue
           case "latest" => blockStart
           case hex if hex.startsWith("0x") =>
-            java.lang.Long.parseLong(hex,16).toInt
+            java.lang.Long.parseLong(hex,16).toLong
           case _ @ dec =>
-            dec.toInt
+            dec.toLong
         }
 
         cursor.init(blockStart - config.blockLag, blockEnd)
@@ -121,48 +125,9 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           FiniteDuration(10,TimeUnit.MILLISECONDS), 
           //FiniteDuration(config.ingestCron.toLong,TimeUnit.SECONDS),
           FiniteDuration(config.throttle,TimeUnit.MILLISECONDS),
-          s"ingest-eth-${feed}"
+          s"ingest-starknet-${feed}"
         )
-
-        // ----- Reorg -----------------------------------------------------------------------------------
-        val reorgFlow = (lastBlock:String) => {
-          if(config.blockReorg > 0 ) {            
-            // // check the block again for reorg
-            // val blockHex = s"0x${lastBlock.toHexString}"
-            // val blocksReq = s"""{
-            //       "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-            //       "params":["${blockHex}",true],
-            //       "id":0
-            //     }""".trim.replaceAll("\\s+","")
-                        
-            // val json = blocksReq
-            // val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
-            // log.info(s"rsp=${rsp.statusCode}: checking reorg: ${lastBlock}")              
-            // val r = ujson.read(decodeSingle(rsp.text()).head)
-            
-            val r = ujson.read(lastBlock)
-            val result = r.obj("result").obj
-            
-            val blockNum = java.lang.Long.decode(result("number").str).toLong
-            val blockHash = result("hash").str
-            val ts = java.lang.Long.decode(result("timestamp").str).toLong
-            val txCount = result("transactions").arr.size
-
-            // check if reorg
-            val rr = reorg.isReorg(blockNum,blockHash)
-            if(rr.size > 0) {
-              log.warn(s"reorg block: >>>>>>>>> ${blockNum}/${blockHash}: reorgs=${rr}")
-              os.write.append(os.Path("REORG",os.pwd),s"${ts},${blockNum},${blockHash},${txCount}}")
-              reorg.reorg(rr)
-              true
-            } else {
-              
-              reorg.cache(blockNum,blockHash,ts,txCount)              
-            }
-
-          } else true
-        }
-        
+                
         // ------- Flow ------------------------------------------------------------------------------------
         sourceTick
           .map(h => {
@@ -171,12 +136,12 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             // request latest block to know where we are from current
             val blockHex = "latest"
             val json = s"""{
-                "jsonrpc":"2.0","method":"eth_blockNumber",
+                "jsonrpc":"2.0","method":"starknet_blockNumber",
                 "params":[],
                 "id": 0
               }""".trim.replaceAll("\\s+","")
 
-            val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
+            val rsp = requests.post(uri, data = json,headers = Map("content-type" -> "application/json"))
             //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
             rsp.statusCode match {
               case 200 => //
@@ -187,7 +152,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             }
             
             val r = ujson.read(rsp.text())
-            val lastBlock = java.lang.Long.decode(r.obj("result").str).toLong
+            val lastBlock = r.obj("result").num.toLong
             
             log.info(s"last=${lastBlock}, current=${cursor.get()}, lag=${config.blockLag}")
             lastBlock - config.blockLag
@@ -206,21 +171,21 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           .mapConcat(blocks => {
             log.info(s"--> ${blocks}")
             
-            val blocksReq = blocks.map(block => {
-              val blockHex = s"0x${block.toHexString}"
+            val blocksReq = blocks.map(block => {              
               s"""{
-                  "jsonrpc":"2.0","method":"eth_getBlockByNumber",
-                  "params":["${blockHex}",true],
+                  "jsonrpc":"2.0","method":"starknet_getBlockWithTxs",
+                  "params":[{"block_number":${block}}],
                   "id":0
-                }""".trim.replaceAll("\\s+","")  
+                }""".trim.replaceAll("\\s+","")
             })
                         
             val json = s"""[${blocksReq.mkString(",")}]"""
-            val rsp = requests.post(config.feed, data = json,headers = Map("content-type" -> "application/json"))
+            val rsp = requests.post(uri, data = json,headers = Map("content-type" -> "application/json"))
             log.info(s"rsp=${rsp.statusCode}")
             
             rsp.statusCode match {
               case 200 => //
+                
               case _ => 
                 // retry
                 log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
@@ -230,7 +195,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
             val batch = decodeBatch(rsp.text())            
             batch
           })
-          .filter(reorgFlow)
+          //.filter(reorgFlow)
           .map(b => ByteString(b))
       
       case _ => super.source(feed)
