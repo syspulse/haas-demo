@@ -48,13 +48,14 @@ import io.syspulse.skel.Ingestable
 
 case class RpcTx(
   calldata: Option[Seq[String]],
-  max_fee: String,
+  max_fee: Option[String],
   nonce: String,
   sender_address: Option[String],
-  signature: Seq[String],    
+  signature: Option[Seq[String]],
   transaction_hash: String,
   `type`: String,
   version: String,
+  entry_point_selector:Option[String],
 
   block_number:Option[Long] = None, // NOT FROM RPC !!! used internally for streaming Block timestamp 
   timestamp:Option[Long] = None // NOT FROM RPC !!! used internally for streaming Block timestamp 
@@ -64,6 +65,10 @@ case class RpcUncle(
   hash:String
 )
 
+// "l1_gas_price":{"price_in_wei":"0xc203ba11b"}
+case class RpcL1Gas( 
+  price_in_wei:String
+)
 case class RpcBlockResult(  
   block_hash: String,
   block_number: Long,
@@ -73,6 +78,8 @@ case class RpcBlockResult(
   status: String,
   timestamp: Long,
   transactions: Seq[RpcTx],  
+
+  l1_gas_price:Option[RpcL1Gas]
 )
 
 case class RpcBlock(  

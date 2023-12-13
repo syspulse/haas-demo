@@ -9,8 +9,9 @@ import spray.json.{DefaultJsonProtocol,NullOptions}
 
 object StarknetRpcJson extends JsonCommon {
   
-  implicit val jf_rpc_tx = jsonFormat10(RpcTx)
-  implicit val jf_rpc_res = jsonFormat8(RpcBlockResult)
+  implicit val jf_rpc_tx = jsonFormat11(RpcTx)
+  implicit val jf_rpc_l1_gas = jsonFormat1(RpcL1Gas)
+  implicit val jf_rpc_res = jsonFormat9(RpcBlockResult)
   implicit val jf_rpc_bl = jsonFormat3(RpcBlock)
 
   implicit val jf_rpc_evn = jsonFormat3(RpcEvent)

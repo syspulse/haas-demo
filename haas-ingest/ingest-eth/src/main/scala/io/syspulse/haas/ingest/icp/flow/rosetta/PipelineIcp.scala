@@ -184,6 +184,9 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
           })          
           // batch limiter with a small tiny throttle
           .groupedWithin(config.blockBatch,FiniteDuration( 50L ,TimeUnit.MILLISECONDS)) 
+          .map(blocks => 
+            blocks.filter(_ <= blockEnd)
+          )
           .mapConcat(blocks => {
             log.info(s"--> ${blocks}")
             blocks

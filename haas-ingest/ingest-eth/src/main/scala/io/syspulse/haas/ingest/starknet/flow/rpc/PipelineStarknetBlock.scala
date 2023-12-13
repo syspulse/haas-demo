@@ -68,7 +68,8 @@ class PipelineBlock(config:Config) extends PipelineStarknetBlock[Block](config) 
       b.status,
       b.new_root,
       b.timestamp * 1000L,
-      tx = None
+      tx = None,
+      l1gas = b.l1_gas_price.map(g => toBigInt(g.price_in_wei))
     )
 
     // commit cursor

@@ -11,6 +11,7 @@ case class Block(
   nroot:String,  // new root
   ts:Long,       // timestamp
   tx:Option[Seq[Transaction]], // transactions
+  l1gas:Option[BigInt] = None
 
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(i)

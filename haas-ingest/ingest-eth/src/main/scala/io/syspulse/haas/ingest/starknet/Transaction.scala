@@ -6,12 +6,14 @@ case class Transaction(
   hash:String,      // transaction hash
   nonce:Long,
   from:String,
-  fee:BigInt,
+  fee:Option[BigInt],
   typ:String,
   ver:Int,
-  sig:String,
+  sig:String,       // signature (can be empty)
   
   data:Seq[String], // calldata
+  
+  entry:Option[String],     // entry_point_selector
 
   b:Long,           // block number
   ts:Long,          // timestamp
