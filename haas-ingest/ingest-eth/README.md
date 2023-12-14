@@ -124,6 +124,11 @@ Blocks from specific block in batches:
 ./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=19999 --batch=10
 ```
 
+Blocks Range:
+```
+./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=0 --block.end=100
+```
+
 Blocks from state file (to continue stream with restarts)
 ```
 ./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --block=file://BLOCKS 
@@ -154,7 +159,3 @@ __NOTES__:
 ./run-ingest-eth.sh -e block.rpc -f http://geth:8545 --delimiter= --block=latest --logging=WARN --reorg=2 --throttle=1000
 ```
 
-
-## Intercept
-
-Intercept moved to [haas-intercept](../../haas-intercept/README.md)
