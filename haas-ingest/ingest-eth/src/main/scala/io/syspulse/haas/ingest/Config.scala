@@ -38,7 +38,7 @@ case class Config(
   // It does not affect: akka.http.parsing.max-chunk-size = 1m
   buffer:Int = 5 * 1024*1024, 
 
-  throttle:Long = 1000L,
+  throttle:Long = 3000L,
   
   entity:Seq[String] = Seq("transaction"),
   

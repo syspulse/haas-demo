@@ -191,6 +191,12 @@ object App extends skel.Server {
           case "transaction.icp.rosetta" | "tx.icp.rosetta" =>
             Some(new icp.flow.rosetta.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
 
+          // ICP Ledger API
+          case "block.icp" =>
+            Some(new icp.flow.ledger.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.icp" | "tx.icp" =>
+            Some(new icp.flow.ledger.PipelineTansaction(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+
           // Starknet
           case "block.starknet" =>
             Some(new starknet.flow.rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
