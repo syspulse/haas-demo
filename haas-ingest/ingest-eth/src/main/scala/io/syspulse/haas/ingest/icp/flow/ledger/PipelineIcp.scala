@@ -188,8 +188,7 @@ abstract class PipelineIcp[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
                   log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
                   throw new RetryException("")
               }
-              
-              log.info(s"${rsp.text()}")
+                            
               rsp.text()    
 
             } catch {
