@@ -121,8 +121,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
                             FiniteDuration(config.ingestCron.toLong,TimeUnit.SECONDS),
                             s"ingest-eth-${feed}")
         .map(h => {
-          log.info(s"Cron --> ${h}")
-          h
+          log.info(s"Cron --> ${h}")          
 
           lazy val reqs = LazyList.from(lastBlock.next().toInt,1).takeWhile(_ <= lastBlock.end()).map { block => 
             val id = System.currentTimeMillis() / 1000L

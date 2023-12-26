@@ -328,6 +328,9 @@ trait ETLDecoder[T] extends Decoder[T,EthBlock,EthTransaction,EthTokenTransfer,E
                   ts,
                   block_hash
                 ))
+              case _ => 
+                log.error(s"failed to parse: '${data}'")
+                Seq()
             }
 
             case _ => 

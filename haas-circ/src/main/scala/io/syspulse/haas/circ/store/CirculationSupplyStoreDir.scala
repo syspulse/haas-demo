@@ -31,7 +31,7 @@ case class TokenCirculating(tid:String,circ:Circulation)
 class CirculationSupplyStoreDir(dir:String = "store/",preload:Boolean = true) extends CirculationSupplyStoreMem {
   import CirculatingJson._
     
-  override def reload() {
+  override def reload() = {
     val dd = load(dir)
     dd.foreach(d => this.+(d))
     log.info(s"Loaded store: CirculationSupply: ${this.size}")

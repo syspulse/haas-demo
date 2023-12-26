@@ -256,6 +256,9 @@ trait LakeDecoder[T] extends Decoder[T,Block,Transaction,TokenTransfer,Event,Tx]
                   log_index.toInt,
                   transaction_index.toInt,
                 ))
+              case _ => 
+                log.error(s"failed to parse: '${data}'")
+                Seq()
             }
 
             case _ => 

@@ -34,7 +34,9 @@ import io.syspulse.haas.core.Event
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 
+import io.syspulse.haas.ingest
 import io.syspulse.haas.intercept.Config
+
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
@@ -49,7 +51,7 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorEvent
 
 class PipelineETLInterceptEvent(feed:String,output:String,override val interceptor:InterceptorEvent)(implicit config:Config) 
   extends PipelineETLLog[InterceptionAlarm](
-    Config(
+    ingest.Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,

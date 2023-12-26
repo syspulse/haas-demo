@@ -34,7 +34,9 @@ import io.syspulse.haas.ingest.eth._
 import io.syspulse.haas.intercept.store.ScriptStore
 import io.syspulse.haas.intercept.store.InterceptionStore
 
-import io.syspulse.haas.intercept.Config
+import io.syspulse.haas.ingest
+import io.syspulse.haas.intercept
+
 import io.syspulse.haas.intercept.Interceptor
 import io.syspulse.haas.intercept.Interception
 import io.syspulse.haas.intercept.InterceptionAlarm
@@ -46,9 +48,9 @@ import io.syspulse.haas.intercept.flow.eth.InterceptorTransaction
 import io.syspulse.haas.ingest.eth.flow.etl.PipelineETLTransaction
 import io.syspulse.haas.intercept.flow.eth.PipelineEthIntercept
 
-class PipelineETLInterceptTransaction(feed:String,output:String,override val interceptor:InterceptorTransaction)(implicit config:Config) 
+class PipelineETLInterceptTransaction(feed:String,output:String,override val interceptor:InterceptorTransaction)(implicit config:intercept.Config) 
   extends PipelineETLTransaction[InterceptionAlarm](
-    Config(
+    ingest.Config(
       feed = config.feed,
       output = config.output,
       throttle = config.throttle,
