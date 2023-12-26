@@ -37,7 +37,7 @@ abstract class PipelineIcpTransaction[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineIcp[IcpRpcTransaction,IcpRpcTransaction,E](config) {
     
-  def apiSuffix():String = s"/transaction"
+  def apiSuffix():String = ""
 
   def parse(data:String):Seq[IcpRpcTransaction] = {
     val bb = parseBlock(data)    

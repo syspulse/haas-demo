@@ -30,12 +30,11 @@ import io.syspulse.haas.ingest.icp.IcpJson._
 import io.syspulse.haas.ingest.icp.flow.rosetta._
 import io.syspulse.haas.ingest.icp.flow.rosetta.IcpRpcJson._
 
-
 abstract class PipelineIcpBlock[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
   PipelineIcp[IcpRpcBlock,IcpRpcBlock,E](config) {
     
-  def apiSuffix():String = s"/block"
+  def apiSuffix():String = ""
 
   def parse(data:String):Seq[IcpRpcBlock] = {
     val bb = parseBlock(data)    
