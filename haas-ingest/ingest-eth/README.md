@@ -1,7 +1,28 @@
 # ingest-eth
 
+Streaming Ingester with features:
 
-## Stream 
+- Multichain (see Sources)
+- `Latest` state support (file)
+- Range stream (`start`:`end` blocks)
+- Entities (`block`,`transaction`,`tx`(fat transaction),`log`,`token_transfer`)
+- Lag support (to avoid re-orgs)
+- Reorg support (to detect re-orgs)
+- Flexible Source/Sink (stdin/stdout,file,kafka)
+- Support to write to Parquet files Sink
+- Support to write to S3 files
+- File Sink timestamp partitions support
+
+
+### Sources
+| source | description |
+|-------------|--------------|
+| EVM    |  Standard EVM RPC             |
+| [ethereumetl](https://github.com/syspulse/ethereum-etl)    | From ethereumetl stream (kafka) |
+| ICP | Dfinity Rosetta/[Ledger](https://ledger-api.internetcomputer.org/swagger-ui/#/) RPC |
+| Starknet | Starknet RPC |
+|     | 
+
 
 ### From ethereum_etl
 
