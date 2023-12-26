@@ -14,13 +14,27 @@ case class Operation(
 )
 
 case class Transaction(  
-  hash:String,      // transaction hash
-  ops:Seq[Operation], // operations
-
-  b:Long,           // block number
-  ts:Long,          // timestamp
+  ts:Long,              // timestamp
+  hash:String,          // transaction hash
+  blk:Long,             // block number
   
-  i:Option[Long] = None,  // transaction index in Block
+  from:String,
+  to:Option[String],
+  fee:BigInt,
+  v:BigInt,
+  
+  alw:Option[BigInt],   // allowence
+  alwe:Option[BigInt],  // expected allowence
+
+  spend:Option[String], // spender
+  
+  typ:String,           // transfer type
+  memo:String,          // 
+  icrc1:Option[String], // icrc1 memo
+  
+  exp:Option[Long],     // expiration  
+  
+  i:Option[Long] = None,// transaction index in Block
 
 ) extends Ingestable {
   override def getKey:Option[Any] = Some(hash)

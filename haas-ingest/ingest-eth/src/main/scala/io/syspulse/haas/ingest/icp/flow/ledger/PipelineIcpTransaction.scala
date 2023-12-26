@@ -61,16 +61,30 @@ abstract class PipelineIcpTransaction[E <: skel.Ingestable](config:Config)
 class PipelineTansaction(config:Config) extends PipelineIcpTransaction[Transaction](config) {    
 
   def transform(b: IcpRpcBlock): Seq[Transaction] = {
-    val tx = Transaction(            
-      b.transaction_hash,
-      ops = Seq(),
+    val tx = Transaction(
+      ts = b.created_at * 1000L,
+      hash = b.transaction_hash,
+      blk = b.block_height.toLong,
+
+      from = b.from_account_identifier,
+      to = b.to_account_identifier,
+      fee = BigInt(b.fee),
+      v = BigInt(b.amount),
+
+      alw = b.allowance.map(BigInt(_)),
+      alwe = b.expected_allowance.map(BigInt(_)),
+
+      spend = b.spender_account_identifier,
       
-      b.block_height.toLong,
-      b.created_at * 1000L,      
+      typ = b.transfer_type,
+      memo = b.memo,
+      icrc1 = b.icrc1_memo,
+      
+      exp = b.expires_at.map(_.toLong * 1000L)
     )
 
     // commit cursor
-    cursor.commit(tx.b)
+    cursor.commit(tx.blk)
     Seq(tx)
   }    
 }

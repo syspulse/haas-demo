@@ -65,24 +65,47 @@ abstract class PipelineIcpTransaction[E <: skel.Ingestable](config:Config)
 class PipelineTansaction(config:Config) extends PipelineIcpTransaction[Transaction](config) {    
 
   def transform(tx: IcpRpcTransaction): Seq[Transaction] = {
-    val t = Transaction(            
-      tx.transaction_identifier.hash,
-      ops = tx.operations.map(o => Operation(
-        o.operation_identifier.index,
-        o.`type`,
-        o.status,
-        o.account.address,
-        o.amount.value,
-        o.amount.currency.symbol,
-        o.amount.currency.decimals,
-      )),
+
+    val from = tx.operations.find(p => 
+      (p.`type`.toUpperCase == "TRANSACTION" && p.status.toUpperCase() == "COMPLETED" && p.amount.value.trim.startsWith("-")) ||
+      (p.`type`.toUpperCase == "TRANSFER" && p.status.toUpperCase() == "REVERTED")
+    )
+
+    val to = tx.operations.find(p => 
+      (p.`type`.toUpperCase == "TRANSACTION" && p.status.toUpperCase() == "COMPLETED" && !p.amount.value.trim.startsWith("-"))      
+    )
+
+    val fee = tx.operations.find(p => 
+      (p.`type`.toUpperCase == "FEE" && p.status.toUpperCase() == "COMPLETED")
+    ).map(_.amount.value.stripPrefix("-"))
+
+    val value = from.map(f => f.amount.value.stripPrefix("-"))
+
+    val t = Transaction(
+      ts = tx.metadata.timestamp / 1000000L,
+      hash = tx.transaction_identifier.hash,
+      blk = tx.metadata.block_height,
+
+      from = from.map(_.account.address).getOrElse(""),
+      to = to.map(_.account.address),
+      fee = fee.map(BigInt(_)).getOrElse(0),
+      v = value.map(BigInt(_)).getOrElse(0),
+
+      alw = None,
+      alwe = None,
+
+      spend = None,
       
-      tx.metadata.block_height,
-      tx.metadata.timestamp / 1000000L,      
+      typ = from.map(_.`type`).getOrElse(""),
+      memo = tx.metadata.memo.toString,
+      icrc1 = None,
+      
+      exp = None,
+
     )
 
     // commit cursor
-    cursor.commit(t.b)
+    cursor.commit(t.blk)
 
     Seq(t)
   }    

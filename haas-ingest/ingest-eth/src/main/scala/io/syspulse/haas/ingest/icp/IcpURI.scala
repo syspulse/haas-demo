@@ -45,6 +45,10 @@ case class IcpURI(rpcUri:String,apiSuffix:String="",apiToken:String="") {
       case "rosetta" :: blockchain :: path if(rpcUri.contains("@")) => 
         val b = getBlockchain(blockchain)
         (b._1, b._2, prefix + path.mkString("/"))
+
+      case "rosetta" :: path => 
+        val b = getBlockchain("")
+        (b._1, b._2, prefix + DEFAULT_ROSETTA_HOST + path.mkString("/"))
                   
       case "ledger" :: host :: path :: _ => 
         val b = getBlockchain("")
