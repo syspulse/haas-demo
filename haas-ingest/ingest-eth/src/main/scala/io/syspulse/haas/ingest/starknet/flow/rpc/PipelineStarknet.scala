@@ -168,7 +168,8 @@ abstract class PipelineStarknet[T,O <: skel.Ingestable,E <: skel.Ingestable](con
               (cursor.get() - config.blockReorg) to lastBlock
           })          
           .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
-          .takeWhile(blocks => 
+          .map(blocks => blocks.filter(_ <= blockEnd))
+          .takeWhile(blocks => // limit flow by the specified end block
             blocks.filter(_ <= blockEnd).size > 0
           )
           .mapConcat(blocks => {

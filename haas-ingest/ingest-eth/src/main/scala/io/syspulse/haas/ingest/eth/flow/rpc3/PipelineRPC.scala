@@ -210,6 +210,7 @@ abstract class PipelineRPC[T,O <: skel.Ingestable,E <: skel.Ingestable](config:C
               (cursor.get() - config.blockReorg) to lastBlock
           })          
           .groupedWithin(config.blockBatch,FiniteDuration(1,TimeUnit.MILLISECONDS)) // batch limiter 
+          .map(blocks => blocks.filter(_ <= blockEnd))
           .takeWhile(blocks =>  // limit by the specified end block
             blocks.filter(_ <= blockEnd).size > 0
           )
