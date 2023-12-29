@@ -42,7 +42,7 @@ import io.syspulse.skel.Command
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-import io.syspulse.skel.auth.permissions.rbac.Permissions
+import io.syspulse.skel.auth.permissions.Permissions
 import io.syspulse.skel.auth.RouteAuthorizers
 
 import io.syspulse.haas.token.server.TokenProto
