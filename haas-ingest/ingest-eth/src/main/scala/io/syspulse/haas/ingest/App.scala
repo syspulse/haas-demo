@@ -18,6 +18,7 @@ import io.syspulse.skel.ingest.flow.Pipeline
 import io.syspulse.haas.ingest.eth
 import io.syspulse.haas.ingest.icp
 import io.syspulse.haas.ingest.starknet
+import io.syspulse.haas.ingest.vechain
 
 object App extends skel.Server {
   
@@ -202,6 +203,12 @@ object App extends skel.Server {
             Some(new starknet.flow.rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
           case "transaction.starknet" =>
             Some(new starknet.flow.rpc.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
+
+          // Vechain
+          case "block.vechain" =>
+            Some(new vechain.flow.rpc.PipelineBlock(orf(config,config.feedBlock,config.feed,config.outputBlock,config.output)))
+          case "transaction.vechain" =>
+            Some(new vechain.flow.rpc.PipelineTransaction(orf(config,config.feedTransaction,config.feed,config.outputTransaction,config.output)))
 
           case _ => 
             Console.err.println(s"Uknown entity: '${e}'");
