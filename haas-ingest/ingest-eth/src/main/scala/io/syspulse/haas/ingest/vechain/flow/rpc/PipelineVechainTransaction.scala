@@ -30,32 +30,28 @@ import io.syspulse.haas.ingest.vechain.VechainJson._
 
 import io.syspulse.haas.ingest.vechain.flow.rpc._
 import io.syspulse.haas.ingest.vechain.flow.rpc.VechainRpcJson._
+import io.syspulse.haas.ingest.vechain.VechainURI
 
 
 abstract class PipelineVechainTransaction[E <: skel.Ingestable](config:Config)
                                                      (implicit val fmtE:JsonFormat[E],parqEncoders:ParquetRecordEncoder[E],parsResolver:ParquetSchemaResolver[E]) extends 
-  PipelineVechain[RpcTx,RpcTx,E](config) {
+  PipelineVechain[RpcBlock,RpcBlock,E](config) {
     
   def apiSuffix():String = s"/transaction"
 
-  def parse(data:String):Seq[RpcTx] = {
-    val tx:Seq[RpcTx] = parseTransaction(data)    
+  def parse(data:String):Seq[RpcBlock] = {
+    val bb:Seq[RpcBlock] = parseBlock(data)    
    
     // ignore pending transactions
-    if(tx.size!=0) {
-      if(!tx.last.meta.isDefined) {
-        log.warn(s"pending tx: ${tx.last.id}: ignore")
-        Seq()
-      } else {
-        latestTs.set(tx.last.meta.get.blockTimestamp * 1000L)
-        tx
-      }      
+    if(bb.size!=0) {
+      latestTs.set(bb.last.timestamp * 1000L)
+      bb
     } else
       Seq()
   }
 
-  def convert(tx:RpcTx):RpcTx = {
-    tx
+  def convert(b:RpcBlock):RpcBlock = {
+    b
   }
 
   // def transform(tx: Transaction): Seq[Transaction] = {
@@ -64,36 +60,58 @@ abstract class PipelineVechainTransaction[E <: skel.Ingestable](config:Config)
 }
 
 class PipelineTransaction(config:Config) extends PipelineVechainTransaction[Transaction](config) {    
+  val rpcUri = VechainURI(config.feed,apiToken = config.apiToken)
+  val uri = rpcUri.uri
 
-  def transform(tx: RpcTx): Seq[Transaction] = {
-    // ignore pending
-    if(tx.meta.isDefined) {
-      val txx = tx.clauses.map(clause => Transaction(
-        ts = tx.meta.get.blockTimestamp,
-        b = tx.meta.get.blockNumber,
-        hash = tx.id,
-        sz = tx.size,
+  def transform(block: RpcBlock): Seq[Transaction] = {
 
-        from = tx.origin,
-        to = clause.to, 
-        v = BigInt(clause.value),        // value
-        nonce = tx.nonce,
+    val tt = block.transactions.flatMap( txHash => {
+      
+      val rsp = requests.get(s"${uri}/transactions/${txHash}",
+        headers = Map("content-type" -> "application/json")
+      )
+      //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
+      rsp.statusCode match {
+        case 200 => //
+        case _ => 
+          // retry
+          log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
+          throw new RetryException("")
+      }
+      
+      val tx = rsp.text().parseJson.convertTo[RpcTx]
+
+      // ignore pending
+      if(tx.meta.isDefined) {
+        val tt = tx.clauses.map(clause => Transaction(
+          ts = tx.meta.get.blockTimestamp,
+          b = tx.meta.get.blockNumber,
+          hash = tx.id,
+          sz = tx.size,
+
+          from = tx.origin,
+          to = clause.to, 
+          v = new java.math.BigInteger(clause.value.stripPrefix("0x"),16),        // value
+          nonce = tx.nonce,
+          
+          gas = tx.gas, 
+          pric = tx.gasPriceCoef, 
+          
+          data = clause.data,
+
+          blk = tx.blockRef,
+          exp = tx.expiration,
+          del = tx.delegator,
+          dep = tx.dependsOn
+        ))
         
-        gas = tx.gas, 
-        pric = tx.gasPriceCoef, 
-        
-        data = clause.data,
-
-        blk = tx.blockRef,
-        exp = tx.expiration,
-        del = tx.delegator,
-        dep = tx.dependsOn
-      ))
-
-      // commit cursor
-      cursor.commit(tx.meta.get.blockNumber)
-      txx
-    } else 
-      Seq()
+        tt
+      } else 
+        Seq()
+    })
+  
+    // commit cursor
+    cursor.commit(block.number)
+    tt
   }
 }
