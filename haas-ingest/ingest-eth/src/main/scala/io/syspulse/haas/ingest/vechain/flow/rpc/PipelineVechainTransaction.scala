@@ -63,29 +63,57 @@ class PipelineTransaction(config:Config) extends PipelineVechainTransaction[Tran
   val rpcUri = VechainURI(config.feed,apiToken = config.apiToken)
   val uri = rpcUri.uri
 
-  def transform(block: RpcBlock): Seq[Transaction] = {
-
-    val tt = block.transactions.flatMap( txHash => {
-      
-      val rsp = requests.get(s"${uri}/transactions/${txHash}",
+  def single(txHash:String)(config:Config):RpcTx = {
+    val rsp = requests.get(s"${uri}/transactions/${txHash}",
         headers = Map("content-type" -> "application/json")
       )
-      //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
-      rsp.statusCode match {
-        case 200 => //
-        case _ => 
-          // retry
-          log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
-          throw new RetryException("")
-      }
-      
-      val tx = rsp.text().parseJson.convertTo[RpcTx]
+    //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
+    rsp.statusCode match {
+      case 200 => //
+      case _ => 
+        // retry
+        log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
+        throw new RetryException("")
+    }
+    
+    val tx = rsp.text().parseJson.convertTo[RpcTx] 
+    tx
+  }
 
-      // ignore pending
-      if(tx.meta.isDefined) {
-        val tt = tx.clauses.map(clause => Transaction(
-          ts = tx.meta.get.blockTimestamp,
-          b = tx.meta.get.blockNumber,
+  def batch(blockNumber:Long)(config:Config):Seq[RpcTx] = {
+    val rsp = requests.get(s"${uri}/blocks/${blockNumber}?expanded=true",
+        headers = Map("content-type" -> "application/json")
+      )
+    //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
+    rsp.statusCode match {
+      case 200 => //
+      case _ => 
+        // retry
+        log.error(s"RPC error: ${rsp.statusCode}: ${rsp.text()}")
+        throw new RetryException("")
+    }
+    
+    val txx = rsp.text().parseJson.convertTo[RpcBlockTx]
+    txx.transactions
+  }
+
+
+  def transform(block: RpcBlock): Seq[Transaction] = {
+
+    val tt = 
+    // {
+    //   block.transactions.flatMap( txHash => {
+    //     Seq(single(txHash)(config))
+    //   })      
+    // }
+    {
+      batch(block.number)(config)
+    }
+    
+    val txx = tt.map( tx => {      
+        tx.clauses.map(clause => Transaction(
+          ts = block.timestamp,
+          b = block.number,
           hash = tx.id,
           sz = tx.size,
 
@@ -104,14 +132,12 @@ class PipelineTransaction(config:Config) extends PipelineVechainTransaction[Tran
           del = tx.delegator,
           dep = tx.dependsOn
         ))
-        
-        tt
-      } else 
-        Seq()
     })
   
     // commit cursor
     cursor.commit(block.number)
-    tt
+
+    println(s"txx = ${txx}")
+    txx.flatten
   }
 }

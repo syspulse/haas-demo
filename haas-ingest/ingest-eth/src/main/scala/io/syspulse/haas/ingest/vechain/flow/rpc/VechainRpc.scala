@@ -107,3 +107,25 @@ case class RpcBlock(
     
 )  extends Ingestable
 
+
+case class RpcBlockTx(  
+  number: Long,
+  id: String,
+  size: Int,
+  parentID: String,
+  timestamp: Long,
+  gasLimit: Long,
+  beneficiary: String,
+  gasUsed: Long,
+  totalScore: Long,
+  txsRoot: String,
+  txsFeatures: Int,
+  stateRoot: String,
+  receiptsRoot: String,
+  com: Boolean,
+  signer: String,
+  isTrunk: Boolean,
+  isFinalized: Boolean,
+  transactions: Seq[RpcTx]
+    
+)  extends Ingestable

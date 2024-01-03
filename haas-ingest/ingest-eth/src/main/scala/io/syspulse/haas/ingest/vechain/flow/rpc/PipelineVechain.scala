@@ -133,7 +133,7 @@ abstract class PipelineVechain[T,O <: skel.Ingestable,E <: skel.Ingestable](conf
             log.debug(s"Cron --> ${h}")
 
             // request latest block to know where we are from current
-            val rsp = requests.get(s"${uri}/blocks/best",
+            val rsp = requests.get(s"${uri}/blocks/best?expanded=false",
               headers = Map("content-type" -> "application/json")
             )
             //log.info(s"rsp=${rsp.statusCode}: ${rsp.text()}")
