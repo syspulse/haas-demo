@@ -21,6 +21,7 @@ Streaming Ingester with features:
 | [ethereumetl](https://github.com/syspulse/ethereum-etl)    | From ethereumetl stream (kafka) |
 | ICP | Dfinity Rosetta/[Ledger](https://ledger-api.internetcomputer.org/swagger-ui/#/) RPC |
 | Starknet | Starknet RPC |
+| Vechain | Vechain RPC |
 |     | 
 
 
