@@ -48,6 +48,7 @@ curl -i http://localhost/api/v1/{service}/health
 | tag   | Tag (Label)        |
 | token   | Token Search        |
 | circ   | Circulation Supply        |
+| intercept   | Interceptor        |
 
 
 Public:
@@ -90,9 +91,3 @@ http://api.demo.hacken.cloud/api/v1/auth/swagger
 
 ## SecurityGroup
 
-Only the following IPs are whitelisted:
-
-```
-188.163.122.27 (vg)
-89.216.24.81 (sc)
-```

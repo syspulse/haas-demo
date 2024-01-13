@@ -7,7 +7,7 @@ DOCKER=${1}
 if [[ $DOCKER = skel-* ]]; then
    REPO="syspulse"
 else
-   REPO="649502643044.dkr.ecr.eu-west-1.amazonaws.com/syspulse"
+   REPO="${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/syspulse"
 fi
 
 if [ "$DOCKER" == "" ]; then
