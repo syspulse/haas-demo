@@ -21,6 +21,7 @@
     "@uiw/codemirror-extensions-color": "^4.19.7",
     "@uiw/react-codemirror": "^4.15.1",
     "@uiw/react-markdown-preview": "^4.1.10",
+    "follow-redirects": "^1.15.4",
     "axios": "^1.2.0",
     "btoa": "^1.2.1",
     "chartjs-plugin-datalabels": "^2.2.0",
