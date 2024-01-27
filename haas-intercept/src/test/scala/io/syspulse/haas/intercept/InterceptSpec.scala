@@ -24,10 +24,10 @@ import io.syspulse.skel.crypto.eth.abi.FuncSignature
 import io.syspulse.skel.crypto.eth.abi.EventSignature
 
 import io.syspulse.haas.ingest.Decoder
+import io.syspulse.haas.ingest.eth.flow.rpc.RPCDecoder
 
-
-class DecoderTest[T](implicit val fmt:JsonFormat[T]) extends Decoder[T,_,_,_,_,_] {
-
+class DecoderTest[T](implicit val fmt:JsonFormat[T]) extends RPCDecoder[T] {
+  
 }
 
 class InterceptSpec extends AnyWordSpec with Matchers {

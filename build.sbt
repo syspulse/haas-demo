@@ -238,7 +238,8 @@ lazy val root = (project in file("."))
       haas_circ,
       haas_intercept,
       haas_abi,
-      haas_holders
+      haas_holders,
+      haas_supply
   )
   .dependsOn(
     haas_core, 
@@ -253,7 +254,8 @@ lazy val root = (project in file("."))
       haas_circ,
       haas_intercept,
       haas_abi,
-      haas_holders
+      haas_holders,
+      haas_supply
   )
   .disablePlugins(sbtassembly.AssemblyPlugin) // this is needed to prevent generating useless assembly and merge error
   .settings(
