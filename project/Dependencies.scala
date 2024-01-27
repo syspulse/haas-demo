@@ -18,7 +18,7 @@ object Dependencies {
     lazy val elastic4sVersion = "7.17.3"
 
     lazy val skelVersion = "0.0.7"
-    lazy val appVersion = "0.0.5"
+    lazy val appVersion = "0.0.5.1"
     lazy val jarPrefix = "server-"
     
     lazy val appDockerRoot = "/app"
