@@ -105,7 +105,7 @@ object App extends skel.Server {
         ArgInt('p', "http.port",s"listern port (def: ${d.port})"),
         ArgString('u', "http.uri",s"api uri (def: ${d.uri})"),
         
-        ArgString('f', "feed",s"Input Feed (def: ${d.feed})"),
+        ArgString('f', "input",s"Input Feed (def: ${d.feed})"),
         ArgString('o', "output",s"Output file (pattern is supported: data-{yyyy-MM-dd-HH-mm}.log) def=${d.output}"),
         ArgString('e', "entity",s"Ingest entity: (tx,block,block-tx,token,log) def=${d.entity}"),
 
@@ -153,7 +153,7 @@ object App extends skel.Server {
       port = c.getInt("http.port").getOrElse(d.port),
       uri = c.getString("http.uri").getOrElse(d.uri),
       
-      feed = c.getString("feed").getOrElse(d.feed),
+      feed = c.getString("input").getOrElse(d.feed),
       output = c.getString("output").getOrElse(d.output),
       entity = c.getString("entity").getOrElse(d.entity),
 

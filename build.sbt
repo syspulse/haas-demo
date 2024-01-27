@@ -480,7 +480,9 @@ lazy val haas_intercept = (project in file("haas-intercept"))
       libEthAbi,
       libScalaTest % "test",
 
-      libSkelSerde
+      libSkelSerde,
+
+      libExtCore // extractor Events
     ),
   )
 

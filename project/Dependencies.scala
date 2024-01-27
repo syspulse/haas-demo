@@ -17,7 +17,8 @@ object Dependencies {
     lazy val janinoVersion = "3.0.16" //"3.1.6" //"3.0.16"
     lazy val elastic4sVersion = "7.17.3"
 
-    lazy val skelVersion = "0.0.8"
+    lazy val skelVersion = "0.0.8"    
+    lazy val extVersion = "0.0.3"
     lazy val appVersion = "0.0.6"
     lazy val jarPrefix = "server-"
     
@@ -203,5 +204,7 @@ object Dependencies {
     val libSkelJobCore =      "io.syspulse"                     %% "job-core"                       % skelVersion
     
     val libEthAbi =           "com.github.lbqds"                %% "ethabi"                         % "0.4.1"
+
+    val libExtCore =          "io.syspulse"                     %% "ext-core"                       % extVersion
   }
   
