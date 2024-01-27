@@ -79,19 +79,19 @@ class ScriptStoreDir(dir:String = "scripts/") extends ScriptStoreMem {
     Success(sc)
   }
 
-  override def +(sc:Script):Try[ScriptStore] = {     
+  override def +(sc:Script):Try[Script] = {     
     super.+(sc)
     
-    if(loading) return Success(this)
+    if(loading) return Success(sc)
 
     write(sc)
-    Success(this)
+    Success(sc)
   }
 
-  override def -(sc:Script):Try[ScriptStore] = { 
+  override def -(sc:Script):Try[Script] = { 
     super.-(sc)
     os.remove(os.Path(dir,os.pwd) / s"${sc.id}.json")
-    Success(this)
+    Success(sc)
   }
 
   override def update(id:ID,name:Option[String]=None,desc:Option[String]=None,src:Option[String]=None):Try[Script]= 

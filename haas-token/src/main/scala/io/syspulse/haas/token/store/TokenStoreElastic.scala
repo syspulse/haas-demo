@@ -86,11 +86,11 @@ class TokenStoreElastic(uri:String) extends TokenStore {
     Tokens(r.result.to[Token].toList,Some(r.result.totalHits))
   }
 
-  def +(t:Token):Try[TokenStore] = { 
+  def +(t:Token):Try[Token] = { 
     Failure(new UnsupportedOperationException(s"not implemented: ${t}"))
   }
 
-  def del(id:ID):Try[TokenStore] = { 
+  def del(id:ID):Try[ID] = { 
     Failure(new UnsupportedOperationException(s"not implemented: ${id}"))
   }
 

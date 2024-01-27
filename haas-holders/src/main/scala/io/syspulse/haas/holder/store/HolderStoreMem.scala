@@ -63,7 +63,7 @@ class HolderStoreMem extends HolderStore {
 
   def size:Long = holders.size
 
-  def +(h:Holders):Try[HolderStore] = { 
+  def +(h:Holders):Try[Holders] = { 
     holders = holders.get(h.token.toLowerCase) match {
       case Some(hh) => 
         hh.add(h)
@@ -72,7 +72,7 @@ class HolderStoreMem extends HolderStore {
         holders + (h.token.toLowerCase -> mutable.SortedSet[Holders](h))
     }
     //log.info(s"holders=${holders}")
-    Success(this)
+    Success(h)
   }
   
   def ?(id:ID):Try[Holders] = holders.get(id) match {

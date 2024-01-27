@@ -18,12 +18,12 @@ import io.syspulse.haas.core.TokenLocks
 trait TokenStore extends Store[Token,ID] {
   def getKey(t:Token):ID = t.id
   
-  def +(t:Token):Try[TokenStore]
+  def +(t:Token):Try[Token]
   
   // add with duplicate
   def ?+(t:Token):Try[Token]
   
-  def del(id:ID):Try[TokenStore]
+  def del(id:ID):Try[ID]
   
   def all:Seq[Token]
   def size:Long

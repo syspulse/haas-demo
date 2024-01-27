@@ -34,9 +34,9 @@ class CirculationSupplyStoreMem extends CirculationSupplyStore {
 
   def size:Long = circs.size
 
-  def +(c:CirculationSupply):Try[CirculationSupplyStore] = {
+  def +(c:CirculationSupply):Try[CirculationSupply] = {
     circs = circs + (c.id -> c)
-    Success(this)
+    Success(c)
   }
 
   def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply] = {

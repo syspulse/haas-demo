@@ -54,18 +54,18 @@ class InterceptionStoreDir(dir:String = "store/") extends InterceptionStoreMem {
   def delFile(ix:Interception) = os.remove(os.Path(dir,os.pwd) / s"${ix.id}.json")
   def delFile(id:Interception.ID) = os.remove(os.Path(dir,os.pwd) / s"${id}.json")
 
-  override def +(ix:Interception):Try[InterceptionStore] = {     
+  override def +(ix:Interception):Try[Interception] = {     
     super.+(ix)
 
-    if(loading) return Success(this)
+    if(loading) return Success(ix)
     writeFile(ix)  
-    Success(this)
+    Success(ix)
   }
 
-  override def del(id:Interception.ID):Try[InterceptionStore] = { 
+  override def del(id:Interception.ID):Try[Interception.ID] = { 
     super.del(id)
     delFile(id)
-    Success(this)
+    Success(id)
   }
 
   override def flush(ix:Option[Interception]):Try[InterceptionStore] = {

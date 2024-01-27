@@ -17,8 +17,8 @@ import scala.util.Failure
 trait HolderStore extends Store[Holders,ID] {
   def getKey(h:Holders):ID = h.token
   
-  def +(h:Holders):Try[HolderStore]
-  override def del(id:ID):Try[HolderStore]= Failure(new NotImplementedError())
+  def +(h:Holders):Try[Holders]
+  override def del(id:ID):Try[ID]= Failure(new NotImplementedError())
 
   def all:Seq[Holders]
   def size:Long

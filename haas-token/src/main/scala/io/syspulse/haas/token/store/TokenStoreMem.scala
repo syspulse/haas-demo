@@ -41,17 +41,17 @@ class TokenStoreMem extends TokenStore {
     Success(t1)
   }
 
-  def +(t:Token):Try[TokenStore] = {
+  def +(t:Token):Try[Token] = {
     log.info(s"${t}")    
     tokens = tokens + (t.id -> t)    
-    Success(this)
+    Success(t)
   }
 
-  def del(id:ID):Try[TokenStore] = { 
+  def del(id:ID):Try[ID] = { 
     val sz = tokens.size
     tokens = tokens - id;
     log.info(s"${id}")
-    if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(this)  
+    if(sz == tokens.size) Failure(new Exception(s"not found: ${id}")) else Success(id)  
   }
 
   def ?(id:ID):Try[Token] = tokens.get(id) match {

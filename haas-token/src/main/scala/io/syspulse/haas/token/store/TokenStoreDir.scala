@@ -34,10 +34,10 @@ class TokenStoreDir(dir:String = "store/") extends StoreDir[Token,ID](dir) with 
   def all:Seq[Token] = store.all
   def size:Long = store.size
   
-  override def +(t:Token):Try[TokenStoreDir] = super.+(t).flatMap(_ => store.+(t)).map(_ => this)
+  override def +(t:Token):Try[Token] = super.+(t).flatMap(_ => store.+(t))
   override def ?+(t:Token):Try[Token] = super.+(t).flatMap(_ => store.?+(t))
 
-  override def del(id:ID):Try[TokenStoreDir] = super.del(id).flatMap(_ => store.del(id)).map(_ => this)
+  override def del(id:ID):Try[ID] = super.del(id).flatMap(_ => store.del(id))
   override def ?(id:ID):Try[Token] = store.?(id)
 
   def search(txt:Seq[String],from:Option[Int],size:Option[Int]):Tokens = store.search(txt,from,size)

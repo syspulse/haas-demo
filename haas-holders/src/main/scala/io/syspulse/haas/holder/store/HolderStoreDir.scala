@@ -58,9 +58,8 @@ class HolderStoreDir(dir:String = "store/",limit:Int=100) extends StoreDir[Holde
   def size:Long = store.size
 
   // does not support writing add
-  override def +(h:Holders):Try[HolderStoreDir] = {
-    store.+(h).map(_ => this)
-    //super.+(h).flatMap(_ => store.+(h)).map(_ => this)    
+  override def +(h:Holders):Try[Holders] = {
+    store.+(h)    
   }
 
   override def ?(id:ID):Try[Holders] = store.?(id)

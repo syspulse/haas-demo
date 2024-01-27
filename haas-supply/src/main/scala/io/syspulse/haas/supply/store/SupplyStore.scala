@@ -19,9 +19,9 @@ import scala.util.Success
 
 trait SupplyStore extends Store[Supply,Supply.ID] {  
   def getKey(c: Supply): Supply.ID = c.id
-  def +(c:Supply):Try[SupplyStore]
+  def +(c:Supply):Try[Supply]
 
-  def del(id:Supply.ID):Try[SupplyStore]= Failure(new NotImplementedError())
+  def del(id:Supply.ID):Try[Supply.ID]= Failure(new NotImplementedError())
 
   def ?(id:Supply.ID,ts0:Long,ts1:Long):Option[Supply]
   def findByToken(tid:String,ts0:Long,ts1:Long):Option[Supply]

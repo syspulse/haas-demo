@@ -20,9 +20,9 @@ import scala.util.Success
 
 trait CirculationSupplyStore extends Store[CirculationSupply,CirculationSupply.ID] {  
   def getKey(c: CirculationSupply): CirculationSupply.ID = c.id
-  def +(c:CirculationSupply):Try[CirculationSupplyStore]
+  def +(c:CirculationSupply):Try[CirculationSupply]
 
-  def del(id:CirculationSupply.ID):Try[CirculationSupplyStore]= Failure(new NotImplementedError())
+  def del(id:CirculationSupply.ID):Try[CirculationSupply.ID]= Failure(new NotImplementedError())
 
   def ?(id:CirculationSupply.ID,ts0:Long,ts1:Long):Option[CirculationSupply]
   def findByToken(tid:String,ts0:Long,ts1:Long):Option[CirculationSupply]

@@ -14,8 +14,8 @@ import io.syspulse.haas.intercept.script.Script.ID
 trait ScriptStore extends Store[Script,ID] {
   def getKey(s: Script): ID = s.id
 
-  def +(script:Script):Try[ScriptStore]
-  def del(id:ID):Try[ScriptStore] = Failure(new UnsupportedOperationException())
+  def +(script:Script):Try[Script]
+  def del(id:ID):Try[ID] = Failure(new UnsupportedOperationException())
   def ?(id:ID):Try[Script] 
   def all:Seq[Script]
   def size:Long

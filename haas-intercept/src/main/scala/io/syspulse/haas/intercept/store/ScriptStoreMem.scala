@@ -23,10 +23,10 @@ class ScriptStoreMem extends ScriptStore {
 
   def size:Long = scripts.size
 
-  def +(s:Script):Try[ScriptStore] = { 
+  def +(s:Script):Try[Script] = { 
     scripts = scripts + (s.id -> s)
     log.info(s"${s}")
-    Success(this)
+    Success(s)
   }
 
   def ?(id:ID):Try[Script] = scripts.get(id) match {

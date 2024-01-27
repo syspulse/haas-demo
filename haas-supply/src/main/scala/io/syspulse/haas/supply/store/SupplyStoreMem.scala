@@ -26,9 +26,9 @@ class SupplyStoreMem extends SupplyStore {
 
   def size:Long = supplys.size
 
-  def +(c:Supply):Try[SupplyStore] = {
+  def +(c:Supply):Try[Supply] = {
     supplys = supplys + (c.id -> c)
-    Success(this)
+    Success(c)
   }
 
   def ?(id:Supply.ID,ts0:Long,ts1:Long):Option[Supply] = {
