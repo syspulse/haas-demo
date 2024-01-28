@@ -75,23 +75,24 @@ class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Intercept
 
                 val ix = interceptions.get(iid)
                 
-                // turn to Extract Event
-                val msg = iaa.foldLeft("")((s,ia) => {
-                  val blockchain = ia.bid.map(b => Blockchain("",b)).getOrElse(Blockchain("0","ethereum"))
+                // turn to Extractor Event
+                val msg = iaa.map(ia => {
+                  val blockchain = ia.bid.map(b => Blockchain(b)).getOrElse(Blockchain("ethereum"))
 
                   val event = io.syspulse.ext.core.Event(
                     did = "Interceptor",
                     eid = ia.iid.toString,
-                    sid = "haas:ixx",
+                    sid = "haas:int",
                     category = "EVENT",
                     `type` = "monitor",
                     severity = 0.25,
                     ts = ia.ts,
                     blockchain = blockchain,
-                    metadata = Map()
+                    metadata = Map("output" -> ia.output)
                   )
-                  s + event.toJson + "\n"
-                }) 
+                  event.toJson
+                }).mkString("\n")
+                
                 val severity = NotifySeverity.INFO
                 val title = ""
                 Notification.send(nr, title, msg, Some(severity), Some("user.intercept"))
