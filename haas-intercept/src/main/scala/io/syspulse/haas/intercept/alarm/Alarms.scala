@@ -82,13 +82,16 @@ class Alarms(throttle:Long = 10000L, interceptions:Map[Interception.ID,Intercept
                   val event = io.syspulse.ext.core.Event(
                     did = "Interceptor",
                     eid = ia.iid.toString,
-                    sid = "haas:int",
+                    sid = s"${blockchain.network}:int",
                     category = "EVENT",
                     `type` = "monitor",
                     severity = 0.25,
                     ts = ia.ts,
                     blockchain = blockchain,
-                    metadata = Map("output" -> ia.output)
+                    metadata = Map(
+                      "monitored_contract" -> "0x0000000000000000000000000000000000000007", // use artificical contract name
+                      "output" -> ia.output
+                    )
                   )
                   event.toJson
                 }).mkString("\n")
